@@ -45,6 +45,12 @@ public class AccountChart extends Parameter{
                 poJSON.put("message", "Description must not be empty.");
                 return poJSON;
             }
+            
+            if (poModel.getGLCode()== null ||  poModel.getGLCode().isEmpty()){
+                poJSON.put("result", "error");
+                poJSON.put("message", "General ledger must not be empty.");
+                return poJSON;
+            }
         }
         
         poModel.setModifyingId(poGRider.Encrypt(poGRider.getUserID()));
@@ -110,8 +116,10 @@ public class AccountChart extends Parameter{
                             ", a.sModified" +
                             ", a.dModified" +
                             ", IFNULL(b.sDescript, '') xIndstNme" +
+                            ", IFNULL(c.sGLDescxx, '') sGLDescxx" +
                         " FROM Account_Chart a" +
-                            " LEFT JOIN Industry b ON a.sIndstCde = b.sIndstCdx";
+                            " LEFT JOIN Industry b ON a.sIndstCde = b.sIndstCdx" +
+                            " LEFT JOIN Transaction_Account_Chart c ON a.sGLCodexx = c.sGLCodexx";
         
         return MiscUtil.addCondition(lsSQL, lsCondition);
     }

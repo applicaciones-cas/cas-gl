@@ -3,6 +3,7 @@ import org.guanzon.appdriver.base.GRiderCAS;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.cas.gl.AccountChart;
+import org.guanzon.cas.gl.TransactionAccountChart;
 import org.guanzon.cas.gl.services.GLControllers;
 import org.guanzon.cas.parameter.Department;
 import org.json.simple.JSONObject;
@@ -14,9 +15,9 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class testAccountChart {
+public class testTransactionAccountChart {
     static GRiderCAS instance;
-    static AccountChart record;
+    static TransactionAccountChart record;
 
     @BeforeClass
     public static void setUpClass() {
@@ -26,7 +27,7 @@ public class testAccountChart {
         
         try {
             GLControllers ctrl = new GLControllers(instance, null);
-            record = ctrl.AccountChart();
+            record = ctrl.TransactionAccountChart();
         } catch (SQLException | GuanzonException e) {
             Assert.fail(e.getMessage());
         }
@@ -42,22 +43,12 @@ public class testAccountChart {
                 Assert.fail((String) loJSON.get("message"));
             }           
 
-            loJSON = record.getModel().setDescription("Liabilities");
+            loJSON = record.getModel().setGLCode("ACCOUNT_PAYABLE");
             if ("error".equals((String) loJSON.get("result"))) {
                 Assert.fail((String) loJSON.get("message"));
             } 
             
-            loJSON = record.getModel().setParentAccountCode("");
-            if ("error".equals((String) loJSON.get("result"))) {
-                Assert.fail((String) loJSON.get("message"));
-            } 
-            
-            loJSON = record.getModel().setGLCode("ACCOUNTS_PAYABLE");
-            if ("error".equals((String) loJSON.get("result"))) {
-                Assert.fail((String) loJSON.get("message"));
-            } 
-            
-            loJSON = record.getModel().setIndustryId("01");
+            loJSON = record.getModel().setDescription("Account PAYABLE");
             if ("error".equals((String) loJSON.get("result"))) {
                 Assert.fail((String) loJSON.get("message"));
             } 

@@ -5,6 +5,7 @@ import org.guanzon.appdriver.base.GRiderCAS;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.LogWrapper;
 import org.guanzon.cas.gl.AccountChart;
+import org.guanzon.cas.gl.TransactionAccountChart;
 
 public class GLControllers {
     public GLControllers(GRiderCAS applicationDriver, LogWrapper logWrapper){
@@ -29,10 +30,28 @@ public class GLControllers {
         return poAccountChart;        
     }
     
+    public TransactionAccountChart TransactionAccountChart() throws SQLException, GuanzonException{
+        if (poGRider == null){
+            poLogWrapper.severe("GLControllers.TransactionAccountChart: Application driver is not set.");
+            return null;
+        }
+        
+        if (poGeneralLedger != null) return poGeneralLedger;
+        
+        poGeneralLedger = new TransactionAccountChart();
+        poGeneralLedger.setApplicationDriver(poGRider);
+        poGeneralLedger.setWithParentClass(false);
+        poGeneralLedger.setLogWrapper(poLogWrapper);
+        poGeneralLedger.initialize();
+        poGeneralLedger.newRecord();
+        return poGeneralLedger;        
+    }
+    
     @Override
     protected void finalize() throws Throwable {
         try {                    
             poAccountChart = null;
+            poGeneralLedger = null;
             
             poLogWrapper = null;
             poGRider = null;
@@ -45,4 +64,5 @@ public class GLControllers {
     private LogWrapper poLogWrapper;
     
     private AccountChart poAccountChart;
+    private TransactionAccountChart poGeneralLedger;
 }

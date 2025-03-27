@@ -3,13 +3,16 @@ package org.guanzon.cas.gl.model;
 import java.sql.SQLException;
 import java.util.Date;
 import org.guanzon.appdriver.agent.services.Model;
+import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.constant.EditMode;
 import org.guanzon.appdriver.constant.RecordStatus;
+import org.guanzon.cas.gl.services.GLModels;
 import org.json.simple.JSONObject;
 
 public class Model_Account_Chart extends Model {
-
+    Model_Transaction_Account_Chart poGL;
+    
     @Override
     public void initialize() {
         try {
@@ -31,6 +34,9 @@ public class Model_Account_Chart extends Model {
 
             ID = poEntity.getMetaData().getColumnLabel(1);
 
+            GLModels model = new GLModels(poGRider);
+            poGL = model.Transaction_Account_Chart();
+            
             pnEditMode = EditMode.UNKNOWN;
         } catch (SQLException e) {
             logwrapr.severe(e.getMessage());
@@ -140,5 +146,26 @@ public class Model_Account_Chart extends Model {
 
     public Date getModifiedDate() {
         return (Date) getValue("dModified");
+    }
+    
+    public Model_Transaction_Account_Chart General_Ledger() throws SQLException, GuanzonException{
+        if (!"".equals((String) getValue("sGLCodexx"))){
+            if (poGL.getEditMode() == EditMode.READY && 
+                poGL.getGLCode().equals((String) getValue("sGLCodexx")))
+                return poGL;
+            else{
+                poJSON = poGL.openRecord((String) getValue("sGLCodexx"));
+
+                if ("success".equals((String) poJSON.get("result")))
+                    return poGL;
+                else {
+                    poGL.initialize();
+                    return poGL;
+                }
+            }
+        } else {
+            poGL.initialize();
+            return poGL;
+        }
     }
 }
