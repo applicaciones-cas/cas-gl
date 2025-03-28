@@ -46,7 +46,7 @@ public class GLControllers {
         poGeneralLedger.newRecord();
         return poGeneralLedger;        
     }
-    
+       
     @Override
     protected void finalize() throws Throwable {
         try {                    
