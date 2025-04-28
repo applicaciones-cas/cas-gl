@@ -5,6 +5,8 @@ import org.guanzon.appdriver.base.GRiderCAS;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.LogWrapper;
 import org.guanzon.cas.gl.AccountChart;
+import org.guanzon.cas.gl.Particular;
+import org.guanzon.cas.gl.Payee;
 import org.guanzon.cas.gl.TransactionAccountChart;
 
 public class GLControllers {
@@ -46,12 +48,48 @@ public class GLControllers {
         poGeneralLedger.newRecord();
         return poGeneralLedger;        
     }
+    
+    public Payee Payee() throws SQLException, GuanzonException{
+        if (poGRider == null){
+            poLogWrapper.severe("GLControllers.Payee: Application driver is not set.");
+            return null;
+        }
+        
+        if (poPayee != null) return poPayee;
+        
+        poPayee = new Payee();
+        poPayee.setApplicationDriver(poGRider);
+        poPayee.setWithParentClass(false);
+        poPayee.setLogWrapper(poLogWrapper);
+        poPayee.initialize();
+        poPayee.newRecord();
+        return poPayee;        
+    }
+    
+    public Particular Particular() throws SQLException, GuanzonException{
+        if (poGRider == null){
+            poLogWrapper.severe("GLControllers.Particular: Application driver is not set.");
+            return null;
+        }
+        
+        if (poParticular != null) return poParticular;
+        
+        poParticular = new Particular();
+        poParticular.setApplicationDriver(poGRider);
+        poParticular.setWithParentClass(false);
+        poParticular.setLogWrapper(poLogWrapper);
+        poParticular.initialize();
+        poParticular.newRecord();
+        return poParticular;        
+    }
        
     @Override
     protected void finalize() throws Throwable {
         try {                    
             poAccountChart = null;
             poGeneralLedger = null;
+            poParticular = null;
+            poPayee = null;
             
             poLogWrapper = null;
             poGRider = null;
@@ -65,4 +103,6 @@ public class GLControllers {
     
     private AccountChart poAccountChart;
     private TransactionAccountChart poGeneralLedger;
+    private Particular poParticular;
+    private Payee poPayee;
 }
