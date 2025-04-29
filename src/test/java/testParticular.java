@@ -5,7 +5,7 @@ import java.util.logging.Logger;
 import org.guanzon.appdriver.base.GRiderCAS;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
-import org.guanzon.cas.gl.Payee;
+import org.guanzon.cas.gl.Particular;
 import org.guanzon.cas.gl.services.GLControllers;
 import org.json.simple.JSONObject;
 import org.junit.AfterClass;
@@ -21,12 +21,12 @@ import org.junit.Test;
  *
  * @author User
  */
-public class testPayee {
+public class testParticular {
 
     static GRiderCAS oApp;
     static GLControllers poGLControllers;
     static JSONObject poJSON;
-    static Payee record;
+    static Particular record;
 
     @BeforeClass
     public static void setUpClass() {
@@ -37,9 +37,9 @@ public class testPayee {
 //        poGLControllers = new GLControllers(oApp, null);
 //
             GLControllers ctrl = new GLControllers(oApp, null);
-            record = ctrl.Payee();
+            record = ctrl.Particular();
         } catch (SQLException | GuanzonException ex) {
-            Logger.getLogger(testPayee.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(testParticular.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -51,12 +51,7 @@ public class testPayee {
             if ("error".equals((String) poJSON.get("result"))) {
                 Assert.fail((String) poJSON.get("message"));
             }
-            poJSON = record.getModel().setPayeeName("CENPELCO");
-            if ("error".equals((String) poJSON.get("result"))) {
-                Assert.fail((String) poJSON.get("message"));
-            }
-
-            poJSON = record.getModel().setParticularID("0001");
+            poJSON = record.getModel().setDescription("Electric Bill");
             if ("error".equals((String) poJSON.get("result"))) {
                 Assert.fail((String) poJSON.get("message"));
             }
@@ -82,12 +77,7 @@ public class testPayee {
             if ("error".equals((String) poJSON.get("result"))) {
                 Assert.fail((String) poJSON.get("message"));
             }
-            poJSON = record.getModel().setPayeeName("CENPELCO");
-            if ("error".equals((String) poJSON.get("result"))) {
-                Assert.fail((String) poJSON.get("message"));
-            }
-
-            poJSON = record.getModel().setParticularID("0001");
+            poJSON = record.getModel().setDescription("Electric Bills");
             if ("error".equals((String) poJSON.get("result"))) {
                 Assert.fail((String) poJSON.get("message"));
             }
@@ -106,7 +96,7 @@ public class testPayee {
                 Assert.fail((String) poJSON.get("message"));
             }
         } catch (SQLException | GuanzonException | CloneNotSupportedException ex) {
-            Logger.getLogger(testPayee.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(testParticular.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
