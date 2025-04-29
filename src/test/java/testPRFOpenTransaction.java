@@ -45,6 +45,8 @@ public class testPRFOpenTransaction {
                 System.err.println((String) loJSON.get("message"));
                 Assert.fail();
             }
+            poApp.getDepartment();
+
 
             System.out.println("Transaction No: " + poPaymentRequest.PaymentRequest().Master().getTransactionNo());
             System.out.println("Transaction Date : " + poPaymentRequest.PaymentRequest().Master().getTransactionDate().toString());

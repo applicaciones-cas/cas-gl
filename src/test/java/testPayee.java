@@ -38,6 +38,7 @@ public class testPayee {
     public void testNewRecord() {
 
         try {
+            JSONObject poJSON;
             
             poJSON = poGLControllers.Payee().getModel().setPayeeName("CENPELCO");
             if ("error".equals((String) poJSON.get("result"))) {
