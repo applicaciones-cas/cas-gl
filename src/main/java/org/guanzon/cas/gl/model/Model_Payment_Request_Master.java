@@ -115,11 +115,11 @@ public class Model_Payment_Request_Master extends Model{
     }
     
     public JSONObject setDepartmentID(String deptartmentID){
-        return setValue("sDeptIdxx", deptartmentID);
+        return setValue("sDeptIDxx", deptartmentID);
     }
     
     public String getDepartmentID(){
-        return (String) getValue("sDeptIdxx");
+        return (String) getValue("sDeptIDxx");
     }
     
     public JSONObject setPayeeID(String payeeID){
