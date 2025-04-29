@@ -610,140 +610,48 @@ public class PaymentRequest extends Transaction {
         return loJSON;
     }
 
-    public JSONObject getApprovedStockRequests() throws SQLException, GuanzonException {
-        StringBuilder lsSQL = new StringBuilder(
-                "SELECT"
-                + "  sTransNox"
-                + ", sBranchCd"
-                + ", sIndstCdx"
-                + ", sCategrCd"
-                + ", dTransact"
-                + ", sReferNox"
-                + ", sRemarksx"
-                + ", sIssNotes"
-                + ", nCurrInvx"
-                + ", nEstInvxx"
-                + ", sApproved"
-                + ", dApproved"
-                + ", sAprvCode"
-                + ", nEntryNox"
-                + ", sSourceCd"
-                + ", sSourceNo"
-                + ", cConfirmd"
-                + ", cTranStat"
-                + ", sModified"
-                + ", dModified"
-                + ", dTimeStmp"
-                + " FROM inv_stock_request_master");
-
-        lsSQL.append(" ORDER BY sTransNox ASC");
-
-        System.out.println("Executing SQL: " + lsSQL.toString());
-
-        ResultSet loRS = poGRider.executeQuery(lsSQL.toString());
-        JSONObject poJSON = new JSONObject();
-        JSONArray dataArray = new JSONArray();
-        try {
-            int lnctr = 0;
-
-            if (MiscUtil.RecordCount(loRS) >= 0) {
-                poInvStockRequestMaster = new ArrayList<>();
-                while (loRS.next()) {
-                    // Print the result set
-                    JSONObject request = new JSONObject();
-                    System.out.println("sTransNox: " + loRS.getString("sTransNox"));
-                    System.out.println("sBranchCd: " + loRS.getString("sBranchCd"));
-                    System.out.println("dTransact: " + loRS.getDate("dTransact"));
-                    System.out.println("nEntryNox: " + loRS.getInt("nEntryNox"));
-                    System.out.println("sReferNox: " + loRS.getString("sReferNox"));
-                    System.out.println("sApproved: " + loRS.getString("sApproved"));
-                    System.out.println("------------------------------------------------------------------------------");
-
-                    poInvStockRequestMaster.add(invStockRequestMaster(loRS.getString("sTransNox")));
-                    poInvStockRequestMaster.get(poInvStockRequestMaster.size() - 1)
-                            .openRecord(loRS.getString("sTransNox"));
-                    dataArray.add(request);
-                    lnctr++;
+    public JSONObject addRecurringIssuanceToPaymentRequestDetail(String particularNo, String payeeID) throws CloneNotSupportedException, SQLException, GuanzonException {
+        poJSON = new JSONObject();
+        boolean lbExist = false;
+        int lnRow = 0;
+        GLControllers loRecord = new GLControllers(poGRider, logwrapr);
+        loRecord.RecurringIssuance();
+        poJSON = loRecord.RecurringIssuance().openRecord(particularNo, Master().getBranchCode(), payeeID);
+        if ("success".equals((String) poJSON.get("result"))) {
+            for (int lnCtr = 0; lnCtr <= getRecurring_IssuanceCount() - 1; lnCtr++) {
+                //Check existing supplier
+                if (Master().getPayeeID() == null || "".equals(Master().getPayeeID())) {
+                    Master().setPayeeID(loRecord.RecurringIssuance().getModel().getPayeeID());
+                } else {
+                    if (!Master().getPayeeID().equals(loRecord.RecurringIssuance().getModel().getPayeeID())) {
+                        if (getDetailCount() >= 0) {
+                            poJSON.put("result", "error");
+                            poJSON.put("message", "Payee must be equal to selected Recurring Issuance Payee.");
+                            return poJSON;
+                        } else {
+                            Master().setPayeeID(loRecord.RecurringIssuance().getModel().getPayeeID());
+                        }
+                    }
                 }
 
-                System.out.println("Records found: " + lnctr);
-                poJSON.put("result", "success");
-                poJSON.put("message", "Record loaded successfully.");
-                poJSON.put("data", dataArray);
+                for (lnRow = 0; lnRow <= getDetailCount() - 1; lnRow++) {
+                    if (Detail(lnRow).getParticularID().equals(Recurring_Issuance(lnCtr).getParticularID())) {
+                        lbExist = true;
+                        break;
+                    }
+                }
 
-            } else {
-                poInvStockRequestMaster = new ArrayList<>();
-                addInventoryStockRequestMaster();
-                poJSON.put("result", "error");
-                poJSON.put("continue", true);
-                poJSON.put("message", "No record found .");
+                if (!lbExist) {
+                    Detail(getDetailCount() - 1).setParticularID(Recurring_Issuance(lnCtr).getParticularID());
+                    Detail(getDetailCount() - 1).setAmount(Recurring_Issuance(lnCtr).getAmount());
+                    AddDetail();
+                }
+                lbExist = false;
             }
-            MiscUtil.close(loRS);
-        } catch (SQLException e) {
+        } else {
             poJSON.put("result", "error");
-            poJSON.put("message", e.getMessage());
+            poJSON.put("message", "No records found.");
         }
-        return poJSON;
-    }
-
-    private Model_Inv_Stock_Request_Master invStockRequestMaster(String transactionNo) throws SQLException, GuanzonException {
-        Model_Inv_Stock_Request_Master object = new InvWarehouseModels(poGRider).InventoryStockRequestMaster();
-
-        JSONObject loJSON = object.openRecord(transactionNo);
-
-        if ("success".equals((String) loJSON.get("result"))) {
-            return object;
-        } else {
-            return new InvWarehouseModels(poGRider).InventoryStockRequestMaster();
-        }
-    }
-
-    private Model_Inv_Stock_Request_Master invStockRequestMaster() {
-        return new InvWarehouseModels(poGRider).InventoryStockRequestMaster();
-    }
-
-    public JSONObject addInventoryStockRequestMaster() {
-        poJSON = new JSONObject();
-
-        if (poInvStockRequestMaster.isEmpty()) {
-            poInvStockRequestMaster.add(invStockRequestMaster());
-        } else {
-            if (!poInvStockRequestMaster.get(poInvStockRequestMaster.size() - 1).getTransactionNo().isEmpty()) {
-                poInvStockRequestMaster.add(invStockRequestMaster());
-            } else {
-                poJSON.put("result", "error");
-                poJSON.put("message", "Unable to add Inventory Stock Request.");
-                return poJSON;
-            }
-        }
-
-        poJSON.put("result", "success");
-        return poJSON;
-    }
-
-    public JSONObject getApprovedStockRequests(String transactionNo) {
-        return poJSON;
-    }
-
-    public JSONObject addOrdersToDetail(String transactionNo) throws CloneNotSupportedException, SQLException, GuanzonException {
-        StockRequest loTrans = new StockRequest();
-        poJSON = loTrans.OpenTransaction(transactionNo);
-
-        if (!"success".equals((String) poJSON.get("result"))) {
-            return poJSON;
-        }
-
-        poDetail = new GLModels(poGRider).PaymentRequestDetail(); // Initialize poDetail
-
-        for (int lnCtr = 0; lnCtr < loTrans.getDetailCount(); lnCtr++) {
-            Model_Payment_Request_Detail detail = new Model_Payment_Request_Detail();
-            poDetail.setValue("sSourceNo", transactionNo);
-            AddDetail();
-        }
-
-        poJSON = new JSONObject();
-        poJSON.put("result", "success");
-        poJSON.put("message", "Orders added successfully to Purchase Order details.");
         return poJSON;
     }
 }
