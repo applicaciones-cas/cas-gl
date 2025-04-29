@@ -6,6 +6,7 @@ import org.guanzon.cas.gl.model.Model_Journal_Detail;
 import org.guanzon.cas.gl.model.Model_Journal_Master;
 import org.guanzon.cas.gl.model.Model_Particular;
 import org.guanzon.cas.gl.model.Model_Payee;
+import org.guanzon.cas.gl.model.Model_Recurring_Issuance;
 import org.guanzon.cas.gl.model.Model_Transaction_Account_Chart;
 
 public class GLModels {
@@ -108,11 +109,28 @@ public class GLModels {
             poPayee = new Model_Payee();
             poPayee.setApplicationDriver(poGRider);
             poPayee.setXML("Model_Payee");
-            poPayee.setTableName("Particular");
+            poPayee.setTableName("Payee");
             poPayee.initialize();
         }
 
         return poPayee;
+    }
+    
+    public Model_Recurring_Issuance Recurring_Issuance(){
+        if (poGRider == null){
+            System.err.println("GLModels.Recurring_Issuance: Application driver is not set.");
+            return null;
+        }
+        
+        if (poRecurringIssuance == null){
+            poRecurringIssuance = new Model_Recurring_Issuance();
+            poRecurringIssuance.setApplicationDriver(poGRider);
+            poRecurringIssuance.setXML("Model_Recurring_Issuance");
+            poRecurringIssuance.setTableName("Recurring_Issuance");
+            poRecurringIssuance.initialize();
+        }
+
+        return poRecurringIssuance;
     }
     
     private final GRiderCAS poGRider;
@@ -123,4 +141,5 @@ public class GLModels {
     private Model_Journal_Detail poJournalDetail;
     private Model_Particular poParticular;
     private Model_Payee poPayee;
+    private Model_Recurring_Issuance poRecurringIssuance;
 }
