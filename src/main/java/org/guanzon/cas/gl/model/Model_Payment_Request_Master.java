@@ -5,10 +5,12 @@
 package org.guanzon.cas.gl.model;
 
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import org.guanzon.appdriver.agent.services.Model;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
+import org.guanzon.appdriver.base.SQLUtil;
 import org.guanzon.appdriver.constant.EditMode;
 import org.guanzon.appdriver.constant.Logical;
 import org.guanzon.cas.gl.status.PaymentRequestStatus;
@@ -25,6 +27,7 @@ public class Model_Payment_Request_Master extends Model{
     Model_Department poDepartment;    
     Model_Payee poPayee;    
     Model_Branch poBranch;
+    
     
     @Override
     public void initialize() {
@@ -44,6 +47,7 @@ public class Model_Payment_Request_Master extends Model{
             poEntity.updateObject("nTaxAmntx", 0.0);
             poEntity.updateObject("nNetTotal", 0.0);
             poEntity.updateObject("nAmtPaidx", 0.0);
+            poEntity.updateObject("dTransact", SQLUtil.toDate(xsDateShort(poGRider.getServerDate()), SQLUtil.FORMAT_SHORT_DATE));
             //end - assign default values
 
             poEntity.insertRow();
@@ -77,6 +81,11 @@ public class Model_Payment_Request_Master extends Model{
         }
     }
     
+    private static String xsDateShort(Date fdValue) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String date = sdf.format(fdValue);
+        return date;
+    }
     
     public JSONObject setTransactionNo(String transactionNo){
         return setValue("sTransNox", transactionNo);
