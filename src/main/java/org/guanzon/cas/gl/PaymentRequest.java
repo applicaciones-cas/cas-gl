@@ -8,8 +8,10 @@ import java.util.List;
 import org.guanzon.appdriver.agent.services.Transaction;
 import org.guanzon.appdriver.agent.systables.SysTableContollers;
 import org.guanzon.appdriver.agent.systables.TransactionAttachment;
+import org.guanzon.appdriver.agent.systables.TransactionStatusHistory;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
+import org.guanzon.appdriver.base.SQLUtil;
 import org.guanzon.appdriver.constant.EditMode;
 import org.guanzon.appdriver.iface.GValidator;
 import org.guanzon.cas.gl.model.Model_Payment_Request_Detail;
@@ -25,6 +27,7 @@ import org.guanzon.cas.parameter.Department;
 import org.guanzon.cas.parameter.services.ParamControllers;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 public class PaymentRequest extends Transaction{  
@@ -58,7 +61,8 @@ public class PaymentRequest extends Transaction{
         return updateTransaction();
     }
     
-    public JSONObject VerifyTransaction(String remarks) throws ParseException, SQLException, GuanzonException, CloneNotSupportedException {
+    public JSONObject ConfirmTransaction(String remarks) throws ParseException, SQLException, GuanzonException, CloneNotSupportedException {
+        
         poJSON = new JSONObject();
         
         String lsStatus = PaymentRequestStatus.VERIFIED;
@@ -76,9 +80,11 @@ public class PaymentRequest extends Transaction{
             return poJSON;                
         }
         
+        //validator
         poJSON = isEntryOkay(PaymentRequestStatus.VERIFIED);
         if (!"success".equals((String) poJSON.get("result"))) return poJSON;
         
+        //change status
         poJSON =  statusChange(poMaster.getTable(), (String) poMaster.getValue("sTransNox"), remarks,  lsStatus, !lbConfirm);
         
         if (!"success".equals((String) poJSON.get("result"))) return poJSON;
