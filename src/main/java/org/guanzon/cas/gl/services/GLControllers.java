@@ -7,6 +7,7 @@ import org.guanzon.appdriver.base.LogWrapper;
 import org.guanzon.cas.gl.AccountChart;
 import org.guanzon.cas.gl.Particular;
 import org.guanzon.cas.gl.Payee;
+import org.guanzon.cas.gl.PaymentRequest;
 import org.guanzon.cas.gl.RecurringIssuance;
 import org.guanzon.cas.gl.TransactionAccountChart;
 
@@ -100,6 +101,21 @@ public class GLControllers {
         poRecurringIssuance.newRecord();
         return poRecurringIssuance;        
     }
+    
+    public PaymentRequest PaymentRequest() throws SQLException, GuanzonException{
+        if (poGRider == null){
+            poLogWrapper.severe("GLControllers.Particular: Application driver is not set.");
+            return null;
+        }
+        
+        if (poPaymentRequest != null) return poPaymentRequest;
+        
+        poPaymentRequest = new PaymentRequest();
+        poPaymentRequest.setApplicationDriver(poGRider);
+        poPaymentRequest.setLogWrapper(poLogWrapper);
+        return poPaymentRequest;        
+    }
+
        
     @Override
     protected void finalize() throws Throwable {
@@ -125,4 +141,5 @@ public class GLControllers {
     private Particular poParticular;
     private Payee poPayee;
     private RecurringIssuance poRecurringIssuance;
+    private PaymentRequest poPaymentRequest;
 }
