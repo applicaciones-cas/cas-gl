@@ -49,16 +49,18 @@ public class PaymentRequestValidator implements GValidator{
         switch (psTranStat){
             case PaymentRequestStatus.OPEN:
                 return validateNew();
-            case PaymentRequestStatus.VERIFIED:
-                return validateVerified();
-            case PaymentRequestStatus.POSTED:
-                return validatePosted();
-            case PaymentRequestStatus.CANCELLED:
-                return validateCancelled();
+            case PaymentRequestStatus.CONFIRMED:
+                return validateConfirmed();
             case PaymentRequestStatus.PAID:
                 return validatePaid();
-            case PaymentRequestStatus.LIQUIDATED:
-                return validateLiquidated();
+            case PaymentRequestStatus.CANCELLED:
+                return validateCancelled();
+            case PaymentRequestStatus.VOID:
+                return validateVoid();
+            case PaymentRequestStatus.POSTED:
+                return validatePosted();
+            case PaymentRequestStatus.RETURNED:
+                return validateReturned();
             default:
                 poJSON = new JSONObject();
                 poJSON.put("result", "success");
@@ -108,21 +110,7 @@ public class PaymentRequestValidator implements GValidator{
         return poJSON;
     }
     
-    private JSONObject validateVerified(){
-        poJSON = new JSONObject();
-                
-        poJSON.put("result", "success");
-        return poJSON;
-    }
-    
-    private JSONObject validatePosted(){
-        poJSON = new JSONObject();
-                
-        poJSON.put("result", "success");
-        return poJSON;
-    }
-    
-    private JSONObject validateCancelled(){
+    private JSONObject validateConfirmed(){
         poJSON = new JSONObject();
                 
         poJSON.put("result", "success");
@@ -136,7 +124,29 @@ public class PaymentRequestValidator implements GValidator{
         return poJSON;
     }
     
-    private JSONObject validateLiquidated(){
+    private JSONObject validateCancelled(){
+        poJSON = new JSONObject();
+                
+        poJSON.put("result", "success");
+        return poJSON;
+    }
+    
+    
+    private JSONObject validateVoid(){
+        poJSON = new JSONObject();
+                
+        poJSON.put("result", "success");
+        return poJSON;
+    }
+    
+    private JSONObject validatePosted(){
+        poJSON = new JSONObject();
+                
+        poJSON.put("result", "success");
+        return poJSON;
+    }
+    
+    private JSONObject validateReturned(){
         poJSON = new JSONObject();
                 
         poJSON.put("result", "success");

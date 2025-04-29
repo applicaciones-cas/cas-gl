@@ -8,8 +8,10 @@ import java.util.List;
 import org.guanzon.appdriver.agent.services.Transaction;
 import org.guanzon.appdriver.agent.systables.SysTableContollers;
 import org.guanzon.appdriver.agent.systables.TransactionAttachment;
+import org.guanzon.appdriver.agent.systables.TransactionStatusHistory;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
+import org.guanzon.appdriver.base.SQLUtil;
 import org.guanzon.appdriver.constant.EditMode;
 import org.guanzon.appdriver.iface.GValidator;
 import org.guanzon.cas.gl.model.Model_Payment_Request_Detail;
@@ -25,6 +27,7 @@ import org.guanzon.cas.parameter.Department;
 import org.guanzon.cas.parameter.services.ParamControllers;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 public class PaymentRequest extends Transaction{  
@@ -58,10 +61,11 @@ public class PaymentRequest extends Transaction{
         return updateTransaction();
     }
     
-    public JSONObject VerifyTransaction(String remarks) throws ParseException, SQLException, GuanzonException, CloneNotSupportedException {
+    public JSONObject ConfirmTransaction(String remarks) throws ParseException, SQLException, GuanzonException, CloneNotSupportedException {
+        
         poJSON = new JSONObject();
         
-        String lsStatus = PaymentRequestStatus.VERIFIED;
+        String lsStatus = PaymentRequestStatus.CONFIRMED;
         boolean lbConfirm = true;
         
         if (getEditMode() != EditMode.READY){
@@ -76,9 +80,11 @@ public class PaymentRequest extends Transaction{
             return poJSON;                
         }
         
-        poJSON = isEntryOkay(PaymentRequestStatus.VERIFIED);
+        //validator
+        poJSON = isEntryOkay(PaymentRequestStatus.CONFIRMED);
         if (!"success".equals((String) poJSON.get("result"))) return poJSON;
         
+        //change status
         poJSON =  statusChange(poMaster.getTable(), (String) poMaster.getValue("sTransNox"), remarks,  lsStatus, !lbConfirm);
         
         if (!"success".equals((String) poJSON.get("result"))) return poJSON;
@@ -92,10 +98,11 @@ public class PaymentRequest extends Transaction{
         return poJSON;
     }
     
-    public JSONObject PostTransaction(String remarks) throws ParseException, SQLException, GuanzonException, CloneNotSupportedException {
+    public JSONObject PaidTransaction(String remarks) throws ParseException, SQLException, GuanzonException, CloneNotSupportedException {
+        
         poJSON = new JSONObject();
         
-        String lsStatus = PaymentRequestStatus.POSTED;
+        String lsStatus = PaymentRequestStatus.PAID;
         boolean lbConfirm = true;
         
         if (getEditMode() != EditMode.READY){
@@ -106,13 +113,15 @@ public class PaymentRequest extends Transaction{
         
         if (lsStatus.equals((String) poMaster.getValue("cTranStat"))){    
             poJSON.put("result", "error");
-            poJSON.put("message", "Transaction was already processed.");
+            poJSON.put("message", "Transaction was already Paid.");
             return poJSON;                
         }
         
-        poJSON = isEntryOkay(PaymentRequestStatus.POSTED);
+        //validator
+        poJSON = isEntryOkay(PaymentRequestStatus.PAID);
         if (!"success".equals((String) poJSON.get("result"))) return poJSON;
         
+        //change status
         poJSON =  statusChange(poMaster.getTable(), (String) poMaster.getValue("sTransNox"), remarks,  lsStatus, !lbConfirm);
         
         if (!"success".equals((String) poJSON.get("result"))) return poJSON;
@@ -120,8 +129,8 @@ public class PaymentRequest extends Transaction{
         poJSON = new JSONObject();
         poJSON.put("result", "success");
         
-        if (lbConfirm) poJSON.put("message", "Transaction posted successfully.");
-        else poJSON.put("message", "Transaction posting request submitted successfully.");
+        if (lbConfirm) poJSON.put("message", "Transaction Paid successfully.");
+        else poJSON.put("message", "Transaction Paid request submitted successfully.");
         
         return poJSON;
     }
@@ -160,10 +169,10 @@ public class PaymentRequest extends Transaction{
         return poJSON;
     }
     
-    public JSONObject PaidTransaction(String remarks) throws ParseException, SQLException, GuanzonException, CloneNotSupportedException {
+    public JSONObject VoidTransaction(String remarks) throws ParseException, SQLException, GuanzonException, CloneNotSupportedException {
         poJSON = new JSONObject();
         
-        String lsStatus = PaymentRequestStatus.PAID;
+        String lsStatus = PaymentRequestStatus.VOID;
         boolean lbConfirm = true;
         
         if (getEditMode() != EditMode.READY){
@@ -179,7 +188,7 @@ public class PaymentRequest extends Transaction{
         }
         
 
-        poJSON = isEntryOkay(PaymentRequestStatus.PAID);
+        poJSON = isEntryOkay(PaymentRequestStatus.VOID);
         if (!"success".equals((String) poJSON.get("result"))) return poJSON;
         
 
@@ -195,11 +204,11 @@ public class PaymentRequest extends Transaction{
         
         return poJSON;
     }
-    
-    public JSONObject LiquidateTransaction(String remarks) throws ParseException, SQLException, GuanzonException, CloneNotSupportedException {
+      
+    public JSONObject PostTransaction(String remarks) throws ParseException, SQLException, GuanzonException, CloneNotSupportedException {
         poJSON = new JSONObject();
         
-        String lsStatus = PaymentRequestStatus.LIQUIDATED;
+        String lsStatus = PaymentRequestStatus.POSTED;
         boolean lbConfirm = true;
         
         if (getEditMode() != EditMode.READY){
@@ -210,12 +219,47 @@ public class PaymentRequest extends Transaction{
         
         if (lsStatus.equals((String) poMaster.getValue("cTranStat"))){    
             poJSON.put("result", "error");
-            poJSON.put("message", "Transaction was already voided.");
+            poJSON.put("message", "Transaction was already processed.");
+            return poJSON;                
+        }
+        
+        poJSON = isEntryOkay(PaymentRequestStatus.POSTED);
+        if (!"success".equals((String) poJSON.get("result"))) return poJSON;
+        
+        poJSON =  statusChange(poMaster.getTable(), (String) poMaster.getValue("sTransNox"), remarks,  lsStatus, !lbConfirm);
+        
+        if (!"success".equals((String) poJSON.get("result"))) return poJSON;
+        
+        poJSON = new JSONObject();
+        poJSON.put("result", "success");
+        
+        if (lbConfirm) poJSON.put("message", "Transaction posted successfully.");
+        else poJSON.put("message", "Transaction posting request submitted successfully.");
+        
+        return poJSON;
+    }
+    
+    
+    public JSONObject ReturnTransaction(String remarks) throws ParseException, SQLException, GuanzonException, CloneNotSupportedException {
+        poJSON = new JSONObject();
+        
+        String lsStatus = PaymentRequestStatus.RETURNED;
+        boolean lbConfirm = true;
+        
+        if (getEditMode() != EditMode.READY){
+            poJSON.put("result", "error");
+            poJSON.put("message", "No transacton was loaded.");
+            return poJSON;                
+        }
+        
+        if (lsStatus.equals((String) poMaster.getValue("cTranStat"))){    
+            poJSON.put("result", "error");
+            poJSON.put("message", "Transaction was already returned.");
             return poJSON;                
         }
         
 
-        poJSON = isEntryOkay(PaymentRequestStatus.LIQUIDATED);
+        poJSON = isEntryOkay(PaymentRequestStatus.RETURNED);
         if (!"success".equals((String) poJSON.get("result"))) return poJSON;
         
 
@@ -226,8 +270,8 @@ public class PaymentRequest extends Transaction{
         poJSON = new JSONObject();
         poJSON.put("result", "success");
         
-        if (lbConfirm) poJSON.put("message", "Transaction voided successfully.");
-        else poJSON.put("message", "Transaction voiding request submitted successfully.");
+        if (lbConfirm) poJSON.put("message", "Transaction returned successfully.");
+        else poJSON.put("message", "Transaction return request submitted successfully.");
         
         return poJSON;
     }

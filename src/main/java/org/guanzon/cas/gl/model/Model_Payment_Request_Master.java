@@ -12,7 +12,6 @@ import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.base.SQLUtil;
 import org.guanzon.appdriver.constant.EditMode;
-import org.guanzon.appdriver.constant.Logical;
 import org.guanzon.cas.gl.services.GLModels;
 import org.guanzon.cas.gl.status.PaymentRequestStatus;
 import org.guanzon.cas.parameter.model.Model_Branch;
@@ -248,7 +247,7 @@ public class Model_Payment_Request_Master extends Model{
     }
 
     public Model_Department Department() throws GuanzonException, SQLException {
-        if (!"".equals((String) getValue("sDeptIdxx"))) {
+        if (!"".equals((String) getValue("sDeptIDxx"))) {
             if (poDepartment.getEditMode() == EditMode.READY
                     && poDepartment.getDepartmentId().equals((String) getValue("sDeptIdxx"))) {
                 return poDepartment;
