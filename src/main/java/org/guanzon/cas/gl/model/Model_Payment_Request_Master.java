@@ -13,6 +13,7 @@ import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.base.SQLUtil;
 import org.guanzon.appdriver.constant.EditMode;
 import org.guanzon.appdriver.constant.Logical;
+import org.guanzon.cas.gl.services.GLModels;
 import org.guanzon.cas.gl.status.PaymentRequestStatus;
 import org.guanzon.cas.parameter.model.Model_Branch;
 import org.guanzon.cas.parameter.model.Model_Department;
@@ -48,6 +49,7 @@ public class Model_Payment_Request_Master extends Model{
             poEntity.updateObject("nNetTotal", 0.0);
             poEntity.updateObject("nAmtPaidx", 0.0);
             poEntity.updateObject("dTransact", SQLUtil.toDate(xsDateShort(poGRider.getServerDate()), SQLUtil.FORMAT_SHORT_DATE));
+            poEntity.updateObject("sBranchCd", poGRider.getBranchCode());
             //end - assign default values
 
             poEntity.insertRow();
@@ -61,6 +63,8 @@ public class Model_Payment_Request_Master extends Model{
             ParamModels model = new ParamModels(poGRider);
             poDepartment = model.Department();
             poBranch = model.Branch();
+            GLModels gl = new GLModels(poGRider);
+            poPayee = gl.Payee();
 //            poCategory = model.Category();
 //            poCompany = model.Company();
 //            poTerm = model.Term();

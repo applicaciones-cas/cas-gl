@@ -49,7 +49,7 @@ public class testParticular {
                 Assert.fail((String) poJSON.get("message"));
             }
 
-            poJSON = poGLControllers.getModel().setAccountCode("0000001");
+            poJSON = poGLControllers.getModel().setAccountCode("1101020");
             if ("error".equals((String) poJSON.get("result"))) {
                 Assert.fail((String) poJSON.get("message"));
             }
