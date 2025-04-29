@@ -17,7 +17,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class testPRFVerifyTransaction {
+public class testPRFPostTransaction {
 
     
     static GRiderCAS poApp;
@@ -41,7 +41,7 @@ public class testPRFVerifyTransaction {
     
 
     @Test
-    public void testConfirmTransaction() {
+    public void testPostTransaction() {
         JSONObject loJSON;
 
         try {
@@ -78,7 +78,7 @@ public class testPRFVerifyTransaction {
                  }
             }
 
-            loJSON = poPaymentRequest.ConfirmTransaction("verify");
+            loJSON = poPaymentRequest.PostTransaction("post");
             if (!"success".equals((String) loJSON.get("result"))) {
                 System.err.println((String) loJSON.get("message"));
                 Assert.fail();
