@@ -6,6 +6,8 @@ import org.guanzon.cas.gl.model.Model_Journal_Detail;
 import org.guanzon.cas.gl.model.Model_Journal_Master;
 import org.guanzon.cas.gl.model.Model_Particular;
 import org.guanzon.cas.gl.model.Model_Payee;
+import org.guanzon.cas.gl.model.Model_Payment_Request_Detail;
+import org.guanzon.cas.gl.model.Model_Payment_Request_Master;
 import org.guanzon.cas.gl.model.Model_Transaction_Account_Chart;
 
 public class GLModels {
@@ -108,11 +110,45 @@ public class GLModels {
             poPayee = new Model_Payee();
             poPayee.setApplicationDriver(poGRider);
             poPayee.setXML("Model_Payee");
-            poPayee.setTableName("Particular");
+            poPayee.setTableName("Payee");
             poPayee.initialize();
         }
 
         return poPayee;
+    }
+    
+    public Model_Payment_Request_Master PaymentRequestMaster(){
+        if (poGRider == null){
+            System.err.println("GLModels.PaymentRequestMaster: Application driver is not set.");
+            return null;
+        }
+        
+        if (poPaymentRequestMaster == null){
+            poPaymentRequestMaster = new Model_Payment_Request_Master();
+            poPaymentRequestMaster.setApplicationDriver(poGRider);
+            poPaymentRequestMaster.setXML("Model_Payment_Request_Master");
+            poPaymentRequestMaster.setTableName("Payment_Request_Master");
+            poPaymentRequestMaster.initialize();
+        }
+
+        return poPaymentRequestMaster;
+    }
+
+    public Model_Payment_Request_Detail PaymentRequestDetail(){
+        if (poGRider == null){
+            System.err.println("GLModels.PaymentRequestDetail: Application driver is not set.");
+            return null;
+        }
+        
+        if (poPaymentRequestDetail == null){
+            poPaymentRequestDetail = new Model_Payment_Request_Detail();
+            poPaymentRequestDetail.setApplicationDriver(poGRider);
+            poPaymentRequestDetail.setXML("Model_Payment_Request_Detail");
+            poPaymentRequestDetail.setTableName("Payment_Request_Detail");
+            poPaymentRequestDetail.initialize();
+        }
+
+        return poPaymentRequestDetail;
     }
     
     private final GRiderCAS poGRider;
@@ -123,4 +159,6 @@ public class GLModels {
     private Model_Journal_Detail poJournalDetail;
     private Model_Particular poParticular;
     private Model_Payee poPayee;
+    private Model_Payment_Request_Master poPaymentRequestMaster;    
+    private Model_Payment_Request_Detail poPaymentRequestDetail;
 }
