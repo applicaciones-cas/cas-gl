@@ -36,7 +36,7 @@ public class Model_Payee extends Model {
 
             poEntity.absolute(1);
 
-            ID = poEntity.getMetaData().getColumnLabel(1);
+            ID = "sPayeeIDx";
             
             ClientModels model = new ClientModels(poGRider);
             poClient = model.ClientMaster();

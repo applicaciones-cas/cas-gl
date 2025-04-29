@@ -7,6 +7,7 @@ package org.guanzon.cas.gl.model;
 import java.sql.SQLException;
 import java.util.Date;
 import org.guanzon.appdriver.agent.services.Model;
+import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.constant.EditMode;
 import org.guanzon.appdriver.constant.Logical;
@@ -19,7 +20,7 @@ import org.json.simple.JSONObject;
  * @author User
  */
 public class Model_Payment_Request_Detail extends Model{
-//    Model_Particular poParticular;
+    Model_Particular poParticular;
     @Override
     public void initialize() {
         try {
@@ -45,6 +46,7 @@ public class Model_Payment_Request_Detail extends Model{
             poEntity.absolute(1);
 
             ID = "sTransNox";
+            ID2 = "nEntryNox";
             
             //initialize reference objects
             ParamModels model = new ParamModels(poGRider);
@@ -146,24 +148,24 @@ public class Model_Payment_Request_Detail extends Model{
         return (Date) getValue("dModified");
     }
     
-    //reference object models
-//    public Model_Particular Particular() throws GuanzonException, SQLException {
-//        if (!"".equals((String) getValue("sPrtclrID"))) {
-//            if (poParticular.getEditMode() == EditMode.READY
-//                    && poParticular.getDepartmentId().equals((String) getValue("sPrtclrID"))) {
-//                return poParticular;
-//            } else {
-//                poJSON = poParticular.openRecord((String) getValue("sPrtclrID"));
-//                if ("success".equals((String) poJSON.get("result"))) {
-//                    return poParticular;
-//                } else {
-//                    poParticular.initialize();
-//                    return poParticular;
-//                }
-//            }
-//        } else {
-//            poParticular.initialize();
-//            return poParticular;
-//        }
-//    }
+
+    public Model_Particular Particular() throws GuanzonException, SQLException {
+        if (!"".equals((String) getValue("sPrtclrID"))) {
+            if (poParticular.getEditMode() == EditMode.READY
+                    && poParticular.getParticularID().equals((String) getValue("sPrtclrID"))) {
+                return poParticular;
+            } else {
+                poJSON = poParticular.openRecord((String) getValue("sPrtclrID"));
+                if ("success".equals((String) poJSON.get("result"))) {
+                    return poParticular;
+                } else {
+                    poParticular.initialize();
+                    return poParticular;
+                }
+            }
+        } else {
+            poParticular.initialize();
+            return poParticular;
+        }
+    }
 }

@@ -14,7 +14,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class testPRFOpenTransaction {
+public class testPRFUpdateTransaction {
 
     
     static GRiderCAS poApp;
@@ -28,88 +28,50 @@ public class testPRFOpenTransaction {
 
         poPaymentRequest = new GLControllers(poApp, null);
     }
-    
-
     @Test
-    public void testOpenTransaction() {
+    public void testUpdateTransaction() throws GuanzonException {
         JSONObject loJSON;
+
         try {
-            loJSON = poPaymentRequest.PaymentRequest().InitTransaction();
+            loJSON = (JSONObject) poPaymentRequest.PaymentRequest().InitTransaction();
             if (!"success".equals((String) loJSON.get("result"))) {
                 System.err.println((String) loJSON.get("message"));
                 Assert.fail();
             }
 
-            loJSON = poPaymentRequest.PaymentRequest().OpenTransaction("GCC225000001");
+            loJSON = (JSONObject) poPaymentRequest.PaymentRequest().OpenTransaction("GCC225000001");
             if (!"success".equals((String) loJSON.get("result"))) {
                 System.err.println((String) loJSON.get("message"));
                 Assert.fail();
             }
 
-            System.out.println("Transaction No: " + poPaymentRequest.PaymentRequest().Master().getTransactionNo());
-            System.out.println("Transaction Date : " + poPaymentRequest.PaymentRequest().Master().getTransactionDate().toString());
-            System.out.println("Branch: " + poPaymentRequest.PaymentRequest().Master().Branch().getBranchName());
-            System.out.println("Department: " + poPaymentRequest.PaymentRequest().Master().Department().getDescription());
-//            System.out.println("Payee: " + poPaymentRequest.PaymentRequest().Master().getPayeeID());
-            System.out.println("Series No: " + poPaymentRequest.PaymentRequest().Master().getSeriesNo());
-            System.out.println("Entry No: " + poPaymentRequest.PaymentRequest().Master().getEntryNo());
-            System.out.println("");
-            int detailSize = poPaymentRequest.PaymentRequest().Detail().size();
-            if (detailSize > 0) {
-                 for (int lnCtr = 0; lnCtr < poPaymentRequest.PaymentRequest().Detail().size(); lnCtr++) {
-                    System.out.println("DETAIL------------------- " + (lnCtr + 1));
-                    System.out.println("TRANSACTION NO : " + poPaymentRequest.PaymentRequest().Master().getTransactionNo());
-                    System.out.println("ENTRY No: " + poPaymentRequest.PaymentRequest().Detail(lnCtr).getEntryNo());
-                    System.out.println("PARTICULAR ID : " + poPaymentRequest.PaymentRequest().Detail(lnCtr).getParticularID());
-                    System.out.println("");
-                 }
+            loJSON = (JSONObject) poPaymentRequest.PaymentRequest().UpdateTransaction();
+            if (!"success".equals((String) loJSON.get("result"))) {
+                System.err.println((String) loJSON.get("message"));
+                Assert.fail();
             }
-        } catch (CloneNotSupportedException | SQLException | GuanzonException e) {
+
+            poPaymentRequest.PaymentRequest().Detail(1).setParticularID("M001250002");
+            poPaymentRequest.PaymentRequest().Detail(2).setParticularID("M001250003");
+            poPaymentRequest.PaymentRequest().Detail(0).setAmount(1000);
+            poPaymentRequest.PaymentRequest().Detail(1).setAmount(2000);
+            poPaymentRequest.PaymentRequest().Detail(2).setAmount(3000);
+            
+            poPaymentRequest.PaymentRequest().Detail(0).setModifiedDate(poApp.getServerDate());
+            poPaymentRequest.PaymentRequest().Detail(1).setModifiedDate(poApp.getServerDate());
+            poPaymentRequest.PaymentRequest().Detail(2).setModifiedDate(poApp.getServerDate());
+            
+            loJSON = poPaymentRequest.PaymentRequest().SaveTransaction();
+            if (!"success".equals((String) loJSON.get("result"))) {
+                System.err.println((String) loJSON.get("message"));
+                Assert.fail();
+            }
+        } catch (CloneNotSupportedException | SQLException e) {
             System.err.println(MiscUtil.getException(e));
             Assert.fail();
         }
 
     }
-
-//    @Test
-//    public void testUpdateTransaction() throws GuanzonException {
-//        JSONObject loJSON;
-//
-//        try {
-//            loJSON = (JSONObject) poPaymentRequest.PaymentRequest().InitTransaction();
-//            if (!"success".equals((String) loJSON.get("result"))) {
-//                System.err.println((String) loJSON.get("message"));
-//                Assert.fail();
-//            }
-//
-//            loJSON = (JSONObject) poPaymentRequest.PaymentRequest().OpenTransaction("A00125000001");
-//            if (!"success".equals((String) loJSON.get("result"))) {
-//                System.err.println((String) loJSON.get("message"));
-//                Assert.fail();
-//            }
-//
-//            loJSON = (JSONObject) poPaymentRequest.PaymentRequest().UpdateTransaction();
-//            if (!"success".equals((String) loJSON.get("result"))) {
-//                System.err.println((String) loJSON.get("message"));
-//                Assert.fail();
-//            }
-//
-//            poPaymentRequest.PaymentRequest().Detail(0).setQuantityOnHand(12);
-//            poPaymentRequest.PaymentRequest().Detail(0).setModifiedDate(poApp.getServerDate());
-//            poPaymentRequest.PaymentRequest().Detail(1).setQuantityOnHand(22);
-//            poPaymentRequest.PaymentRequest().Detail(1).setModifiedDate(poApp.getServerDate());
-//
-//            loJSON = poPaymentRequest.PaymentRequest().SaveTransaction();
-//            if (!"success".equals((String) loJSON.get("result"))) {
-//                System.err.println((String) loJSON.get("message"));
-//                Assert.fail();
-//            }
-//        } catch (CloneNotSupportedException | SQLException e) {
-//            System.err.println(MiscUtil.getException(e));
-//            Assert.fail();
-//        }
-//
-//    }
 //
 //    @Test
 //    public void testConfirmTransaction() {
