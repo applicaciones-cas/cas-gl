@@ -5,10 +5,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.guanzon.appdriver.agent.services.Model;
 import org.guanzon.appdriver.agent.services.Transaction;
 import org.guanzon.appdriver.agent.systables.SysTableContollers;
 import org.guanzon.appdriver.agent.systables.TransactionAttachment;
+import org.guanzon.appdriver.agent.systables.TransactionStatusHistory;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.base.SQLUtil;
@@ -22,12 +22,18 @@ import org.guanzon.cas.gl.services.GLControllers;
 import org.guanzon.cas.gl.services.GLModels;
 import org.guanzon.cas.gl.status.PaymentRequestStatus;
 import org.guanzon.cas.gl.validator.PaymentRequestValidator;
+import org.guanzon.cas.inv.warehouse.StockRequest;
+import org.guanzon.cas.inv.warehouse.model.Model_Inv_Stock_Request_Master;
+import org.guanzon.cas.inv.warehouse.services.InvWarehouseModels;
 import org.guanzon.cas.parameter.Department;
 import org.guanzon.cas.parameter.services.ParamControllers;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
 public class PaymentRequest extends Transaction {
+
+    List<Model_Inv_Stock_Request_Master> poInvStockRequestMaster;
 
     List<TransactionAttachment> paAttachments;
     List<Model_Recurring_Issuance> paRecurring;
@@ -446,16 +452,23 @@ public class PaymentRequest extends Transaction {
         /*Put system validations and other assignments here*/
         poJSON = new JSONObject();
 
-//        remove items with no stockid or quantity order
-        Iterator<Model> detail = Detail().iterator();
-        while (detail.hasNext()) {
-            Model item = detail.next(); // Store the item before checking conditions
-
-            if ("".equals((String) item.getValue("sPrtclrID"))
-                    || (int) item.getValue("nAmountxx") <= 0.0) {
-                detail.remove(); // Correctly remove the item
-            }
-        }
+        //remove items with no stockid or quantity order
+//        Iterator<Model> detail = Detail().iterator();
+//        while (detail.hasNext()) {
+//            if ("".equals((String) detail.next().getValue("sStockIDx")) ||
+//                (int)detail.next().getValue("nQuantity") <= 0) {
+//                detail.remove();
+//            }
+//        }
+//        Iterator<Model> detail = Detail().iterator();
+//                while (detail.hasNext()) {
+//                    Model item = detail.next(); // Store the item before checking conditions
+//
+//                    if ("".equals((String) item.getValue("sTransNox"))
+//                            || (int) item.getValue("nQuantity") <= 0) {
+//                        detail.remove(); // Correctly remove the item
+//                    }
+//                }
         //assign other info on detail
         for (int lnCtr = 0; lnCtr <= getDetailCount() - 1; lnCtr++) {
             Detail(lnCtr).setTransactionNo(Master().getTransactionNo());
@@ -601,21 +614,22 @@ public class PaymentRequest extends Transaction {
         poJSON = new JSONObject();
         boolean lbExist = false;
         int lnRow = 0;
-        RecurringIssuance loRecord = new GLControllers(poGRider, logwrapr).RecurringIssuance();
-        poJSON = loRecord.openRecord(particularNo, Master().getBranchCode(), payeeID, "");
+        GLControllers loRecord = new GLControllers(poGRider, logwrapr);
+        loRecord.RecurringIssuance();
+        poJSON = loRecord.RecurringIssuance().openRecord(particularNo, Master().getBranchCode(), payeeID);
         if ("success".equals((String) poJSON.get("result"))) {
             for (int lnCtr = 0; lnCtr <= getRecurring_IssuanceCount() - 1; lnCtr++) {
                 //Check existing supplier
                 if (Master().getPayeeID() == null || "".equals(Master().getPayeeID())) {
-                    Master().setPayeeID(loRecord.getModel().getPayeeID());
+                    Master().setPayeeID(loRecord.RecurringIssuance().getModel().getPayeeID());
                 } else {
-                    if (!Master().getPayeeID().equals(loRecord.getModel().getPayeeID())) {
+                    if (!Master().getPayeeID().equals(loRecord.RecurringIssuance().getModel().getPayeeID())) {
                         if (getDetailCount() >= 0) {
                             poJSON.put("result", "error");
                             poJSON.put("message", "Payee must be equal to selected Recurring Issuance Payee.");
                             return poJSON;
                         } else {
-                            Master().setPayeeID(loRecord.getModel().getPayeeID());
+                            Master().setPayeeID(loRecord.RecurringIssuance().getModel().getPayeeID());
                         }
                     }
                 }
