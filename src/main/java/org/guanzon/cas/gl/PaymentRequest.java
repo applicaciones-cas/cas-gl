@@ -610,26 +610,30 @@ public class PaymentRequest extends Transaction {
         return loJSON;
     }
 
-    public JSONObject addRecurringIssuanceToPaymentRequestDetail(String particularNo, String payeeID) throws CloneNotSupportedException, SQLException, GuanzonException {
+    public JSONObject addRecurringIssuanceToPaymentRequestDetail(String particularNo, String payeeID, String AcctNo) throws CloneNotSupportedException, SQLException, GuanzonException {
         poJSON = new JSONObject();
         boolean lbExist = false;
         int lnRow = 0;
-        GLControllers loRecord = new GLControllers(poGRider, logwrapr);
-        loRecord.RecurringIssuance();
-        poJSON = loRecord.RecurringIssuance().openRecord(particularNo, Master().getBranchCode(), payeeID);
-        if ("success".equals((String) poJSON.get("result"))) {
+        RecurringIssuance poRecurringIssuance;
+        poRecurringIssuance = new GLControllers(poGRider, logwrapr).RecurringIssuance();
+       
+        poJSON = poRecurringIssuance.openRecord(particularNo, "M001", payeeID,AcctNo);
+        if ("error".equals((String) poJSON.get("result"))) {
+             poJSON.put("result", "error");
+             return poJSON;
+        }
             for (int lnCtr = 0; lnCtr <= getRecurring_IssuanceCount() - 1; lnCtr++) {
                 //Check existing supplier
                 if (Master().getPayeeID() == null || "".equals(Master().getPayeeID())) {
-                    Master().setPayeeID(loRecord.RecurringIssuance().getModel().getPayeeID());
+                    Master().setPayeeID(poRecurringIssuance.getModel().getPayeeID());
                 } else {
-                    if (!Master().getPayeeID().equals(loRecord.RecurringIssuance().getModel().getPayeeID())) {
+                    if (!Master().getPayeeID().equals(poRecurringIssuance.getModel().getPayeeID())) {
                         if (getDetailCount() >= 0) {
                             poJSON.put("result", "error");
                             poJSON.put("message", "Payee must be equal to selected Recurring Issuance Payee.");
                             return poJSON;
                         } else {
-                            Master().setPayeeID(loRecord.RecurringIssuance().getModel().getPayeeID());
+                            Master().setPayeeID(poRecurringIssuance.getModel().getPayeeID());
                         }
                     }
                 }
@@ -648,10 +652,38 @@ public class PaymentRequest extends Transaction {
                 }
                 lbExist = false;
             }
-        } else {
-            poJSON.put("result", "error");
-            poJSON.put("message", "No records found.");
-        }
+        poJSON.put("result", "success");
         return poJSON;
+    }
+    
+    public JSONObject computeNetPayableDetails(double rent, boolean isVatExclusive, double vatRate, double wtaxRate) {
+        JSONObject result = new JSONObject();
+        double baseRent;
+        double vat;
+        double whtax;
+        double total;
+        double netPayable;
+
+        if (isVatExclusive) {
+            vat = rent * vatRate / (1 + vatRate);  // Extract VAT from total
+            baseRent = rent - vat;
+            whtax = baseRent * wtaxRate;
+            total = rent;
+            netPayable = total - whtax;
+        } else {
+            baseRent = rent;
+            vat = rent * vatRate;
+            total = rent + vat;
+            whtax = rent * wtaxRate;
+            netPayable = total - whtax;
+        }
+
+        result.put("baseRent", baseRent);
+        result.put("vat", vat);
+        result.put("wtax", whtax);
+        result.put("total", total);
+        result.put("netPayable", netPayable);
+        result.put("result", "success");
+        return result;
     }
 }
