@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.guanzon.appdriver.agent.ShowDialogFX;
+import org.guanzon.appdriver.agent.services.Model;
 import org.guanzon.appdriver.agent.services.Transaction;
 import org.guanzon.appdriver.agent.systables.SysTableContollers;
 import org.guanzon.appdriver.agent.systables.TransactionAttachment;
@@ -516,36 +517,31 @@ public class PaymentRequest extends Transaction {
         poJSON = new JSONObject();
 
         //remove items with no stockid or quantity order
-//        Iterator<Model> detail = Detail().iterator();
-//        while (detail.hasNext()) {
-//            if ("".equals((String) detail.next().getValue("sStockIDx")) ||
-//                (int)detail.next().getValue("nQuantity") <= 0) {
-//                detail.remove();
-//            }
-//        }
-//        Iterator<Model> detail = Detail().iterator();
-//                while (detail.hasNext()) {
-//                    Model item = detail.next(); // Store the item before checking conditions
-//
-//                    if ("".equals((String) item.getValue("sTransNox"))
-//                            || (int) item.getValue("nQuantity") <= 0) {
-//                        detail.remove(); // Correctly remove the item
-//                    }
-//                }
+        
+        Iterator<Model> detail = Detail().iterator();
+                while (detail.hasNext()) {
+                    Model item = detail.next(); // Store the item before checking conditions
+
+                    Number amount = (Number) item.getValue("nAmountxx");
+                    
+                    if (amount.doubleValue() <= 0) {
+                        detail.remove(); // Correctly remove the item
+                    }
+                }
         //assign other info on detail
         for (int lnCtr = 0; lnCtr <= getDetailCount() - 1; lnCtr++) {
             Detail(lnCtr).setTransactionNo(Master().getTransactionNo());
             Detail(lnCtr).setEntryNo(lnCtr + 1);
         }
 
-//        if (getDetailCount() == 1){
-//            //do not allow a single item detail with no quantity order
-//            if (Detail(0).getQuantityOnHand() == 0) {
-//                poJSON.put("result", "error");
-//                poJSON.put("message", "Your order has zero quantity.");
-//                return poJSON;
-//            }
-//        }
+        if (getDetailCount() == 1){
+            //do not allow a single item detail with no quantity order
+            if (Detail(0).getAmount().equals(0)) {
+                poJSON.put("result", "error");
+                poJSON.put("message", "Particular has 0 amount.");
+                return poJSON;
+            }
+        }
         //attachement checker
         if (getTransactionAttachmentCount() > 0) {
             Iterator<TransactionAttachment> attachment = TransactionAttachmentList().iterator();

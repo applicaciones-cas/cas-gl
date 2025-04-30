@@ -94,14 +94,14 @@ public class testPRFNewTransaction {
             poPaymentRequest.PaymentRequest().AddDetail();
             
             poPaymentRequest.PaymentRequest().Detail(2).setEntryNo(3);
-            poPaymentRequest.PaymentRequest().Detail(2).setParticularID(particularid);
+            poPaymentRequest.PaymentRequest().Detail(2).setParticularID("");
             poPaymentRequest.PaymentRequest().Detail(2).setPRFRemarks("");
-            poPaymentRequest.PaymentRequest().Detail(2).setAmount(amount);
+            poPaymentRequest.PaymentRequest().Detail(2).setAmount(0);
             poPaymentRequest.PaymentRequest().Detail(2).setDiscount(discount);
             poPaymentRequest.PaymentRequest().Detail(2).setAddDiscount(adddiscount);
             poPaymentRequest.PaymentRequest().Detail(2).setVatable(vatable);
             poPaymentRequest.PaymentRequest().Detail(2).setWithHoldingTax(withholddingtax);
-            
+            poPaymentRequest.PaymentRequest().AddDetail();
             
             loJSON = poPaymentRequest.PaymentRequest().SaveTransaction();
 
