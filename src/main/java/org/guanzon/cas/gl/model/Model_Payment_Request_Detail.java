@@ -20,27 +20,28 @@ import org.json.simple.JSONObject;
  *
  * @author User
  */
-public class Model_Payment_Request_Detail extends Model{
+public class Model_Payment_Request_Detail extends Model {
+
     Model_Particular poParticular;
+
     @Override
     public void initialize() {
         try {
             poEntity = MiscUtil.xml2ResultSet(System.getProperty("sys.default.path.metadata") + XML, getTable());
-            
+
             poEntity.last();
             poEntity.moveToInsertRow();
 
             MiscUtil.initRowSet(poEntity);
-            
+
             //assign default values
-            
+            poEntity.updateObject("nEntryNox", 0);
             poEntity.updateObject("nAmountxx", 0.0);
             poEntity.updateObject("nDiscount", 0.0);
             poEntity.updateObject("nAddDiscx", 0.0);
             poEntity.updateObject("nTWithHld", 0.0);
-                
-            //end - assign default values
 
+            //end - assign default values
             poEntity.insertRow();
             poEntity.moveToCurrentRow();
 
@@ -48,58 +49,55 @@ public class Model_Payment_Request_Detail extends Model{
 
             ID = "sTransNox";
             ID2 = "nEntryNox";
-            
 
             GLModels gl = new GLModels(poGRider);
             poParticular = gl.Particular();
-            
-           
+
             //end - initialize reference objects
-            
             pnEditMode = EditMode.UNKNOWN;
         } catch (SQLException e) {
             logwrapr.severe(e.getMessage());
             System.exit(1);
         }
     }
-    
+
     @Override
     public String getNextCode() {
         return "";
     }
-    
-    public JSONObject setTransactionNo(String transactionNo){
+
+    public JSONObject setTransactionNo(String transactionNo) {
         return setValue("sTransNox", transactionNo);
     }
-    
-    public String getTransactionNo  (){
+
+    public String getTransactionNo() {
         return (String) getValue("sTransNox");
     }
-    
-    public JSONObject setEntryNo(int entryNo){
+
+    public JSONObject setEntryNo(Number entryNo) {
         return setValue("nEntryNox", entryNo);
     }
-    
-    public int getEntryNo(){
-        return (int) getValue("nEntryNox");
+
+    public Number getEntryNo() {
+        return (Number) getValue("nEntryNox");
     }
-    
-    public JSONObject setParticularID(String particularID){
+
+    public JSONObject setParticularID(String particularID) {
         return setValue("sPrtclrID", particularID);
     }
-    
-    public String getParticularID(){
+
+    public String getParticularID() {
         return (String) getValue("sPrtclrID");
     }
-    
-    public JSONObject setPRFRemarks(String prfRemarks){
+
+    public JSONObject setPRFRemarks(String prfRemarks) {
         return setValue("sPRFRemxx", prfRemarks);
     }
-    
-    public String getPRFRemarks(){
+
+    public String getPRFRemarks() {
         return (String) getValue("sPRFRemxx");
     }
-    
+
     public JSONObject setAmount(Number amount) {
         return setValue("nAmountxx", amount);
     }
@@ -107,7 +105,7 @@ public class Model_Payment_Request_Detail extends Model{
     public Number getAmount() {
         return (Number) getValue("nAmountxx");
     }
-    
+
     public JSONObject setDiscount(Number discount) {
         return setValue("nDiscount", discount);
     }
@@ -115,7 +113,7 @@ public class Model_Payment_Request_Detail extends Model{
     public Number getDiscount() {
         return (Number) getValue("nDiscount");
     }
-    
+
     public JSONObject setAddDiscount(Number addDiscount) {
         return setValue("nAddDiscx", addDiscount);
     }
@@ -123,15 +121,15 @@ public class Model_Payment_Request_Detail extends Model{
     public Number getAddDiscount() {
         return (Number) getValue("nAddDiscx");
     }
-    
-    public JSONObject setVatable (String vatable) {
+
+    public JSONObject setVatable(String vatable) {
         return setValue("cVATaxabl", vatable);
     }
 
     public String getVatable() {
         return (String) getValue("cVATaxabl");
     }
-    
+
     public JSONObject setWithHoldingTax(Number withHoldingTax) {
         return setValue("nTWithHld", withHoldingTax);
     }
@@ -139,15 +137,14 @@ public class Model_Payment_Request_Detail extends Model{
     public Number getWithHoldingTax() {
         return (Number) getValue("nTWithHld");
     }
-    
-    public JSONObject setModifiedDate(Date modifiedDate){
+
+    public JSONObject setModifiedDate(Date modifiedDate) {
         return setValue("dModified", modifiedDate);
     }
-    
-    public Date getModifiedDate(){
+
+    public Date getModifiedDate() {
         return (Date) getValue("dModified");
     }
-    
 
     public Model_Particular Particular() throws GuanzonException, SQLException {
         if (!"".equals((String) getValue("sPrtclrID"))) {

@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.guanzon.appdriver.agent.ShowDialogFX;
 import org.guanzon.appdriver.agent.services.Transaction;
 import org.guanzon.appdriver.agent.systables.SysTableContollers;
 import org.guanzon.appdriver.agent.systables.TransactionAttachment;
@@ -393,6 +394,58 @@ public class PaymentRequest extends Transaction {
         return poJSON;
     }
 
+    @Override
+    public void initSQL() {
+        SQL_BROWSE = "SELECT "
+                + " a.sTransNox,"
+                + " a.dTransact,"
+                + " b.sBranchNm,"
+                + " c.sDeptName,"
+                + " d.sPayeeNme"
+                + " FROM payment_request_master a "
+                + " LEFT JOIN Branch b ON a.sBranchCd = b.sBranchCd "
+                + " LEFT JOIN Department c ON c.sDeptIDxx = a.sDeptIDxx "
+                + " LEFT JOIN Payee d ON a.sPayeeIDx = d.sPayeeIDx";
+    }
+
+    public JSONObject SearchTransaction(String fsValue) throws CloneNotSupportedException, SQLException, GuanzonException {
+        poJSON = new JSONObject();
+        String lsTransStat = "";
+        if (psTranStat.length() > 1) {
+            for (int lnCtr = 0; lnCtr <= psTranStat.length() - 1; lnCtr++) {
+                lsTransStat += ", " + SQLUtil.toSQL(Character.toString(psTranStat.charAt(lnCtr)));
+            }
+            lsTransStat = " AND a.cTranStat IN (" + lsTransStat.substring(2) + ")";
+        } else {
+            lsTransStat = " AND a.cTranStat = " + SQLUtil.toSQL(psTranStat);
+        }
+        initSQL();
+        String lsFilterCondition = String.join(" AND ", "a.sPayeeIDx LIKE " + SQLUtil.toSQL("%" + Master().getPayeeID()),
+                " b.sBranchCd = " + SQLUtil.toSQL(Master().getBranchCode()));
+        String lsSQL = MiscUtil.addCondition(SQL_BROWSE, lsFilterCondition);
+        if (!psTranStat.isEmpty()) {
+            lsSQL = lsSQL + lsTransStat;
+        }
+        lsSQL = lsSQL + " GROUP BY a.sTransNox";
+        System.out.println("SQL EXECUTED: " + lsSQL);
+        poJSON = ShowDialogFX.Browse(poGRider,
+                lsSQL,
+                fsValue,
+                "Transaction Date»Transaction No»Branch»Payee",
+                "a.dTransact»a.sTransNox»b.sBranchNm»d.sPayeeNme",
+                "a.dTransact»a.sTransNox»b.sBranchNm»d.sPayeeNme",
+                1);
+
+        if (poJSON != null) {
+            return OpenTransaction((String) poJSON.get("sTransNox"));
+        } else {
+            poJSON = new JSONObject();
+            poJSON.put("result", "error");
+            poJSON.put("message", "No record loaded.");
+            return poJSON;
+        }
+    }
+
     public JSONObject SearchDepartment(String value, boolean byCode) throws ExceptionInInitializerError, SQLException, GuanzonException {
         Department object = new ParamControllers(poGRider, logwrapr).Department();
         object.setRecordStatus("1");
@@ -423,9 +476,19 @@ public class PaymentRequest extends Transaction {
         Particular object = new GLControllers(poGRider, logwrapr).Particular();
         object.setRecordStatus("1");
 
-        poJSON = object.searchRecord(value, byCode);
+        poJSON = object.searchRecord(value, Master().getPayeeID(), byCode);
 
         if ("success".equals((String) poJSON.get("result"))) {
+            for (int lnRow = 0; lnRow <= getDetailCount() - 1; lnRow++) {
+                if (lnRow != row) {
+                    if ((Detail(lnRow).getParticularID().equals(object.getModel().getParticularID()))) {
+                        poJSON.put("result", "error");
+                        poJSON.put("message", "Particular: " + object.getModel().getDescription() + " already exist in table at row " + (lnRow + 1) + ".");
+                        poJSON.put("tableRow", lnRow);
+                        return poJSON;
+                    }
+                }
+            }
             Detail(row).setParticularID(object.getModel().getParticularID());
         }
 
@@ -526,11 +589,6 @@ public class PaymentRequest extends Transaction {
     }
 
     @Override
-    public void initSQL() {
-        SQL_BROWSE = "";
-    }
-
-    @Override
     protected JSONObject isEntryOkay(String status) {
         GValidator loValidator = new PaymentRequestValidator();
         loValidator.setApplicationDriver(poGRider);
@@ -616,46 +674,46 @@ public class PaymentRequest extends Transaction {
         int lnRow = 0;
         RecurringIssuance poRecurringIssuance;
         poRecurringIssuance = new GLControllers(poGRider, logwrapr).RecurringIssuance();
-       
-        poJSON = poRecurringIssuance.openRecord(particularNo, "M001", payeeID,AcctNo);
+
+        poJSON = poRecurringIssuance.openRecord(particularNo, "M001", payeeID, AcctNo);
         if ("error".equals((String) poJSON.get("result"))) {
-             poJSON.put("result", "error");
-             return poJSON;
+            poJSON.put("result", "error");
+            return poJSON;
         }
-            for (int lnCtr = 0; lnCtr <= getRecurring_IssuanceCount() - 1; lnCtr++) {
-                //Check existing supplier
-                if (Master().getPayeeID() == null || "".equals(Master().getPayeeID())) {
-                    Master().setPayeeID(poRecurringIssuance.getModel().getPayeeID());
-                } else {
-                    if (!Master().getPayeeID().equals(poRecurringIssuance.getModel().getPayeeID())) {
-                        if (getDetailCount() >= 0) {
-                            poJSON.put("result", "error");
-                            poJSON.put("message", "Payee must be equal to selected Recurring Issuance Payee.");
-                            return poJSON;
-                        } else {
-                            Master().setPayeeID(poRecurringIssuance.getModel().getPayeeID());
-                        }
+        for (int lnCtr = 0; lnCtr <= getRecurring_IssuanceCount() - 1; lnCtr++) {
+            //Check existing supplier
+            if (Master().getPayeeID() == null || "".equals(Master().getPayeeID())) {
+                Master().setPayeeID(poRecurringIssuance.getModel().getPayeeID());
+            } else {
+                if (!Master().getPayeeID().equals(poRecurringIssuance.getModel().getPayeeID())) {
+                    if (getDetailCount() >= 0) {
+                        poJSON.put("result", "error");
+                        poJSON.put("message", "Payee must be equal to selected Recurring Issuance Payee.");
+                        return poJSON;
+                    } else {
+                        Master().setPayeeID(poRecurringIssuance.getModel().getPayeeID());
                     }
                 }
-
-                for (lnRow = 0; lnRow <= getDetailCount() - 1; lnRow++) {
-                    if (Detail(lnRow).getParticularID().equals(Recurring_Issuance(lnCtr).getParticularID())) {
-                        lbExist = true;
-                        break;
-                    }
-                }
-
-                if (!lbExist) {
-                    Detail(getDetailCount() - 1).setParticularID(Recurring_Issuance(lnCtr).getParticularID());
-                    Detail(getDetailCount() - 1).setAmount(Recurring_Issuance(lnCtr).getAmount());
-                    AddDetail();
-                }
-                lbExist = false;
             }
+
+            for (lnRow = 0; lnRow <= getDetailCount() - 1; lnRow++) {
+                if (Detail(lnRow).getParticularID().equals(Recurring_Issuance(lnCtr).getParticularID())) {
+                    lbExist = true;
+                    break;
+                }
+            }
+
+            if (!lbExist) {
+                Detail(getDetailCount() - 1).setParticularID(Recurring_Issuance(lnCtr).getParticularID());
+                Detail(getDetailCount() - 1).setAmount(Recurring_Issuance(lnCtr).getAmount());
+                AddDetail();
+            }
+            lbExist = false;
+        }
         poJSON.put("result", "success");
         return poJSON;
     }
-    
+
     public JSONObject computeNetPayableDetails(double rent, boolean isVatExclusive, double vatRate, double wtaxRate) {
         JSONObject result = new JSONObject();
         double baseRent;
