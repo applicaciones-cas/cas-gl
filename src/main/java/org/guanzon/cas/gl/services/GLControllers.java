@@ -98,7 +98,7 @@ public class GLControllers {
         poRecurringIssuance.setWithParentClass(false);
         poRecurringIssuance.setLogWrapper(poLogWrapper);
         poRecurringIssuance.initialize();
-        poRecurringIssuance.newRecord();
+//        poRecurringIssuance.newRecord();
         return poRecurringIssuance;        
     }
     
