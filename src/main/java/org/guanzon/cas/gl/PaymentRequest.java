@@ -771,5 +771,45 @@ public class PaymentRequest extends Transaction {
         Master().setNetTotal(detailNetAmount);
         return poJSON;
     }
-    
+    public JSONObject isDetailHasZeroAmount() {
+        poJSON = new JSONObject();
+        int zeroAmountRow = -1;
+        boolean hasNonZeroAmount = false;
+        boolean hasZeroAmount = false;
+        int lastRow = getDetailCount() - 1;
+
+        for (int lnRow = 0; lnRow <= lastRow; lnRow++) {
+            double amount = Detail(lnRow).getAmount().doubleValue();
+            String particularID = (String) Detail(lnRow).getValue("sPrtclrID");
+
+            if (!particularID.isEmpty()) {
+                if (amount == 0.00) {
+                    hasZeroAmount = true;
+                    if (zeroAmountRow == -1) {
+                        zeroAmountRow = lnRow;
+                    }
+                } else {
+                    hasNonZeroAmount = true;
+                }
+            }
+        }
+
+        if (!hasNonZeroAmount && hasZeroAmount) {
+            poJSON.put("result", "error");
+            poJSON.put("message", "All items have zero amount. Please enter a valid amount.");
+            poJSON.put("tableRow", zeroAmountRow);
+            poJSON.put("warning", "true");
+        } else if (hasZeroAmount) {
+            poJSON.put("result", "error");
+            poJSON.put("message", "Some items have zero amount. Please review.");
+            poJSON.put("tableRow", zeroAmountRow);
+            poJSON.put("warning", "false");
+        } else {
+            poJSON.put("result", "success");
+            poJSON.put("message", "All items have valid amounts.");
+            poJSON.put("tableRow", lastRow);
+        }
+
+        return poJSON;
+    }
 }

@@ -51,7 +51,7 @@ public class testPRFConfirmTransaction {
                 Assert.fail();
             }
 
-            loJSON = poPaymentRequest.OpenTransaction("GCC225000001");
+            loJSON = poPaymentRequest.OpenTransaction("M00125000002");
             if (!"success".equals((String) loJSON.get("result"))) {
                 System.err.println((String) loJSON.get("message"));
                 Assert.fail();
@@ -87,6 +87,7 @@ public class testPRFConfirmTransaction {
 //            System.out.println((String) loJSON.get("message"));
         } catch (CloneNotSupportedException | SQLException | GuanzonException | ParseException e) {
             MiscUtil.getException(e);
+             System.err.println(MiscUtil.getException(e));
             Assert.fail();
         
         } 
