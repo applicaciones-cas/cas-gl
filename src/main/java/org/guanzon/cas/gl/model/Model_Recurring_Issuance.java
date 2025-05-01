@@ -92,12 +92,12 @@ public class Model_Recurring_Issuance extends Model {
         return (String) getValue("sAcctName");
     }
     
-    public JSONObject setAmount(double amount){
+    public JSONObject setAmount(Number amount){
         return setValue("nAmountxx", amount);
     }
 
-    public double getAmount() {
-        return (double) getValue("nAmountxx");
+    public Number getAmount() {
+        return (Number) getValue("nAmountxx");
     }
     
     public JSONObject setMonth(int month){
@@ -124,20 +124,20 @@ public class Model_Recurring_Issuance extends Model {
         return (Date) getValue("dDueUntil");
     }
     
-    public JSONObject setVATRate(double rate){
+    public JSONObject setVATRate(Number rate){
         return setValue("nVATRatex", rate);
     }
 
-    public double getVATRate() {
-        return (double) getValue("nVATRatex");
+    public Number getVATRate() {
+        return (Number) getValue("nVATRatex");
     }
     
-    public JSONObject setTaxWithheldRate (double rate){
+    public JSONObject setTaxWithheldRate (Number rate){
         return setValue("nTWHldRte", rate);
     }
 
-    public double getTaxWithheldRate() {
-        return (double) getValue("nTWHldRte");
+    public Number getTaxWithheldRate() {
+        return (Number) getValue("nTWHldRte");
     }
     
     public JSONObject setLastPRFTrans(String lastPRFTrans){
