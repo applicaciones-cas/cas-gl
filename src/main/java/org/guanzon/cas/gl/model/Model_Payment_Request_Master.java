@@ -250,10 +250,10 @@ public class Model_Payment_Request_Master extends Model{
     public Model_Department Department() throws GuanzonException, SQLException {
         if (!"".equals((String) getValue("sDeptIDxx"))) {
             if (poDepartment.getEditMode() == EditMode.READY
-                    && poDepartment.getDepartmentId().equals((String) getValue("sDeptIdxx"))) {
+                    && poDepartment.getDepartmentId().equals((String) getValue("sDeptIDxx"))) {
                 return poDepartment;
             } else {
-                poJSON = poDepartment.openRecord((String) getValue("sDeptIdxx"));
+                poJSON = poDepartment.openRecord((String) getValue("sDeptIDxx"));
                 if ("success".equals((String) poJSON.get("result"))) {
                     return poDepartment;
                 } else {
