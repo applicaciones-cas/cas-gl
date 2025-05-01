@@ -10,10 +10,7 @@ import org.guanzon.appdriver.agent.services.Model;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.constant.EditMode;
-import org.guanzon.appdriver.constant.Logical;
 import org.guanzon.cas.gl.services.GLModels;
-import org.guanzon.cas.gl.status.PaymentRequestStatus;
-import org.guanzon.cas.parameter.services.ParamModels;
 import org.json.simple.JSONObject;
 
 /**
@@ -40,6 +37,7 @@ public class Model_Payment_Request_Detail extends Model {
             poEntity.updateObject("nDiscount", 0.0);
             poEntity.updateObject("nAddDiscx", 0.0);
             poEntity.updateObject("nTWithHld", 0.0);
+            poEntity.updateObject("cVATaxabl", "0");
 
             //end - assign default values
             poEntity.insertRow();

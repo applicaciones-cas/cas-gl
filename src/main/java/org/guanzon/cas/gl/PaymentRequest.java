@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.guanzon.appdriver.agent.ShowDialogFX;
+import org.guanzon.appdriver.agent.services.Model;
 import org.guanzon.appdriver.agent.services.Transaction;
 import org.guanzon.appdriver.agent.systables.SysTableContollers;
 import org.guanzon.appdriver.agent.systables.TransactionAttachment;
@@ -516,47 +517,44 @@ public class PaymentRequest extends Transaction {
         poJSON = new JSONObject();
 
         //remove items with no stockid or quantity order
-//        Iterator<Model> detail = Detail().iterator();
-//        while (detail.hasNext()) {
-//            if ("".equals((String) detail.next().getValue("sStockIDx")) ||
-//                (int)detail.next().getValue("nQuantity") <= 0) {
-//                detail.remove();
-//            }
-//        }
-//        Iterator<Model> detail = Detail().iterator();
-//                while (detail.hasNext()) {
-//                    Model item = detail.next(); // Store the item before checking conditions
-//
-//                    if ("".equals((String) item.getValue("sTransNox"))
-//                            || (int) item.getValue("nQuantity") <= 0) {
-//                        detail.remove(); // Correctly remove the item
-//                    }
-//                }
+        
+        Iterator<Model> detail = Detail().iterator();
+                while (detail.hasNext()) {
+                    Model item = detail.next(); // Store the item before checking conditions
+
+                    Number amount = (Number) item.getValue("nAmountxx");
+                    
+                    if (amount.doubleValue() <= 0) {
+                        detail.remove(); // Correctly remove the item
+                    }
+                }
         //assign other info on detail
         for (int lnCtr = 0; lnCtr <= getDetailCount() - 1; lnCtr++) {
             Detail(lnCtr).setTransactionNo(Master().getTransactionNo());
             Detail(lnCtr).setEntryNo(lnCtr + 1);
         }
+        
+//        Master().setEntryNo( getDetailCount() - 1);
 
-//        if (getDetailCount() == 1){
-//            //do not allow a single item detail with no quantity order
-//            if (Detail(0).getQuantityOnHand() == 0) {
-//                poJSON.put("result", "error");
-//                poJSON.put("message", "Your order has zero quantity.");
-//                return poJSON;
-//            }
-//        }
-        //attachement checker
-        if (getTransactionAttachmentCount() > 0) {
-            Iterator<TransactionAttachment> attachment = TransactionAttachmentList().iterator();
-            while (attachment.hasNext()) {
-                TransactionAttachment item = attachment.next();
-
-                if ((String) item.getModel().getFileName() == null || "".equals(item.getModel().getFileName())) {
-                    attachment.remove();
-                }
+        if (getDetailCount() == 1){
+            //do not allow a single item detail with no quantity order
+            if (Detail(0).getAmount().equals(0)) {
+                poJSON.put("result", "error");
+                poJSON.put("message", "Particular has 0 amount.");
+                return poJSON;
             }
         }
+        //attachement checker
+//        if (getTransactionAttachmentCount() > 0) {
+//            Iterator<TransactionAttachment> attachment = TransactionAttachmentList().iterator();
+//            while (attachment.hasNext()) {
+//                TransactionAttachment item = attachment.next();
+//
+//                if ((String) item.getModel().getFileName() == null || "".equals(item.getModel().getFileName())) {
+//                    attachment.remove();
+//                }
+//            }
+//        }
 
         poJSON.put("result", "success");
         return poJSON;
@@ -606,7 +604,10 @@ public class PaymentRequest extends Transaction {
     }
 
     public int getRecurring_IssuanceCount() {
-        return paRecurring.size();
+        if(paRecurring == null){
+            return 0;
+        } 
+            return paRecurring.size();
     }
 
     public JSONObject loadRecurringIssuance() throws SQLException, GuanzonException {
@@ -675,7 +676,7 @@ public class PaymentRequest extends Transaction {
         RecurringIssuance poRecurringIssuance;
         poRecurringIssuance = new GLControllers(poGRider, logwrapr).RecurringIssuance();
 
-        poJSON = poRecurringIssuance.openRecord(particularNo, "M001", payeeID, AcctNo);
+        poJSON = poRecurringIssuance.openRecord(particularNo, Master().getBranchCode(), payeeID, AcctNo);
         if ("error".equals((String) poJSON.get("result"))) {
             poJSON.put("result", "error");
             return poJSON;
@@ -743,5 +744,72 @@ public class PaymentRequest extends Transaction {
         result.put("netPayable", netPayable);
         result.put("result", "success");
         return result;
+    }
+    
+    public JSONObject computeMasterFields() {
+        poJSON = new JSONObject();
+        double totalAmount = 0.00;
+        double totalDiscountAmount = 0.00;
+        double detailTaxAmount = 0.00;
+        double detailNetAmount = 0.00;
+
+        for (int lnCtr = 0; lnCtr <= getDetailCount() - 1; lnCtr++) {
+            totalAmount += Detail(lnCtr).getAmount().doubleValue();
+            totalDiscountAmount += Detail(lnCtr).getAddDiscount().doubleValue();
+            if (Detail(lnCtr).getVatable().equals("1")) {
+                poJSON = computeNetPayableDetails(Detail(lnCtr).getAmount().doubleValue() - Detail(lnCtr).getAddDiscount().doubleValue(), true, 0.12, 0.00);
+            } else {
+                poJSON = computeNetPayableDetails(Detail(lnCtr).getAmount().doubleValue() - Detail(lnCtr).getAddDiscount().doubleValue(), false, 0.12, 0.00);
+            }
+            detailTaxAmount += Double.parseDouble(poJSON.get("vat").toString());
+            detailNetAmount += Double.parseDouble(poJSON.get("netPayable").toString());
+        }
+
+        Master().setTranTotal(totalAmount);
+        Master().setDiscountAmount(totalDiscountAmount);
+        Master().setTaxAmount(detailTaxAmount);
+        Master().setNetTotal(detailNetAmount);
+        return poJSON;
+    }
+    public JSONObject isDetailHasZeroAmount() {
+        poJSON = new JSONObject();
+        int zeroAmountRow = -1;
+        boolean hasNonZeroAmount = false;
+        boolean hasZeroAmount = false;
+        int lastRow = getDetailCount() - 1;
+
+        for (int lnRow = 0; lnRow <= lastRow; lnRow++) {
+            double amount = Detail(lnRow).getAmount().doubleValue();
+            String particularID = (String) Detail(lnRow).getValue("sPrtclrID");
+
+            if (!particularID.isEmpty()) {
+                if (amount == 0.00) {
+                    hasZeroAmount = true;
+                    if (zeroAmountRow == -1) {
+                        zeroAmountRow = lnRow;
+                    }
+                } else {
+                    hasNonZeroAmount = true;
+                }
+            }
+        }
+
+        if (!hasNonZeroAmount && hasZeroAmount) {
+            poJSON.put("result", "error");
+            poJSON.put("message", "All items have zero amount. Please enter a valid amount.");
+            poJSON.put("tableRow", zeroAmountRow);
+            poJSON.put("warning", "true");
+        } else if (hasZeroAmount) {
+            poJSON.put("result", "error");
+            poJSON.put("message", "Some items have zero amount. Please review.");
+            poJSON.put("tableRow", zeroAmountRow);
+            poJSON.put("warning", "false");
+        } else {
+            poJSON.put("result", "success");
+            poJSON.put("message", "All items have valid amounts.");
+            poJSON.put("tableRow", lastRow);
+        }
+
+        return poJSON;
     }
 }

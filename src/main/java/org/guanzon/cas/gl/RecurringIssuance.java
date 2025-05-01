@@ -21,7 +21,8 @@ public class RecurringIssuance extends Parameter{
     
     @Override
     public void initialize() {
-        psRecdStat = Logical.YES;
+        psRecdStat = Logical.YES;        
+        pbInitRec = true;
         
         GLModels model = new GLModels(poGRider);
         poModel = model.Recurring_Issuance();

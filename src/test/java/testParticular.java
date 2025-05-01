@@ -36,7 +36,7 @@ public class testParticular {
         
         poGLControllers = new Particular();
         poGLControllers.setApplicationDriver(instance);
-        poGLControllers.setWithParentClass(false);
+        poGLControllers.setWithParentClass(false);        
         poGLControllers.initialize();
     }
 
@@ -44,6 +44,8 @@ public class testParticular {
     public void testNewRecord() {
 
         try {
+
+            
             poJSON = poGLControllers.getModel().setDescription("CENPELCO");
             if ("error".equals((String) poJSON.get("result"))) {
                 Assert.fail((String) poJSON.get("message"));
