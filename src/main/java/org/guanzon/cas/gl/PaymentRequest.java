@@ -841,4 +841,42 @@ public class PaymentRequest extends Transaction {
     public void resetOthers() {
         paAttachments = new ArrayList<>();
     }
+    
+    public JSONObject SearchTransaction(String fsValue, String fsPayeeID) throws CloneNotSupportedException, SQLException, GuanzonException {
+        poJSON = new JSONObject();
+        String lsTransStat = "";
+        if (psTranStat.length() > 1) {
+            for (int lnCtr = 0; lnCtr <= psTranStat.length() - 1; lnCtr++) {
+                lsTransStat += ", " + SQLUtil.toSQL(Character.toString(psTranStat.charAt(lnCtr)));
+            }
+            lsTransStat = " AND a.cTranStat IN (" + lsTransStat.substring(2) + ")";
+        } else {
+            lsTransStat = " AND a.cTranStat = " + SQLUtil.toSQL(psTranStat);
+        }
+        initSQL();
+        String lsFilterCondition = String.join(" AND ", "a.sPayeeIDx LIKE " + SQLUtil.toSQL("%" + fsPayeeID),
+                " b.sBranchCd = " + SQLUtil.toSQL(Master().getBranchCode()));
+        String lsSQL = MiscUtil.addCondition(SQL_BROWSE, lsFilterCondition);
+        if (!psTranStat.isEmpty()) {
+            lsSQL = lsSQL + lsTransStat;
+        }
+        lsSQL = lsSQL + " GROUP BY a.sTransNox";
+        System.out.println("SQL EXECUTED: " + lsSQL);
+        poJSON = ShowDialogFX.Browse(poGRider,
+                lsSQL,
+                fsValue,
+                "Transaction Date»Transaction No»Branch»Payee",
+                "a.dTransact»a.sTransNox»b.sBranchNm»d.sPayeeNme",
+                "a.dTransact»a.sTransNox»b.sBranchNm»d.sPayeeNme",
+                1);
+
+        if (poJSON != null) {
+            return OpenTransaction((String) poJSON.get("sTransNox"));
+        } else {
+            poJSON = new JSONObject();
+            poJSON.put("result", "error");
+            poJSON.put("message", "No record loaded.");
+            return poJSON;
+        }
+    }
 }
