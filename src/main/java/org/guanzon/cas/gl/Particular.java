@@ -19,6 +19,7 @@ public class Particular extends Parameter {
     @Override
     public void initialize() {
         psRecdStat = Logical.YES;
+        pbInitRec = true;
 
         GLModels model = new GLModels(poGRider);
         poModel = model.Particular();

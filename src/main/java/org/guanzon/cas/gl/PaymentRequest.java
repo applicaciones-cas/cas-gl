@@ -533,6 +533,8 @@ public class PaymentRequest extends Transaction {
             Detail(lnCtr).setTransactionNo(Master().getTransactionNo());
             Detail(lnCtr).setEntryNo(lnCtr + 1);
         }
+        
+//        Master().setEntryNo( getDetailCount() - 1);
 
         if (getDetailCount() == 1){
             //do not allow a single item detail with no quantity order
@@ -543,16 +545,16 @@ public class PaymentRequest extends Transaction {
             }
         }
         //attachement checker
-        if (getTransactionAttachmentCount() > 0) {
-            Iterator<TransactionAttachment> attachment = TransactionAttachmentList().iterator();
-            while (attachment.hasNext()) {
-                TransactionAttachment item = attachment.next();
-
-                if ((String) item.getModel().getFileName() == null || "".equals(item.getModel().getFileName())) {
-                    attachment.remove();
-                }
-            }
-        }
+//        if (getTransactionAttachmentCount() > 0) {
+//            Iterator<TransactionAttachment> attachment = TransactionAttachmentList().iterator();
+//            while (attachment.hasNext()) {
+//                TransactionAttachment item = attachment.next();
+//
+//                if ((String) item.getModel().getFileName() == null || "".equals(item.getModel().getFileName())) {
+//                    attachment.remove();
+//                }
+//            }
+//        }
 
         poJSON.put("result", "success");
         return poJSON;
@@ -602,7 +604,10 @@ public class PaymentRequest extends Transaction {
     }
 
     public int getRecurring_IssuanceCount() {
-        return paRecurring.size();
+        if(paRecurring == null){
+            return 0;
+        } 
+            return paRecurring.size();
     }
 
     public JSONObject loadRecurringIssuance() throws SQLException, GuanzonException {
@@ -671,7 +676,7 @@ public class PaymentRequest extends Transaction {
         RecurringIssuance poRecurringIssuance;
         poRecurringIssuance = new GLControllers(poGRider, logwrapr).RecurringIssuance();
 
-        poJSON = poRecurringIssuance.openRecord(particularNo, "M001", payeeID, AcctNo);
+        poJSON = poRecurringIssuance.openRecord(particularNo, Master().getBranchCode(), payeeID, AcctNo);
         if ("error".equals((String) poJSON.get("result"))) {
             poJSON.put("result", "error");
             return poJSON;
@@ -740,4 +745,31 @@ public class PaymentRequest extends Transaction {
         result.put("result", "success");
         return result;
     }
+    
+    public JSONObject computeMasterFields() {
+        poJSON = new JSONObject();
+        double totalAmount = 0.00;
+        double totalDiscountAmount = 0.00;
+        double detailTaxAmount = 0.00;
+        double detailNetAmount = 0.00;
+
+        for (int lnCtr = 0; lnCtr <= getDetailCount() - 1; lnCtr++) {
+            totalAmount += Detail(lnCtr).getAmount().doubleValue();
+            totalDiscountAmount += Detail(lnCtr).getAddDiscount().doubleValue();
+            if (Detail(lnCtr).getVatable().equals("1")) {
+                poJSON = computeNetPayableDetails(Detail(lnCtr).getAmount().doubleValue() - Detail(lnCtr).getAddDiscount().doubleValue(), true, 0.12, 0.00);
+            } else {
+                poJSON = computeNetPayableDetails(Detail(lnCtr).getAmount().doubleValue() - Detail(lnCtr).getAddDiscount().doubleValue(), false, 0.12, 0.00);
+            }
+            detailTaxAmount += Double.parseDouble(poJSON.get("vat").toString());
+            detailNetAmount += Double.parseDouble(poJSON.get("netPayable").toString());
+        }
+
+        Master().setTranTotal(totalAmount);
+        Master().setDiscountAmount(totalDiscountAmount);
+        Master().setTaxAmount(detailTaxAmount);
+        Master().setNetTotal(detailNetAmount);
+        return poJSON;
+    }
+    
 }

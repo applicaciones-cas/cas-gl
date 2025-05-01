@@ -61,12 +61,15 @@ public class GLControllers {
         
         poPayee = new Payee();
         poPayee.setApplicationDriver(poGRider);
-        poPayee.setWithParentClass(false);
+        poPayee.setWithParentClass(true);
         poPayee.setLogWrapper(poLogWrapper);
         poPayee.initialize();
         poPayee.newRecord();
         return poPayee;        
     }
+    
+    
+
     
     public Particular Particular() throws SQLException, GuanzonException{
         if (poGRider == null){
@@ -78,7 +81,7 @@ public class GLControllers {
         
         poParticular = new Particular();
         poParticular.setApplicationDriver(poGRider);
-        poParticular.setWithParentClass(false);
+        poParticular.setWithParentClass(true);
         poParticular.setLogWrapper(poLogWrapper);
         poParticular.initialize();
         poParticular.newRecord();
@@ -95,7 +98,7 @@ public class GLControllers {
         
         poRecurringIssuance = new RecurringIssuance();
         poRecurringIssuance.setApplicationDriver(poGRider);
-        poRecurringIssuance.setWithParentClass(false);
+        poRecurringIssuance.setWithParentClass(true);
         poRecurringIssuance.setLogWrapper(poLogWrapper);
         poRecurringIssuance.initialize();
 //        poRecurringIssuance.newRecord();
@@ -112,11 +115,13 @@ public class GLControllers {
         
         poPaymentRequest = new PaymentRequest();
         poPaymentRequest.setApplicationDriver(poGRider);
+        poPaymentRequest.setBranchCode(poGRider.getBranchCode());
         poPaymentRequest.setLogWrapper(poLogWrapper);
+        poPaymentRequest.setVerifyEntryNo(true);
+        poPaymentRequest.setWithParent(false);
         return poPaymentRequest;        
     }
 
-       
     @Override
     protected void finalize() throws Throwable {
         try {                    

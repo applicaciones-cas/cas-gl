@@ -47,6 +47,7 @@ public class Model_Payment_Request_Master extends Model{
             poEntity.updateObject("nTaxAmntx", 0.0);
             poEntity.updateObject("nNetTotal", 0.0);
             poEntity.updateObject("nAmtPaidx", 0.0);
+            poEntity.updateObject("nEntryNox", 0);
             poEntity.updateObject("dTransact", SQLUtil.toDate(xsDateShort(poGRider.getServerDate()), SQLUtil.FORMAT_SHORT_DATE));
             poEntity.updateObject("sBranchCd", poGRider.getBranchCode());
             //end - assign default values
@@ -186,12 +187,12 @@ public class Model_Payment_Request_Master extends Model{
         return (Number) getValue("nAmtPaidx");
     }
     
-    public JSONObject setEntryNo(int entryNo){
+    public JSONObject setEntryNo(int entryNo) {
         return setValue("nEntryNox", entryNo);
     }
-    
-    public int getEntryNo(){
-        return (int) getValue("nEntryNox");
+
+    public Number getEntryNo() {
+        return (Number) getValue("nEntryNox");
     }
     
     public JSONObject setSourceCode(String sourceCode){
