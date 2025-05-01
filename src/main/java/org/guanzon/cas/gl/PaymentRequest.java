@@ -5,6 +5,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.guanzon.appdriver.agent.ShowDialogFX;
 import org.guanzon.appdriver.agent.services.Model;
 import org.guanzon.appdriver.agent.services.Transaction;
@@ -533,8 +535,6 @@ public class PaymentRequest extends Transaction {
             Detail(lnCtr).setTransactionNo(Master().getTransactionNo());
             Detail(lnCtr).setEntryNo(lnCtr + 1);
         }
-        
-//        Master().setEntryNo( getDetailCount() - 1);
 
         if (getDetailCount() == 1){
             //do not allow a single item detail with no quantity order
@@ -544,17 +544,23 @@ public class PaymentRequest extends Transaction {
                 return poJSON;
             }
         }
+        
         //attachement checker
-//        if (getTransactionAttachmentCount() > 0) {
-//            Iterator<TransactionAttachment> attachment = TransactionAttachmentList().iterator();
-//            while (attachment.hasNext()) {
-//                TransactionAttachment item = attachment.next();
-//
-//                if ((String) item.getModel().getFileName() == null || "".equals(item.getModel().getFileName())) {
-//                    attachment.remove();
-//                }
-//            }
-//        }
+        if (getTransactionAttachmentCount() > 0) {
+            Iterator<TransactionAttachment> attachment = TransactionAttachmentList().iterator();
+            while (attachment.hasNext()) {
+                TransactionAttachment item = attachment.next();
+
+                if ((String) item.getModel().getFileName() == null || "".equals(item.getModel().getFileName())) {
+                    attachment.remove();
+                }
+            }
+        }
+        //Set Transaction Attachments
+        for (int lnCtr = 0; lnCtr <= getTransactionAttachmentCount() - 1; lnCtr++) {
+            TransactionAttachmentList(lnCtr).getModel().setSourceCode(SOURCE_CODE);
+            TransactionAttachmentList(lnCtr).getModel().setSourceNo(Master().getTransactionNo());
+        }
 
         poJSON.put("result", "success");
         return poJSON;
@@ -568,6 +574,22 @@ public class PaymentRequest extends Transaction {
     @Override
     public JSONObject saveOthers() {
         poJSON = new JSONObject();
+        int lnCtr;
+        
+         //Save Attachments
+            for (lnCtr = 0; lnCtr <= getTransactionAttachmentCount() - 1; lnCtr++) {
+                if (paAttachments.get(lnCtr).getEditMode() == EditMode.ADDNEW || paAttachments.get(lnCtr).getEditMode() == EditMode.UPDATE) {
+                    try {
+                        paAttachments.get(lnCtr).setWithParentClass(true);
+                        poJSON = paAttachments.get(lnCtr).saveRecord();
+                        if ("error".equals((String) poJSON.get("result"))) {
+                            return poJSON;
+                        }
+                    } catch (SQLException | GuanzonException | CloneNotSupportedException ex) {
+                        Logger.getLogger(PaymentRequest.class.getName()).log(Level.SEVERE, null, ex);
+                    } 
+                }
+            }
 
         poJSON.put("result", "success");
         return poJSON;
@@ -811,5 +833,12 @@ public class PaymentRequest extends Transaction {
         }
 
         return poJSON;
+    }
+    public void resetMaster() {
+        poMaster = new GLModels(poGRider).PaymentRequestMaster();
+    }
+
+    public void resetOthers() {
+        paAttachments = new ArrayList<>();
     }
 }
