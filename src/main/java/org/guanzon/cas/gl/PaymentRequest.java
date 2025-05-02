@@ -808,21 +808,22 @@ public class PaymentRequest extends Transaction {
                 }
             }
 
-            for (lnRow = 0; lnRow <= getDetailCount() - 1; lnRow++) {
-                if (Detail(lnRow).getParticularID().equals(Recurring_Issuance(lnCtr).getParticularID())) {
-                    psParticularID = Detail(lnRow).getParticularID();
-
-                    lbExist = true;
-                    break;
+            for (lnRow = 0; lnRow < getDetailCount(); lnRow++) {
+                if (Detail(lnRow).getParticularID().equals(Recurring_Issuance(lnCtr).getParticularID())
+                        && Detail(lnRow).getAmount().doubleValue() == Recurring_Issuance(lnCtr).getAmount().doubleValue()) {
+                    lbExist = true; // exact match
+                    poJSON.put("result", "error");
+                    poJSON.put("message", "Particular: " + Detail(lnRow).Recurring().Particular().getDescription() + " already exist in table at row " + (lnRow + 1) + ".");
+                    poJSON.put("tableRow", lnRow);
+                    return poJSON;
                 }
             }
 
             if (!lbExist) {
                 Detail(getDetailCount() - 1).setParticularID(Recurring_Issuance(lnCtr).getParticularID());
-                Detail(getDetailCount() - 1).setAmount(Recurring_Issuance(lnCtr).getAmount());
+                Detail(getDetailCount() - 1).setAmount(Recurring_Issuance(lnCtr).getAmount().doubleValue());
                 AddDetail();
             }
-            lbExist = false;
         }
         poJSON.put("result", "success");
         return poJSON;
