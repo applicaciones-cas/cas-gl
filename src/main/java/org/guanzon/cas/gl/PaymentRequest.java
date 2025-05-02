@@ -41,7 +41,7 @@ public class PaymentRequest extends Transaction {
 
     List<TransactionAttachment> paAttachments;
     List<Model_Recurring_Issuance> paRecurring;
-
+    List<Model_Payment_Request_Master> poPRFMaster;
     public JSONObject InitTransaction() {
         SOURCE_CODE = "PRF";
 
@@ -405,6 +405,9 @@ public class PaymentRequest extends Transaction {
                 + " b.sBranchNm,"
                 + " c.sDeptName,"
                 + " d.sPayeeNme"
+                + " b.sBranchCd,"
+                + " c.sDeptIDxx,"
+                + " d.sPayeeIDx"
                 + " FROM payment_request_master a "
                 + " LEFT JOIN Branch b ON a.sBranchCd = b.sBranchCd "
                 + " LEFT JOIN Department c ON c.sDeptIDxx = a.sDeptIDxx "
@@ -698,7 +701,7 @@ public class PaymentRequest extends Transaction {
         RecurringIssuance poRecurringIssuance;
         poRecurringIssuance = new GLControllers(poGRider, logwrapr).RecurringIssuance();
 
-        poJSON = poRecurringIssuance.openRecord(particularNo, Master().getBranchCode(), payeeID, AcctNo);
+        poJSON = poRecurringIssuance.openRecord(particularNo, "M001", payeeID, AcctNo);
         if ("error".equals((String) poJSON.get("result"))) {
             poJSON.put("result", "error");
             return poJSON;
@@ -880,4 +883,67 @@ public class PaymentRequest extends Transaction {
             return poJSON;
         }
     }
+    
+    public JSONObject getPaymentRequest(String fsTransactionNo, String fsPayee) throws SQLException, GuanzonException {
+        JSONObject loJSON = new JSONObject();
+        String lsTransStat = "";
+        if (psTranStat.length() > 1) {
+            for (int lnCtr = 0; lnCtr <= psTranStat.length() - 1; lnCtr++) {
+                lsTransStat += ", " + SQLUtil.toSQL(Character.toString(psTranStat.charAt(lnCtr)));
+            }
+            lsTransStat = " AND a.cTranStat IN (" + lsTransStat.substring(2) + ")";
+        } else {
+            lsTransStat = " AND a.cTranStat = " + SQLUtil.toSQL(psTranStat);
+        }
+
+        initSQL();
+         String lsFilterCondition = String.join(" AND ", "a.sPayeeIDx LIKE " + SQLUtil.toSQL("%" + fsPayee),
+                " a.sTransNox  LIKE " + SQLUtil.toSQL("%" + fsTransactionNo));
+        String lsSQL = MiscUtil.addCondition(SQL_BROWSE, lsFilterCondition);
+        
+        lsSQL = MiscUtil.addCondition(lsSQL, lsFilterCondition);
+        if (!psTranStat.isEmpty()) {
+            lsSQL = lsSQL + lsTransStat;
+        }
+        lsSQL = lsSQL + " GROUP BY  a.sTransNox"
+                + " ORDER BY dTransact ASC";
+        System.out.println("Executing SQL: " + lsSQL);
+        ResultSet loRS = poGRider.executeQuery(lsSQL);
+
+        int lnCtr = 0;
+        if (MiscUtil.RecordCount(loRS) >= 0) {
+            poPRFMaster = new ArrayList<>();
+            while (loRS.next()) {
+                // Print the result set
+                System.out.println("sTransNox: " + loRS.getString("sTransNox"));
+                System.out.println("dTransact: " + loRS.getDate("dTransact"));
+                System.out.println("------------------------------------------------------------------------------");
+
+                poPRFMaster.add(PRFMasterList());
+                poPRFMaster.get(poPRFMaster.size() - 1).openRecord(loRS.getString("sTransNox"));
+                lnCtr++;
+            }
+            System.out.println("Records found: " + lnCtr);
+            loJSON.put("result", "success");
+            loJSON.put("message", "Record loaded successfully.");
+        } else {
+            poPRFMaster = new ArrayList<>();
+            poPRFMaster.add(PRFMasterList());
+            loJSON.put("result", "error");
+            loJSON.put("continue", true);
+            loJSON.put("message", "No record found .");
+        }
+        MiscUtil.close(loRS);
+        return loJSON;
+    }
+    private Model_Payment_Request_Master PRFMasterList() {
+        return new GLModels(poGRider).PaymentRequestMaster();
+    }
+    public int getPRFMasterCount() {
+        return this.poPRFMaster.size();
+    }
+    public Model_Payment_Request_Master poPRFMaster(int row) {
+        return (Model_Payment_Request_Master) poPRFMaster.get(row);
+    }
+    
 }
