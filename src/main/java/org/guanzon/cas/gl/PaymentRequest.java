@@ -33,8 +33,6 @@ import org.json.simple.parser.ParseException;
 
 public class PaymentRequest extends Transaction {
 
-
-
     List<TransactionAttachment> paAttachments;
     List<Model_Recurring_Issuance> paRecurring;
     List<Model_Payment_Request_Master> poPRFMaster;
@@ -42,6 +40,7 @@ public class PaymentRequest extends Transaction {
     String psParticularID;
     String psAccountNo;
     private boolean pbApproval = false;
+
     public JSONObject InitTransaction() {
         SOURCE_CODE = "PRF";
 
@@ -537,29 +536,69 @@ public class PaymentRequest extends Transaction {
     }
 
     @Override
-    public JSONObject willSave() {
+    public JSONObject willSave() throws CloneNotSupportedException, SQLException, GuanzonException {
         /*Put system validations and other assignments here*/
         poJSON = new JSONObject();
-
+        boolean lbUpdated = false;
         //remove items with no stockid or quantity order
-        
         Iterator<Model> detail = Detail().iterator();
-                while (detail.hasNext()) {
-                    Model item = detail.next(); // Store the item before checking conditions
+        while (detail.hasNext()) {
+            Model item = detail.next(); // Store the item before checking conditions
 
-                    Number amount = (Number) item.getValue("nAmountxx");
-                    
-                    if (amount.doubleValue() <= 0) {
-                        detail.remove(); // Correctly remove the item
+            Number amount = (Number) item.getValue("nAmountxx");
+
+            if (amount.doubleValue() <= 0) {
+                detail.remove(); // Correctly remove the item
+            }
+        }
+
+        if (PaymentRequestStatus.RETURNED.equals(Master().getTransactionStatus())) {
+            PaymentRequest loRecord = new GLControllers(poGRider, null).PaymentRequest();
+            loRecord.InitTransaction();
+            loRecord.OpenTransaction(Master().getTransactionNo());
+
+            lbUpdated = loRecord.getDetailCount() == getDetailCount();
+            if (lbUpdated) {
+                lbUpdated = loRecord.Master().getPayeeID().equals(Master().getPayeeID());
+            }
+            if (lbUpdated) {
+                lbUpdated = loRecord.Master().getRemarks().equals(Master().getRemarks());
+            }
+            if (lbUpdated) {
+                lbUpdated = loRecord.Master().getTranTotal().doubleValue() == Master().getTranTotal().doubleValue();
+            }
+            if (lbUpdated) {
+                for (int lnCtr = 0; lnCtr <= loRecord.getDetailCount() - 1; lnCtr++) {
+                    lbUpdated = loRecord.Detail(lnCtr).getParticularID().equals(Detail(lnCtr).getParticularID());
+                    if (lbUpdated) {
+                        lbUpdated = loRecord.Detail(lnCtr).getAmount().doubleValue() == Detail(lnCtr).getAmount().doubleValue();
+                    }
+                    //FOR FUTURE
+//                    if (lbUpdated) {
+//                        lbUpdated = loRecord.Detail(lnCtr).getAddDiscount().doubleValue() == Detail(lnCtr).getAddDiscount().doubleValue();
+//                    }
+                    if (!lbUpdated) {
+                        break;
                     }
                 }
+            }
+
+            if (lbUpdated) {
+                poJSON.put("result", "error");
+                poJSON.put("message", "No update has been made.");
+                return poJSON;
+            }
+
+            Master().setTransactionStatus(PaymentRequestStatus.OPEN); //If edited update trasaction status into open
+        }
+
         //assign other info on detail
         for (int lnCtr = 0; lnCtr <= getDetailCount() - 1; lnCtr++) {
             Detail(lnCtr).setTransactionNo(Master().getTransactionNo());
             Detail(lnCtr).setEntryNo(lnCtr + 1);
         }
 
-        if (getDetailCount() == 1){
+        if (getDetailCount() == 1) {
             //do not allow a single item detail with no quantity order
             if (Detail(0).getAmount().equals(0)) {
                 poJSON.put("result", "error");
@@ -567,7 +606,7 @@ public class PaymentRequest extends Transaction {
                 return poJSON;
             }
         }
-        
+
         //attachement checker
         if (getTransactionAttachmentCount() > 0) {
             Iterator<TransactionAttachment> attachment = TransactionAttachmentList().iterator();
@@ -584,7 +623,7 @@ public class PaymentRequest extends Transaction {
             TransactionAttachmentList(lnCtr).getModel().setSourceCode(SOURCE_CODE);
             TransactionAttachmentList(lnCtr).getModel().setSourceNo(Master().getTransactionNo());
         }
-        
+
         if (PaymentRequestStatus.CONFIRMED.equals(Master().getTransactionStatus())) {
 //            poJSON = setValueToOthers(Master().getTransactionStatus());
             if (!"success".equals((String) poJSON.get("result"))) {
@@ -623,7 +662,6 @@ public class PaymentRequest extends Transaction {
 //                poGRider.rollbackTrans();
 //                return poJSON;
 //            }
-            
         } catch (SQLException | GuanzonException | CloneNotSupportedException ex) {
             Logger.getLogger(PaymentRequest.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -664,10 +702,10 @@ public class PaymentRequest extends Transaction {
     }
 
     public int getRecurring_IssuanceCount() {
-        if(paRecurring == null){
+        if (paRecurring == null) {
             return 0;
-        } 
-            return paRecurring.size();
+        }
+        return paRecurring.size();
     }
 
     public JSONObject loadRecurringIssuance() throws SQLException, GuanzonException {
@@ -769,7 +807,7 @@ public class PaymentRequest extends Transaction {
             for (lnRow = 0; lnRow <= getDetailCount() - 1; lnRow++) {
                 if (Detail(lnRow).getParticularID().equals(Recurring_Issuance(lnCtr).getParticularID())) {
                     psParticularID = Detail(lnRow).getParticularID();
-                    
+
                     lbExist = true;
                     break;
                 }
@@ -816,7 +854,7 @@ public class PaymentRequest extends Transaction {
         result.put("result", "success");
         return result;
     }
-    
+
     public JSONObject computeMasterFields() {
         poJSON = new JSONObject();
         double totalAmount = 0.00;
@@ -843,6 +881,7 @@ public class PaymentRequest extends Transaction {
         Master().setNetTotal(detailNetAmount);
         return poJSON;
     }
+
     public JSONObject isDetailHasZeroAmount() {
         poJSON = new JSONObject();
         int zeroAmountRow = -1;
@@ -884,6 +923,7 @@ public class PaymentRequest extends Transaction {
 
         return poJSON;
     }
+
     public void resetMaster() {
         poMaster = new GLModels(poGRider).PaymentRequestMaster();
     }
@@ -891,7 +931,7 @@ public class PaymentRequest extends Transaction {
     public void resetOthers() {
         paAttachments = new ArrayList<>();
     }
-    
+
     public JSONObject SearchTransaction(String fsValue, String fsPayeeID) throws CloneNotSupportedException, SQLException, GuanzonException {
         poJSON = new JSONObject();
         String lsTransStat = "";
@@ -929,7 +969,7 @@ public class PaymentRequest extends Transaction {
             return poJSON;
         }
     }
-    
+
     public JSONObject getPaymentRequest(String fsTransactionNo, String fsPayee) throws SQLException, GuanzonException {
         JSONObject loJSON = new JSONObject();
         String lsTransStat = "";
@@ -943,10 +983,10 @@ public class PaymentRequest extends Transaction {
         }
 
         initSQL();
-         String lsFilterCondition = String.join(" AND ", "a.sPayeeIDx LIKE " + SQLUtil.toSQL("%" + fsPayee),
+        String lsFilterCondition = String.join(" AND ", "a.sPayeeIDx LIKE " + SQLUtil.toSQL("%" + fsPayee),
                 " a.sTransNox  LIKE " + SQLUtil.toSQL("%" + fsTransactionNo));
         String lsSQL = MiscUtil.addCondition(SQL_BROWSE, lsFilterCondition);
-        
+
         lsSQL = MiscUtil.addCondition(lsSQL, lsFilterCondition);
         if (!psTranStat.isEmpty()) {
             lsSQL = lsSQL + lsTransStat;
@@ -982,23 +1022,26 @@ public class PaymentRequest extends Transaction {
         MiscUtil.close(loRS);
         return loJSON;
     }
+
     private Model_Payment_Request_Master PRFMasterList() {
         return new GLModels(poGRider).PaymentRequestMaster();
     }
+
     public int getPRFMasterCount() {
         return this.poPRFMaster.size();
     }
+
     public Model_Payment_Request_Master poPRFMaster(int row) {
         return (Model_Payment_Request_Master) poPRFMaster.get(row);
     }
-    
+
 //    private JSONObject recurringIssuanceTagging()
 //            throws CloneNotSupportedException {
 //        poJSON = new JSONObject();
 //        int lnCtr;
-//        try {   
+//        try {
 //            RecurringIssuance poRecurringIssuance = new GLControllers(poGRider, logwrapr).RecurringIssuance();
-//            
+//
 //                poJSON = poRecurringIssuance.openRecord(psParticularID,Master().getBranchCode(),Master().getPayeeID(),psAccountNo);
 //                if ("error".equals((String) poJSON.get("result"))) {
 //                    poJSON.put("result", "error");
@@ -1025,12 +1068,10 @@ public class PaymentRequest extends Transaction {
 //            poJSON.put("result", "error");
 //            poJSON.put("message", MiscUtil.getException(ex));
 //            return poJSON;
-//        } 
+//        }
 //        poJSON.put("result", "success");
 //        return poJSON;
 //    }
-    
-    
     private JSONObject setValueToOthers(String status)
             throws CloneNotSupportedException,
             SQLException,
@@ -1047,45 +1088,46 @@ public class PaymentRequest extends Transaction {
             System.out.println("particular ROOT: " + (lnCtr + 1) + " : " + Detail(lnCtr).getParticularID());
             System.out.println("RECURRING ROOT: " + (lnCtr + 1) + " : " + Detail(lnCtr).Recurring().getAccountNo());
             System.out.println("------------------------------------------------------------------ ");
-            
+
             updateRecurringIssuance(Detail(lnCtr).getParticularID(),
-                                        Master().getBranchCode(),
-                                         Master().getPayeeID(),
-                                       Detail(lnCtr).Recurring().getAccountNo()
+                    Master().getBranchCode(),
+                    Master().getPayeeID(),
+                    Detail(lnCtr).Recurring().getAccountNo()
             );
         }
-        
+
         poJSON.put("result", "success");
         return poJSON;
     }
+
     private RecurringIssuance RecurringIssuance() throws GuanzonException, SQLException {
         return new GLControllers(poGRider, logwrapr).RecurringIssuance();
     }
+
     private void updateRecurringIssuance(String Particular, String branch, String payee, String AccoutNo)
             throws GuanzonException,
             SQLException,
             CloneNotSupportedException {
-            int  lnCtr;
-            
-            poRecurringIssuances.add(RecurringIssuance());
+        int lnCtr;
+
+        poRecurringIssuances.add(RecurringIssuance());
 //            poRecurringIssuances.get(poRecurringIssuances.size() - 1).initialize();
-              System.out.println("editmode = " + Particular + branch + payee + AccoutNo);
-            poJSON = poRecurringIssuances.get(poRecurringIssuances.size() - 1).poModel.openRecord(Particular,branch,payee,AccoutNo);
-            System.out.print(poJSON.clone());
-            System.out.println("editmode = " + poRecurringIssuances.get(poRecurringIssuances.size() - 1).poModel.getEditMode());
-            poRecurringIssuances.get(poRecurringIssuances.size() - 1).poModel.updateRecord();
-            lnCtr = poRecurringIssuances.size() - 1;
-            System.out.println("editmode = " + poRecurringIssuances.get(lnCtr).poModel.getEditMode());
+        System.out.println("editmode = " + Particular + branch + payee + AccoutNo);
+        poJSON = poRecurringIssuances.get(poRecurringIssuances.size() - 1).poModel.openRecord(Particular, branch, payee, AccoutNo);
+        System.out.print(poJSON.clone());
+        System.out.println("editmode = " + poRecurringIssuances.get(poRecurringIssuances.size() - 1).poModel.getEditMode());
+        poRecurringIssuances.get(poRecurringIssuances.size() - 1).poModel.updateRecord();
+        lnCtr = poRecurringIssuances.size() - 1;
+        System.out.println("editmode = " + poRecurringIssuances.get(lnCtr).poModel.getEditMode());
 
-                    poRecurringIssuances.get(lnCtr).poModel.setParticularID(Particular);
-                    poRecurringIssuances.get(lnCtr).poModel.setBranchCode(branch);
-                    poRecurringIssuances.get(lnCtr).poModel.setPayeeID(payee);
-                    poRecurringIssuances.get(lnCtr).poModel.setAccountNo(AccoutNo);
-                    poRecurringIssuances.get(lnCtr).poModel.setLastPRFTrans(Master().getTransactionNo());
-                    poRecurringIssuances.get(lnCtr).poModel.setModifyingId(poGRider.getUserID());
-                    poRecurringIssuances.get(lnCtr).poModel.setModifiedDate(poGRider.getServerDate());
+        poRecurringIssuances.get(lnCtr).poModel.setParticularID(Particular);
+        poRecurringIssuances.get(lnCtr).poModel.setBranchCode(branch);
+        poRecurringIssuances.get(lnCtr).poModel.setPayeeID(payee);
+        poRecurringIssuances.get(lnCtr).poModel.setAccountNo(AccoutNo);
+        poRecurringIssuances.get(lnCtr).poModel.setLastPRFTrans(Master().getTransactionNo());
+        poRecurringIssuances.get(lnCtr).poModel.setModifyingId(poGRider.getUserID());
+        poRecurringIssuances.get(lnCtr).poModel.setModifiedDate(poGRider.getServerDate());
 
-      
 //                 for (lnCtr = 0; lnCtr <= poRecurringIssuances.size() - 1; lnCtr++) {
 //                    poRecurringIssuances.get(lnCtr).poModel.setParticularID(Particular);
 //                    poRecurringIssuances.get(lnCtr).poModel.setBranchCode(branch);
@@ -1096,27 +1138,24 @@ public class PaymentRequest extends Transaction {
 //                    poRecurringIssuances.get(lnCtr).poModel.setModifiedDate(poGRider.getServerDate());
 //                }
     }
-    
+
     private JSONObject saveUpdates()
-            throws CloneNotSupportedException, SQLException , GuanzonException {
+            throws CloneNotSupportedException, SQLException, GuanzonException {
         poJSON = new JSONObject();
         int lnCtr;
-            for (lnCtr = 0; lnCtr <= poRecurringIssuances.size() - 1; lnCtr++) {
-                
-               
-                poRecurringIssuances.get(lnCtr).setWithParentClass(true);
-                
-                System.out.println("editmode = " + poRecurringIssuances.get(lnCtr).poModel.getEditMode());
-                poJSON = poRecurringIssuances.get(lnCtr).poModel.saveRecord();
-                if ("error".equals((String) poJSON.get("result"))) {
-                    return poJSON;
-                }
-            }
+        for (lnCtr = 0; lnCtr <= poRecurringIssuances.size() - 1; lnCtr++) {
 
-        
+            poRecurringIssuances.get(lnCtr).setWithParentClass(true);
+
+            System.out.println("editmode = " + poRecurringIssuances.get(lnCtr).poModel.getEditMode());
+            poJSON = poRecurringIssuances.get(lnCtr).poModel.saveRecord();
+            if ("error".equals((String) poJSON.get("result"))) {
+                return poJSON;
+            }
+        }
+
         poJSON.put("result", "success");
         return poJSON;
     }
-    
-    
+
 }
