@@ -683,19 +683,19 @@ public class PaymentRequest extends Transaction {
                 + "  a.sAcctNoxx, "
                 + "  a.sLastRqNo, "
                 + "  f.dTransact, "
-                + "  DATE_ADD(f.dTransact, INTERVAL 1 MONTH) AS nextDue, "
+                + "  DATE_SUB(DATE_ADD(f.dTransact, INTERVAL 1 MONTH), INTERVAL 5 DAY) AS nextDue, "
                 + "  CASE "
                 + "    WHEN CURRENT_DATE >= DATE_ADD(f.dTransact, INTERVAL 1 MONTH) THEN 1 "
                 + "    ELSE 0 "
                 + "  END AS currentDue "
-                + "FROM "
+                + " FROM "
                 + "  recurring_issuance a "
                 + "  LEFT JOIN branch b ON a.sBranchCd = b.sBranchCd "
                 + "  LEFT JOIN payee c ON a.sPayeeIDx = c.sPayeeIDx "
                 + "  LEFT JOIN client_master d ON c.sClientID = d.sClientID "
                 + "  LEFT JOIN particular e ON a.sPrtclrID = e.sPrtclrID "
-                + "  LEFT JOIN Payment_Request_Master f ON f.sTransNox = a.sLastRqNo;";
-        
+                + "  LEFT JOIN Payment_Request_Master f ON f.sTransNox = a.sLastRqNo ";
+
         String lsFilterCondition = String.join(" AND ",
                 " a.sBranchCd = " + SQLUtil.toSQL(Master().getBranchCode()),
                 " a.sPayeeIDx LIKE " + SQLUtil.toSQL("%" + Master().getPayeeID()),
