@@ -41,7 +41,7 @@ public class testPRFConfirmTransaction {
     
 
     @Test
-    public void testVConfirmTransaction() {
+    public void testConfirmTransaction() {
         JSONObject loJSON;
 
         try {
@@ -51,7 +51,7 @@ public class testPRFConfirmTransaction {
                 Assert.fail();
             }
 
-            loJSON = poPaymentRequest.OpenTransaction("M00125000002");
+            loJSON = poPaymentRequest.OpenTransaction("M00225000006");
             if (!"success".equals((String) loJSON.get("result"))) {
                 System.err.println((String) loJSON.get("message"));
                 Assert.fail();

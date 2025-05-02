@@ -72,33 +72,24 @@ public class PaymentRequestValidator implements GValidator{
     private JSONObject validateNew(){
         poJSON = new JSONObject();
         
-//        if (poMaster.getTransactionNo()== null || poMaster.getTransactionNo().isEmpty()) {
-//            poJSON.put("message", "Invalid Transaction No.");
-//            return poJSON;
-//        }
         
-//        if (poMaster.getTransactionDate()== null || poMaster.getTransactionDate().equals("0000-00-00")) {
-//            poJSON.put("message", "Invalid Transaction Date.");
-//            return poJSON;
-//        }
+        if (poMaster.getBranchCode()== null || poMaster.getBranchCode().isEmpty()) {
+            poJSON.put("message", "Invalid Branch");
+            return poJSON;
+        }
         
-//        if (poMaster.getBranchCode()== null || poMaster.getBranchCode().isEmpty()) {
-//            poJSON.put("message", "Invalid Branch");
-//            return poJSON;
-//        }
-//        
-//        if (poGrider.isMainOffice() || poGrider.isWarehouse()){
-//            if (poMaster.getDepartmentID()== null || poMaster.getDepartmentID().isEmpty()) {
-//                poJSON.put("message", "Department is not set");
-//                return poJSON;
-//            }
-//        }
-//        
-//        if (poMaster.getPayeeID()== null || poMaster.getPayeeID().isEmpty()) {
-//            poJSON.put("message", "Payee information is missing or not set.");
-//            return poJSON;
-//        }
-//        
+        if (poGrider.isMainOffice() || poGrider.isWarehouse()){
+            if (poMaster.getDepartmentID()== null || poMaster.getDepartmentID().isEmpty()) {
+                poJSON.put("message", "Department is not set");
+                return poJSON;
+            }
+        }
+        
+        if (poMaster.getPayeeID()== null || poMaster.getPayeeID().isEmpty()) {
+            poJSON.put("message", "Payee information is missing or not set.");
+            return poJSON;
+        }
+        
 //        if (!poGrider.isMainOffice() || !poGrider.isWarehouse()){
 //            if (poMaster.getSeriesNo()== null || poMaster.getSeriesNo().isEmpty()) {
 //                poJSON.put("message", "Series No is not set");

@@ -20,7 +20,7 @@ import org.json.simple.JSONObject;
 public class Model_Payment_Request_Detail extends Model {
 
     Model_Particular poParticular;
-
+    Model_Recurring_Issuance poRecurring;
     @Override
     public void initialize() {
         try {
@@ -49,7 +49,8 @@ public class Model_Payment_Request_Detail extends Model {
             ID2 = "nEntryNox";
 
             GLModels gl = new GLModels(poGRider);
-            poParticular = gl.Particular();
+//            poParticular = gl.Particular();
+            poRecurring = gl.Recurring_Issuance();
 
             //end - initialize reference objects
             pnEditMode = EditMode.UNKNOWN;
@@ -144,23 +145,24 @@ public class Model_Payment_Request_Detail extends Model {
         return (Date) getValue("dModified");
     }
 
-    public Model_Particular Particular() throws GuanzonException, SQLException {
+    
+    public Model_Recurring_Issuance Recurring() throws GuanzonException, SQLException {
         if (!"".equals((String) getValue("sPrtclrID"))) {
-            if (poParticular.getEditMode() == EditMode.READY
-                    && poParticular.getParticularID().equals((String) getValue("sPrtclrID"))) {
-                return poParticular;
+            if (poRecurring.getEditMode() == EditMode.READY
+                    && poRecurring.getParticularID().equals((String) getValue("sPrtclrID"))) {
+                return poRecurring;
             } else {
-                poJSON = poParticular.openRecord((String) getValue("sPrtclrID"));
+                poJSON = poRecurring.openRecord((String) getValue("sPrtclrID"));
                 if ("success".equals((String) poJSON.get("result"))) {
-                    return poParticular;
+                    return poRecurring;
                 } else {
-                    poParticular.initialize();
-                    return poParticular;
+                    poRecurring.initialize();
+                    return poRecurring;
                 }
             }
         } else {
-            poParticular.initialize();
-            return poParticular;
+            poRecurring.initialize();
+            return poRecurring;
         }
     }
 }
