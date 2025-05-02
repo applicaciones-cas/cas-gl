@@ -723,6 +723,10 @@ public class PaymentRequest extends Transaction {
                 + "  f.dTransact, "
                 + "  DATE_SUB(DATE_ADD(f.dTransact, INTERVAL 1 MONTH), INTERVAL 5 DAY) AS nextDue, "
                 + "  CASE "
+                + "    WHEN CURRENT_DATE = DATE_SUB(DATE_ADD(f.dTransact, INTERVAL 1 MONTH), INTERVAL 5 DAY) THEN 1 "
+                + "    ELSE 0 "
+                + "  END AS is5DaysBeforeDue, "
+                + "  CASE "
                 + "    WHEN CURRENT_DATE >= DATE_ADD(f.dTransact, INTERVAL 1 MONTH) THEN 1 "
                 + "    ELSE 0 "
                 + "  END AS currentDue "
@@ -872,13 +876,13 @@ public class PaymentRequest extends Transaction {
 //            }
 //            detailTaxAmount += Double.parseDouble(poJSON.get("vat").toString());
 //            detailNetAmount += Double.parseDouble(poJSON.get("netPayable").toString());
-            detailNetAmount += totalAmount;
+//            detailNetAmount += totalAmount;
         }
 
         Master().setTranTotal(totalAmount);
         Master().setDiscountAmount(0.00);
         Master().setTaxAmount(0.00);
-        Master().setNetTotal(detailNetAmount);
+        Master().setNetTotal(totalAmount);
         return poJSON;
     }
 

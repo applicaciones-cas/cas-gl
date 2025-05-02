@@ -51,7 +51,7 @@ public class testPRFConfirmTransaction {
                 Assert.fail();
             }
 
-            loJSON = poPaymentRequest.OpenTransaction("M00225000006");
+            loJSON = poPaymentRequest.OpenTransaction("M00225000007");
             if (!"success".equals((String) loJSON.get("result"))) {
                 System.err.println((String) loJSON.get("message"));
                 Assert.fail();
