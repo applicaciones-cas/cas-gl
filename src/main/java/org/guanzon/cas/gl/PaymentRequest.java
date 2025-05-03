@@ -790,9 +790,19 @@ public JSONObject addRecurringIssuanceToPaymentRequestDetail(String particularNo
         poJSON = poRecurringIssuance.openRecord(particularNo, Master().getBranchCode(), payeeID, AcctNo);
 
         // Check if openRecord returned an error
-        if ("error".equals((String) poJSON.get("result"))) {
+        if ("error".equals(poJSON.get("result"))) {
             poJSON.put("result", "error");
             return poJSON;
+        }
+
+        // Validate if the payee in Master is different from the payee in the RecurringIssuance
+        if (!Master().getPayeeID().isEmpty()) {
+            if (!Master().getPayeeID().equals(poRecurringIssuance.getModel().getPayeeID())) {
+                poJSON.put("message", "Invalid addition of recurring issuance; another payee already exists.");
+                poJSON.put("result", "error");
+                poJSON.put("warning", "true");
+                return poJSON;
+            }
         }
 
         // Check if the particular already exists in the details
@@ -814,6 +824,7 @@ public JSONObject addRecurringIssuanceToPaymentRequestDetail(String particularNo
             // Make sure you're writing to an empty row
             Detail(getDetailCount() - 1).setParticularID(poRecurringIssuance.getModel().getParticularID());
             Detail(getDetailCount() - 1).setAmount(poRecurringIssuance.getModel().getAmount().doubleValue());
+            Master().setPayeeID(poRecurringIssuance.getModel().getPayeeID());
 
             // Only add the detail if it's not empty
             if (Detail(getDetailCount() - 1).getParticularID() != null && !Detail(getDetailCount() - 1).getParticularID().isEmpty()) {
@@ -823,6 +834,7 @@ public JSONObject addRecurringIssuanceToPaymentRequestDetail(String particularNo
             poJSON.put("result", "error");
             poJSON.put("message", "Particular: " + Detail(lnRow).Recurring().Particular().getDescription() + " already exists in table at row " + (lnRow + 1) + ".");
             poJSON.put("tableRow", lnRow);
+            poJSON.put("warning", "false");
             return poJSON;
         }
 
@@ -1163,6 +1175,30 @@ public JSONObject addRecurringIssuanceToPaymentRequestDetail(String particularNo
 
         poJSON.put("result", "success");
         return poJSON;
+    }
+    
+     public String getSeriesNoByBranch() throws SQLException {
+        String lsSQL = "SELECT sSeries FROM payment_request_master";
+        lsSQL = MiscUtil.addCondition(lsSQL, " sBranchCd = " + SQLUtil.toSQL(Master().getBranchCode()) + 
+                                        " ORDER BY sSeriesNo DESC LIMIT 1");
+
+        ResultSet loRS = poGRider.executeQuery(lsSQL);
+        String branchSeriesNo = null;
+
+        if (loRS.next()) {
+             String sSeries = loRS.getString("sSeries");
+             if (sSeries == null || sSeries.isEmpty()) {
+                 branchSeriesNo = "0000000001";
+             } else {
+                 // Parse, increment, and pad with leading zeros to keep length consistent
+                 long seriesNumber = Long.parseLong(sSeries);
+                 seriesNumber += 1;
+                 branchSeriesNo = String.format("%010d", seriesNumber); // 10 digits with leading zeros
+             }
+         }
+
+        MiscUtil.close(loRS);
+        return branchSeriesNo;
     }
 
 }
