@@ -740,7 +740,7 @@ public class PaymentRequest extends Transaction {
 
         String lsFilterCondition = String.join(" AND ",
                 " a.sBranchCd = " + SQLUtil.toSQL(Master().getBranchCode()),
-                " a.sPayeeIDx LIKE " + SQLUtil.toSQL("%" + Master().getPayeeID()),
+                " a.sPayeeIDx  = " + SQLUtil.toSQL(Master().getPayeeID()),
                 " a.cRecdStat = " + SQLUtil.toSQL(Logical.YES));
         lsSQL = MiscUtil.addCondition(lsSQL, lsFilterCondition);
 
@@ -753,7 +753,6 @@ public class PaymentRequest extends Transaction {
             while (loRS.next()) {
                 // Print the result set
                 System.out.println("sPrtclrID: " + loRS.getString("sPrtclrID"));
-                System.out.println("sBranchCd: " + loRS.getString("sBranchCd"));
                 System.out.println("sBranchCd: " + loRS.getString("sBranchCd"));
                 System.out.println("------------------------------------------------------------------------------");
 
@@ -811,24 +810,31 @@ public class PaymentRequest extends Transaction {
             }
 
             // Check if already exists in details
-            for (lnRow = 0; lnRow < getDetailCount(); lnRow++) {
-                if (Detail(lnRow).getParticularID().equals(Recurring_Issuance(lnCtr).getParticularID())
-                        && Detail(lnRow).getAmount().doubleValue() == Recurring_Issuance(lnCtr).getAmount().doubleValue()) {
+            for (lnRow = 0; lnRow <= getDetailCount() - 1; lnRow++) {
+                if (Detail(lnRow).getParticularID() == null || Detail(lnRow).getParticularID().isEmpty()) {
+                    continue;
+                }
+
+                if (Detail(lnRow).getParticularID().equals(Recurring_Issuance(lnCtr).getParticularID())) {
                     lbExist = true;
-                    break; // ✅ Stop checking once a match is found
+                    break;
                 }
             }
-
             if (!lbExist) {
+                // Make sure you're writing to a truly empty row
                 Detail(getDetailCount() - 1).setParticularID(Recurring_Issuance(lnCtr).getParticularID());
                 Detail(getDetailCount() - 1).setAmount(Recurring_Issuance(lnCtr).getAmount().doubleValue());
-//                AddDetail();
+
+                if (Detail(getDetailCount() - 1).getParticularID() != null && !Detail(getDetailCount() - 1).getParticularID().isEmpty()) {
+                    AddDetail();
+                }
             } else {
                 poJSON.put("result", "error");
                 poJSON.put("message", "Particular: " + Detail(lnRow).Recurring().Particular().getDescription() + " already exist in table at row " + (lnRow + 1) + ".");
                 poJSON.put("tableRow", lnRow);
                 return poJSON;
             }
+
         }
 
         poJSON.put("result", "success");
