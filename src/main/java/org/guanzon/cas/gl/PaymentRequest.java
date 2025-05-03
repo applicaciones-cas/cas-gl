@@ -784,63 +784,52 @@ public JSONObject addRecurringIssuanceToPaymentRequestDetail(String particularNo
         RecurringIssuance poRecurringIssuance;
         psAccountNo = AcctNo;
         psParticularID = particularNo;
-        poRecurringIssuance = new GLControllers(poGRider, logwrapr).RecurringIssuance();
 
+        // Initialize RecurringIssuance and load the record
+        poRecurringIssuance = new GLControllers(poGRider, logwrapr).RecurringIssuance();
         poJSON = poRecurringIssuance.openRecord(particularNo, Master().getBranchCode(), payeeID, AcctNo);
+
+        // Check if openRecord returned an error
         if ("error".equals((String) poJSON.get("result"))) {
             poJSON.put("result", "error");
             return poJSON;
         }
-        for (int lnCtr = 0; lnCtr < getRecurring_IssuanceCount(); lnCtr++) {
-            lbExist = false; // ✅ Reset per item
 
-            // Check PayeeID
-            if (Master().getPayeeID() == null || "".equals(Master().getPayeeID())) {
-                Master().setPayeeID(poRecurringIssuance.getModel().getPayeeID());
-            } else {
-                if (!Master().getPayeeID().equals(poRecurringIssuance.getModel().getPayeeID())) {
-                    if (getDetailCount() >= 0) {
-                        poJSON.put("result", "error");
-                        poJSON.put("message", "Payee must be equal to selected Recurring Issuance Payee.");
-                        return poJSON;
-                    } else {
-                        Master().setPayeeID(poRecurringIssuance.getModel().getPayeeID());
-                    }
-                }
+        // Check if the particular already exists in the details
+        for (lnRow = 0; lnRow < getDetailCount(); lnRow++) {
+            // Skip if the particular ID is empty
+            if (Detail(lnRow).getParticularID() == null || Detail(lnRow).getParticularID().isEmpty()) {
+                continue;
             }
 
-            // Check if already exists in details
-            for (lnRow = 0; lnRow <= getDetailCount() - 1; lnRow++) {
-                if (Detail(lnRow).getParticularID() == null || Detail(lnRow).getParticularID().isEmpty()) {
-                    continue;
-                }
-
-                if (Detail(lnRow).getParticularID().equals(Recurring_Issuance(lnCtr).getParticularID())) {
-                    lbExist = true;
-                    break;
-                }
+            // Compare with the current record's particular ID
+            if (Detail(lnRow).getParticularID().equals(poRecurringIssuance.getModel().getParticularID())) {
+                lbExist = true;
+                break; // Stop checking once a match is found
             }
-            if (!lbExist) {
-                // Make sure you're writing to a truly empty row
-                Detail(getDetailCount() - 1).setParticularID(Recurring_Issuance(lnCtr).getParticularID());
-                Detail(getDetailCount() - 1).setAmount(Recurring_Issuance(lnCtr).getAmount().doubleValue());
-
-                if (Detail(getDetailCount() - 1).getParticularID() != null && !Detail(getDetailCount() - 1).getParticularID().isEmpty()) {
-                    AddDetail();
-                }
-            } else {
-                poJSON.put("result", "error");
-                poJSON.put("message", "Particular: " + Detail(lnRow).Recurring().Particular().getDescription() + " already exist in table at row " + (lnRow + 1) + ".");
-                poJSON.put("tableRow", lnRow);
-                return poJSON;
-            }
-
         }
 
+        // If the particular doesn't exist, proceed to add it
+        if (!lbExist) {
+            // Make sure you're writing to an empty row
+            Detail(getDetailCount() - 1).setParticularID(poRecurringIssuance.getModel().getParticularID());
+            Detail(getDetailCount() - 1).setAmount(poRecurringIssuance.getModel().getAmount().doubleValue());
+
+            // Only add the detail if it's not empty
+            if (Detail(getDetailCount() - 1).getParticularID() != null && !Detail(getDetailCount() - 1).getParticularID().isEmpty()) {
+                AddDetail();
+            }
+        } else {
+            poJSON.put("result", "error");
+            poJSON.put("message", "Particular: " + Detail(lnRow).Recurring().Particular().getDescription() + " already exists in table at row " + (lnRow + 1) + ".");
+            poJSON.put("tableRow", lnRow);
+            return poJSON;
+        }
+
+        // Return success
         poJSON.put("result", "success");
         return poJSON;
     }
-
 
     public JSONObject computeNetPayableDetails(double rent, boolean isVatExclusive, double vatRate, double wtaxRate) {
         JSONObject result = new JSONObject();
