@@ -1179,23 +1179,24 @@ public JSONObject addRecurringIssuanceToPaymentRequestDetail(String particularNo
     
      public String getSeriesNoByBranch() throws SQLException {
         String lsSQL = "SELECT sSeriesNo FROM payment_request_master";
-        lsSQL = MiscUtil.addCondition(lsSQL, " sBranchCd = " + SQLUtil.toSQL(Master().getBranchCode()) + 
-                                        " ORDER BY sSeriesNo DESC LIMIT 1");
+        lsSQL = MiscUtil.addCondition(lsSQL, " sBranchCd = " + SQLUtil.toSQL(Master().getBranchCode())
+                + " ORDER BY sSeriesNo DESC LIMIT 1");
 
-        ResultSet loRS = poGRider.executeQuery(lsSQL);
         String branchSeriesNo = null;
+        ResultSet loRS = poGRider.executeQuery(lsSQL);
+        if (loRS == null) {
+            branchSeriesNo = "0000000001";
+            MiscUtil.close(loRS);
+            return branchSeriesNo;
+        }
 
         if (loRS.next()) {
-             String sSeries = loRS.getString("sSeriesNo");
-             if (sSeries == null || sSeries.isEmpty()) {
-                 branchSeriesNo = "0000000001";
-             } else {
-                 // Parse, increment, and pad with leading zeros to keep length consistent
-                 long seriesNumber = Long.parseLong(sSeries);
-                 seriesNumber += 1;
-                 branchSeriesNo = String.format("%010d", seriesNumber); // 10 digits with leading zeros
-             }
-         }
+            System.out.println("series no: " + loRS.getString("sSeriesNo"));
+            String sSeries = loRS.getString("sSeriesNo");
+            long seriesNumber = Long.parseLong(sSeries);
+            seriesNumber += 1;
+            branchSeriesNo = String.format("%010d", seriesNumber); // 10 digits with leading zeros
+        }
 
         MiscUtil.close(loRS);
         return branchSeriesNo;
