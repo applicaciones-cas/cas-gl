@@ -777,8 +777,7 @@ public class PaymentRequest extends Transaction {
         MiscUtil.close(loRS);
         return loJSON;
     }
-
-    public JSONObject addRecurringIssuanceToPaymentRequestDetail(String particularNo, String payeeID, String AcctNo) throws CloneNotSupportedException, SQLException, GuanzonException {
+public JSONObject addRecurringIssuanceToPaymentRequestDetail(String particularNo, String payeeID, String AcctNo) throws CloneNotSupportedException, SQLException, GuanzonException {
         poJSON = new JSONObject();
         boolean lbExist = false;
         int lnRow = 0;
@@ -811,29 +810,37 @@ public class PaymentRequest extends Transaction {
             }
 
             // Check if already exists in details
-            for (lnRow = 0; lnRow < getDetailCount(); lnRow++) {
-                if (Detail(lnRow).getParticularID().equals(Recurring_Issuance(lnCtr).getParticularID())
-                        && Detail(lnRow).getAmount().doubleValue() == Recurring_Issuance(lnCtr).getAmount().doubleValue()) {
+            for (lnRow = 0; lnRow <= getDetailCount() - 1; lnRow++) {
+                if (Detail(lnRow).getParticularID() == null || Detail(lnRow).getParticularID().isEmpty()) {
+                    continue;
+                }
+
+                if (Detail(lnRow).getParticularID().equals(Recurring_Issuance(lnCtr).getParticularID())) {
                     lbExist = true;
-                    break; // ✅ Stop checking once a match is found
+                    break;
                 }
             }
-
             if (!lbExist) {
+                // Make sure you're writing to a truly empty row
                 Detail(getDetailCount() - 1).setParticularID(Recurring_Issuance(lnCtr).getParticularID());
                 Detail(getDetailCount() - 1).setAmount(Recurring_Issuance(lnCtr).getAmount().doubleValue());
-//                AddDetail();
+
+                if (Detail(getDetailCount() - 1).getParticularID() != null && !Detail(getDetailCount() - 1).getParticularID().isEmpty()) {
+                    AddDetail();
+                }
             } else {
                 poJSON.put("result", "error");
                 poJSON.put("message", "Particular: " + Detail(lnRow).Recurring().Particular().getDescription() + " already exist in table at row " + (lnRow + 1) + ".");
                 poJSON.put("tableRow", lnRow);
                 return poJSON;
             }
+
         }
 
         poJSON.put("result", "success");
         return poJSON;
     }
+
 
     public JSONObject computeNetPayableDetails(double rent, boolean isVatExclusive, double vatRate, double wtaxRate) {
         JSONObject result = new JSONObject();
