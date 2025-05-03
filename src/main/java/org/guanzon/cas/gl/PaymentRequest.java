@@ -777,60 +777,68 @@ public class PaymentRequest extends Transaction {
         MiscUtil.close(loRS);
         return loJSON;
     }
-
-    public JSONObject addRecurringIssuanceToPaymentRequestDetail(String particularNo, String payeeID, String AcctNo) throws CloneNotSupportedException, SQLException, GuanzonException {
+public JSONObject addRecurringIssuanceToPaymentRequestDetail(String particularNo, String payeeID, String AcctNo) throws CloneNotSupportedException, SQLException, GuanzonException {
         poJSON = new JSONObject();
         boolean lbExist = false;
         int lnRow = 0;
         RecurringIssuance poRecurringIssuance;
         psAccountNo = AcctNo;
         psParticularID = particularNo;
-        poRecurringIssuance = new GLControllers(poGRider, logwrapr).RecurringIssuance();
 
+        // Initialize RecurringIssuance and load the record
+        poRecurringIssuance = new GLControllers(poGRider, logwrapr).RecurringIssuance();
         poJSON = poRecurringIssuance.openRecord(particularNo, Master().getBranchCode(), payeeID, AcctNo);
-        if ("error".equals((String) poJSON.get("result"))) {
+
+        // Check if openRecord returned an error
+        if ("error".equals(poJSON.get("result"))) {
             poJSON.put("result", "error");
             return poJSON;
         }
-        for (int lnCtr = 0; lnCtr < getRecurring_IssuanceCount(); lnCtr++) {
-            lbExist = false; // ✅ Reset per item
 
-            // Check PayeeID
-            if (Master().getPayeeID() == null || "".equals(Master().getPayeeID())) {
-                Master().setPayeeID(poRecurringIssuance.getModel().getPayeeID());
-            } else {
-                if (!Master().getPayeeID().equals(poRecurringIssuance.getModel().getPayeeID())) {
-                    if (getDetailCount() >= 0) {
-                        poJSON.put("result", "error");
-                        poJSON.put("message", "Payee must be equal to selected Recurring Issuance Payee.");
-                        return poJSON;
-                    } else {
-                        Master().setPayeeID(poRecurringIssuance.getModel().getPayeeID());
-                    }
-                }
-            }
-
-            // Check if already exists in details
-            for (lnRow = 0; lnRow < getDetailCount(); lnRow++) {
-                if (Detail(lnRow).getParticularID().equals(Recurring_Issuance(lnCtr).getParticularID())
-                        && Detail(lnRow).getAmount().doubleValue() == Recurring_Issuance(lnCtr).getAmount().doubleValue()) {
-                    lbExist = true;
-                    break; // ✅ Stop checking once a match is found
-                }
-            }
-
-            if (!lbExist) {
-                Detail(getDetailCount() - 1).setParticularID(Recurring_Issuance(lnCtr).getParticularID());
-                Detail(getDetailCount() - 1).setAmount(Recurring_Issuance(lnCtr).getAmount().doubleValue());
-//                AddDetail();
-            } else {
+        // Validate if the payee in Master is different from the payee in the RecurringIssuance
+        if (!Master().getPayeeID().isEmpty()) {
+            if (!Master().getPayeeID().equals(poRecurringIssuance.getModel().getPayeeID())) {
+                poJSON.put("message", "Invalid addition of recurring issuance; another payee already exists.");
                 poJSON.put("result", "error");
-                poJSON.put("message", "Particular: " + Detail(lnRow).Recurring().Particular().getDescription() + " already exist in table at row " + (lnRow + 1) + ".");
-                poJSON.put("tableRow", lnRow);
+                poJSON.put("warning", "true");
                 return poJSON;
             }
         }
 
+        // Check if the particular already exists in the details
+        for (lnRow = 0; lnRow < getDetailCount(); lnRow++) {
+            // Skip if the particular ID is empty
+            if (Detail(lnRow).getParticularID() == null || Detail(lnRow).getParticularID().isEmpty()) {
+                continue;
+            }
+
+            // Compare with the current record's particular ID
+            if (Detail(lnRow).getParticularID().equals(poRecurringIssuance.getModel().getParticularID())) {
+                lbExist = true;
+                break; // Stop checking once a match is found
+            }
+        }
+
+        // If the particular doesn't exist, proceed to add it
+        if (!lbExist) {
+            // Make sure you're writing to an empty row
+            Detail(getDetailCount() - 1).setParticularID(poRecurringIssuance.getModel().getParticularID());
+            Detail(getDetailCount() - 1).setAmount(poRecurringIssuance.getModel().getAmount().doubleValue());
+            Master().setPayeeID(poRecurringIssuance.getModel().getPayeeID());
+
+            // Only add the detail if it's not empty
+            if (Detail(getDetailCount() - 1).getParticularID() != null && !Detail(getDetailCount() - 1).getParticularID().isEmpty()) {
+                AddDetail();
+            }
+        } else {
+            poJSON.put("result", "error");
+            poJSON.put("message", "Particular: " + Detail(lnRow).Recurring().Particular().getDescription() + " already exists in table at row " + (lnRow + 1) + ".");
+            poJSON.put("tableRow", lnRow);
+            poJSON.put("warning", "false");
+            return poJSON;
+        }
+
+        // Return success
         poJSON.put("result", "success");
         return poJSON;
     }
@@ -1167,6 +1175,31 @@ public class PaymentRequest extends Transaction {
 
         poJSON.put("result", "success");
         return poJSON;
+    }
+    
+     public String getSeriesNoByBranch() throws SQLException {
+        String lsSQL = "SELECT sSeriesNo FROM payment_request_master";
+        lsSQL = MiscUtil.addCondition(lsSQL, " sBranchCd = " + SQLUtil.toSQL(Master().getBranchCode())
+                + " ORDER BY sSeriesNo DESC LIMIT 1");
+
+        String branchSeriesNo = null;
+        ResultSet loRS = poGRider.executeQuery(lsSQL);
+        if (loRS == null) {
+            branchSeriesNo = "0000000001";
+            MiscUtil.close(loRS);
+            return branchSeriesNo;
+        }
+
+        if (loRS.next()) {
+            System.out.println("series no: " + loRS.getString("sSeriesNo"));
+            String sSeries = loRS.getString("sSeriesNo");
+            long seriesNumber = Long.parseLong(sSeries);
+            seriesNumber += 1;
+            branchSeriesNo = String.format("%010d", seriesNumber); // 10 digits with leading zeros
+        }
+
+        MiscUtil.close(loRS);
+        return branchSeriesNo;
     }
 
 }
