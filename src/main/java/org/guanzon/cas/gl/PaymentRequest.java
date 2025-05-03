@@ -792,8 +792,10 @@ public class PaymentRequest extends Transaction {
             poJSON.put("result", "error");
             return poJSON;
         }
-        for (int lnCtr = 0; lnCtr <= getRecurring_IssuanceCount() - 1; lnCtr++) {
-            //Check existing supplier
+        for (int lnCtr = 0; lnCtr < getRecurring_IssuanceCount(); lnCtr++) {
+            lbExist = false; // ✅ Reset per item
+
+            // Check PayeeID
             if (Master().getPayeeID() == null || "".equals(Master().getPayeeID())) {
                 Master().setPayeeID(poRecurringIssuance.getModel().getPayeeID());
             } else {
@@ -808,23 +810,27 @@ public class PaymentRequest extends Transaction {
                 }
             }
 
+            // Check if already exists in details
             for (lnRow = 0; lnRow < getDetailCount(); lnRow++) {
                 if (Detail(lnRow).getParticularID().equals(Recurring_Issuance(lnCtr).getParticularID())
                         && Detail(lnRow).getAmount().doubleValue() == Recurring_Issuance(lnCtr).getAmount().doubleValue()) {
-                    lbExist = true; // exact match
-                    poJSON.put("result", "error");
-                    poJSON.put("message", "Particular: " + Detail(lnRow).Recurring().Particular().getDescription() + " already exist in table at row " + (lnRow + 1) + ".");
-                    poJSON.put("tableRow", lnRow);
-                    return poJSON;
+                    lbExist = true;
+                    break; // ✅ Stop checking once a match is found
                 }
             }
 
             if (!lbExist) {
                 Detail(getDetailCount() - 1).setParticularID(Recurring_Issuance(lnCtr).getParticularID());
                 Detail(getDetailCount() - 1).setAmount(Recurring_Issuance(lnCtr).getAmount().doubleValue());
-                AddDetail();
+//                AddDetail();
+            } else {
+                poJSON.put("result", "error");
+                poJSON.put("message", "Particular: " + Detail(lnRow).Recurring().Particular().getDescription() + " already exist in table at row " + (lnRow + 1) + ".");
+                poJSON.put("tableRow", lnRow);
+                return poJSON;
             }
         }
+
         poJSON.put("result", "success");
         return poJSON;
     }
