@@ -777,7 +777,7 @@ public class PaymentRequest extends Transaction {
         MiscUtil.close(loRS);
         return loJSON;
     }
-public JSONObject addRecurringIssuanceToPaymentRequestDetail(String particularNo, String payeeID, String AcctNo) throws CloneNotSupportedException, SQLException, GuanzonException {
+  public JSONObject addRecurringIssuanceToPaymentRequestDetail(String particularNo, String payeeID, String AcctNo) throws CloneNotSupportedException, SQLException, GuanzonException {
         poJSON = new JSONObject();
         boolean lbExist = false;
         int lnRow = 0;
@@ -792,6 +792,12 @@ public JSONObject addRecurringIssuanceToPaymentRequestDetail(String particularNo
         // Check if openRecord returned an error
         if ("error".equals(poJSON.get("result"))) {
             poJSON.put("result", "error");
+            return poJSON;
+        }
+        if (getPaymentStatusFromIssuanceLastPRFNo(poRecurringIssuance.getModel().getLastPRFTrans()).equals(PaymentRequestStatus.PAID)) {
+            poJSON.put("message", "Invalid addition of recurring issuance: already marked as paid.");
+            poJSON.put("result", "error");
+            poJSON.put("warning", "true");
             return poJSON;
         }
 
@@ -842,7 +848,6 @@ public JSONObject addRecurringIssuanceToPaymentRequestDetail(String particularNo
         poJSON.put("result", "success");
         return poJSON;
     }
-
     public JSONObject computeNetPayableDetails(double rent, boolean isVatExclusive, double vatRate, double wtaxRate) {
         JSONObject result = new JSONObject();
         double baseRent;
@@ -1200,6 +1205,26 @@ public JSONObject addRecurringIssuanceToPaymentRequestDetail(String particularNo
 
         MiscUtil.close(loRS);
         return branchSeriesNo;
+    }
+     
+     public String getPaymentStatusFromIssuanceLastPRFNo(String lastPRFNo) throws SQLException {
+        String status = "";
+        String lsSQL = "SELECT b.cTranStat "
+                + "FROM recurring_issuance a "
+                + "LEFT JOIN payment_request_master b ON b.sTransNox = a.sLastRqNo "
+                + MiscUtil.addCondition("", "a.sLastRqNo = " + SQLUtil.toSQL(lastPRFNo));
+
+        ResultSet loRS = poGRider.executeQuery(lsSQL);
+        try {
+            if (loRS.next()) {
+                String tranStat = loRS.getString("cTranStat");
+                status = tranStat != null ? tranStat : "";
+            }
+        } finally {
+            MiscUtil.close(loRS);
+        }
+
+        return status;
     }
 
 }
