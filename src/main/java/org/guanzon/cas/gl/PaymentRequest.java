@@ -501,7 +501,7 @@ public class PaymentRequest extends Transaction {
         Particular object = new GLControllers(poGRider, logwrapr).Particular();
         object.setRecordStatus("1");
 
-        poJSON = object.searchRecord(value, Master().getPayeeID(), byCode);
+        poJSON = object.searchRecord(value,  byCode);
 
         if ("success".equals((String) poJSON.get("result"))) {
             for (int lnRow = 0; lnRow <= getDetailCount() - 1; lnRow++) {
@@ -1196,11 +1196,18 @@ public class PaymentRequest extends Transaction {
         }
 
         if (loRS.next()) {
+            
             System.out.println("series no: " + loRS.getString("sSeriesNo"));
             String sSeries = loRS.getString("sSeriesNo");
-            long seriesNumber = Long.parseLong(sSeries);
-            seriesNumber += 1;
-            branchSeriesNo = String.format("%010d", seriesNumber); // 10 digits with leading zeros
+            if (sSeries != null){
+                long seriesNumber = Long.parseLong(sSeries);
+                seriesNumber += 1;
+                branchSeriesNo = String.format("%010d", seriesNumber); // 10 digits with leading zeros
+            }else{
+                branchSeriesNo = "0000000001";
+            MiscUtil.close(loRS);
+            }
+                
         }
 
         MiscUtil.close(loRS);
