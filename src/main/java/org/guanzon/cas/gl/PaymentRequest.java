@@ -1196,11 +1196,18 @@ public class PaymentRequest extends Transaction {
         }
 
         if (loRS.next()) {
+            
             System.out.println("series no: " + loRS.getString("sSeriesNo"));
             String sSeries = loRS.getString("sSeriesNo");
-            long seriesNumber = Long.parseLong(sSeries);
-            seriesNumber += 1;
-            branchSeriesNo = String.format("%010d", seriesNumber); // 10 digits with leading zeros
+            if (sSeries != null){
+                long seriesNumber = Long.parseLong(sSeries);
+                seriesNumber += 1;
+                branchSeriesNo = String.format("%010d", seriesNumber); // 10 digits with leading zeros
+            }else{
+                branchSeriesNo = "0000000001";
+            MiscUtil.close(loRS);
+            }
+                
         }
 
         MiscUtil.close(loRS);
