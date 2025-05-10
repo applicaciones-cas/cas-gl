@@ -501,7 +501,7 @@ public class PaymentRequest extends Transaction {
         Particular object = new GLControllers(poGRider, logwrapr).Particular();
         object.setRecordStatus("1");
 
-        poJSON = object.searchRecord(value, Master().getPayeeID(), byCode);
+        poJSON = object.searchRecord(value,  byCode);
 
         if ("success".equals((String) poJSON.get("result"))) {
             for (int lnRow = 0; lnRow <= getDetailCount() - 1; lnRow++) {
