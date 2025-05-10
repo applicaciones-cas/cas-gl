@@ -21,6 +21,7 @@ public class Model_Payment_Request_Detail extends Model {
 
     Model_Particular poParticular;
     Model_Recurring_Issuance poRecurring;
+
     @Override
     public void initialize() {
         try {
@@ -49,7 +50,7 @@ public class Model_Payment_Request_Detail extends Model {
             ID2 = "nEntryNox";
 
             GLModels gl = new GLModels(poGRider);
-//            poParticular = gl.Particular();
+            poParticular = gl.Particular();
             poRecurring = gl.Recurring_Issuance();
 
             //end - initialize reference objects
@@ -145,7 +146,27 @@ public class Model_Payment_Request_Detail extends Model {
         return (Date) getValue("dModified");
     }
 
-    
+    public Model_Particular Particular() throws SQLException, GuanzonException {
+        if (!"".equals((String) getValue("sPrtclrID"))) {
+            if (poParticular.getEditMode() == EditMode.READY
+                    && poParticular.getParticularID().equals((String) getValue("sPrtclrID"))) {
+                return poParticular;
+            } else {
+                poJSON = poParticular.openRecord((String) getValue("sPrtclrID"));
+
+                if ("success".equals((String) poJSON.get("result"))) {
+                    return poParticular;
+                } else {
+                    poParticular.initialize();
+                    return poParticular;
+                }
+            }
+        } else {
+            poParticular.initialize();
+            return poParticular;
+        }
+    }
+
     public Model_Recurring_Issuance Recurring() throws GuanzonException, SQLException {
         if (!"".equals((String) getValue("sPrtclrID"))) {
             if (poRecurring.getEditMode() == EditMode.READY
