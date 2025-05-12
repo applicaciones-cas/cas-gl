@@ -501,7 +501,7 @@ public class PaymentRequest extends Transaction {
         Particular object = new GLControllers(poGRider, logwrapr).Particular();
         object.setRecordStatus("1");
 
-        poJSON = object.searchRecord(value,  byCode);
+        poJSON = object.searchRecord(value, byCode);
 
         if ("success".equals((String) poJSON.get("result"))) {
             for (int lnRow = 0; lnRow <= getDetailCount() - 1; lnRow++) {
@@ -777,7 +777,8 @@ public class PaymentRequest extends Transaction {
         MiscUtil.close(loRS);
         return loJSON;
     }
-  public JSONObject addRecurringIssuanceToPaymentRequestDetail(String particularNo, String payeeID, String AcctNo) throws CloneNotSupportedException, SQLException, GuanzonException {
+
+    public JSONObject addRecurringIssuanceToPaymentRequestDetail(String particularNo, String payeeID, String AcctNo) throws CloneNotSupportedException, SQLException, GuanzonException {
         poJSON = new JSONObject();
         boolean lbExist = false;
         int lnRow = 0;
@@ -848,6 +849,7 @@ public class PaymentRequest extends Transaction {
         poJSON.put("result", "success");
         return poJSON;
     }
+
     public JSONObject computeNetPayableDetails(double rent, boolean isVatExclusive, double vatRate, double wtaxRate) {
         JSONObject result = new JSONObject();
         double baseRent;
@@ -1181,8 +1183,8 @@ public class PaymentRequest extends Transaction {
         poJSON.put("result", "success");
         return poJSON;
     }
-    
-     public String getSeriesNoByBranch() throws SQLException {
+
+    public String getSeriesNoByBranch() throws SQLException {
         String lsSQL = "SELECT sSeriesNo FROM payment_request_master";
         lsSQL = MiscUtil.addCondition(lsSQL, " sBranchCd = " + SQLUtil.toSQL(Master().getBranchCode())
                 + " ORDER BY sSeriesNo DESC LIMIT 1");
@@ -1196,25 +1198,25 @@ public class PaymentRequest extends Transaction {
         }
 
         if (loRS.next()) {
-            
             System.out.println("series no: " + loRS.getString("sSeriesNo"));
             String sSeries = loRS.getString("sSeriesNo");
-            if (sSeries != null){
+            if (sSeries != null) {
                 long seriesNumber = Long.parseLong(sSeries);
                 seriesNumber += 1;
                 branchSeriesNo = String.format("%010d", seriesNumber); // 10 digits with leading zeros
-            }else{
+            } else {
                 branchSeriesNo = "0000000001";
-            MiscUtil.close(loRS);
+                MiscUtil.close(loRS);
             }
-                
+        } else {
+            branchSeriesNo = "0000000001";
         }
 
         MiscUtil.close(loRS);
         return branchSeriesNo;
     }
-     
-     public String getPaymentStatusFromIssuanceLastPRFNo(String lastPRFNo) throws SQLException {
+
+    public String getPaymentStatusFromIssuanceLastPRFNo(String lastPRFNo) throws SQLException {
         String status = "";
         String lsSQL = "SELECT b.cTranStat "
                 + "FROM recurring_issuance a "
