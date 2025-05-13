@@ -1186,33 +1186,27 @@ public class PaymentRequest extends Transaction {
 
     public String getSeriesNoByBranch() throws SQLException {
         String lsSQL = "SELECT sSeriesNo FROM payment_request_master";
-        lsSQL = MiscUtil.addCondition(lsSQL, " sBranchCd = " + SQLUtil.toSQL(Master().getBranchCode())
+        lsSQL = MiscUtil.addCondition(lsSQL,
+                "sBranchCd = " + SQLUtil.toSQL(Master().getBranchCode())
                 + " ORDER BY sSeriesNo DESC LIMIT 1");
 
-        String branchSeriesNo = null;
-        ResultSet loRS = poGRider.executeQuery(lsSQL);
-        if (loRS == null) {
-            branchSeriesNo = "0000000001";
-            MiscUtil.close(loRS);
-            return branchSeriesNo;
-        }
+        String branchSeriesNo = "0000000001";  // default value
 
-        if (loRS.next()) {
-            System.out.println("series no: " + loRS.getString("sSeriesNo"));
-            String sSeries = loRS.getString("sSeriesNo");
-            if (sSeries != null) {
-                long seriesNumber = Long.parseLong(sSeries);
-                seriesNumber += 1;
-                branchSeriesNo = String.format("%010d", seriesNumber); // 10 digits with leading zeros
-            } else {
-                branchSeriesNo = "0000000001";
-                MiscUtil.close(loRS);
+        ResultSet loRS = null;
+        try {
+            loRS = poGRider.executeQuery(lsSQL);
+            if (loRS != null && loRS.next()) {
+                String sSeries = loRS.getString("sSeriesNo");
+                if (sSeries != null && !sSeries.trim().isEmpty()) {
+                    long seriesNumber = Long.parseLong(sSeries);
+                    seriesNumber += 1;
+                    branchSeriesNo = String.format("%010d", seriesNumber); // format to 10 digits
+                }
+                
             }
-        } else {
-            branchSeriesNo = "0000000001";
+        } finally {
+            MiscUtil.close(loRS);  // Always close the ResultSet
         }
-
-        MiscUtil.close(loRS);
         return branchSeriesNo;
     }
 
