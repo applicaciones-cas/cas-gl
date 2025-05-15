@@ -88,8 +88,15 @@ public class Payee extends Parameter{
         }
     }
 
-    public JSONObject searchRecordbyClient(String value, boolean byCode) throws SQLException, GuanzonException{
+    public JSONObject searchRecordbyClient(String value, String ParticularID, boolean byCode) throws SQLException, GuanzonException{
         String lsSQL = getSQ_Browse();
+        String lsCondition = "";
+
+        if (ParticularID != null && !ParticularID.isEmpty()) {
+            lsCondition = "a.sPrtclrID = " + SQLUtil.toSQL(ParticularID);
+        }
+
+         lsSQL = MiscUtil.addCondition(getSQ_Browse(), lsCondition);
         
         poJSON = ShowDialogFX.Search(poGRider,
                 lsSQL,
