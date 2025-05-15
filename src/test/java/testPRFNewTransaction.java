@@ -30,7 +30,7 @@ public class testPRFNewTransaction {
     @Test
     public void testNewTransaction() {
         String branchCd = poApp.getBranchCode();
-        String particularid = "M001250001";
+        String particularid = "007";
         String remarks = "this is a test.";
         String vatable = "1";
         Date currentDate = new Date(); 
@@ -54,15 +54,17 @@ public class testPRFNewTransaction {
                 System.err.println((String) loJSON.get("message"));
                 Assert.fail();
             }
-
+            poPaymentRequest.PaymentRequest().Master().setPayeeID("001");
+            Assert.assertEquals( poPaymentRequest.PaymentRequest().Master().getPayeeID(),"001");
+            
             poPaymentRequest.PaymentRequest().Master().setTransactionDate(currentDate); //direct assignment of value
             Assert.assertEquals(poPaymentRequest.PaymentRequest().Master().getTransactionDate(), currentDate);
             
             poPaymentRequest.PaymentRequest().Master().setBranchCode(branchCd); //direct assignment of value
             Assert.assertEquals(poPaymentRequest.PaymentRequest().Master().getBranchCode(), branchCd);
 
-            poPaymentRequest.PaymentRequest().Master().setDepartmentID(null); //direct assignment of value
-            Assert.assertEquals(poPaymentRequest.PaymentRequest().Master().getDepartmentID(), null);
+            poPaymentRequest.PaymentRequest().Master().setDepartmentID("026"); //direct assignment of value
+            Assert.assertEquals(poPaymentRequest.PaymentRequest().Master().getDepartmentID(), "026");
 
             poPaymentRequest.PaymentRequest().Master().setRemarks(remarks);
             Assert.assertEquals(poPaymentRequest.PaymentRequest().Master().getRemarks(), remarks);
@@ -83,25 +85,6 @@ public class testPRFNewTransaction {
             poPaymentRequest.PaymentRequest().Detail(0).setWithHoldingTax(withholddingtax);
             poPaymentRequest.PaymentRequest().AddDetail();
             
-            poPaymentRequest.PaymentRequest().Detail(1).setEntryNo(2);
-            poPaymentRequest.PaymentRequest().Detail(1).setParticularID(particularid);
-            poPaymentRequest.PaymentRequest().Detail(1).setPRFRemarks("");
-            poPaymentRequest.PaymentRequest().Detail(1).setAmount(amount);
-            poPaymentRequest.PaymentRequest().Detail(1).setDiscount(discount);
-            poPaymentRequest.PaymentRequest().Detail(1).setAddDiscount(adddiscount);
-            poPaymentRequest.PaymentRequest().Detail(1).setVatable(vatable);
-            poPaymentRequest.PaymentRequest().Detail(1).setWithHoldingTax(withholddingtax);
-            poPaymentRequest.PaymentRequest().AddDetail();
-            
-            poPaymentRequest.PaymentRequest().Detail(2).setEntryNo(3);
-            poPaymentRequest.PaymentRequest().Detail(2).setParticularID("");
-            poPaymentRequest.PaymentRequest().Detail(2).setPRFRemarks("");
-            poPaymentRequest.PaymentRequest().Detail(2).setAmount(0);
-            poPaymentRequest.PaymentRequest().Detail(2).setDiscount(discount);
-            poPaymentRequest.PaymentRequest().Detail(2).setAddDiscount(adddiscount);
-            poPaymentRequest.PaymentRequest().Detail(2).setVatable(vatable);
-            poPaymentRequest.PaymentRequest().Detail(2).setWithHoldingTax(withholddingtax);
-            poPaymentRequest.PaymentRequest().AddDetail();
             
             loJSON = poPaymentRequest.PaymentRequest().SaveTransaction();
 

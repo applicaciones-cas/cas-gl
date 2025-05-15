@@ -93,12 +93,12 @@ public class PaymentRequest extends Transaction {
         if (!"success".equals((String) poJSON.get("result"))) {
             return poJSON;
         }
-        if (poGRider.getUserLevel() <= UserRight.ENCODER) {
-            poJSON = ShowDialogFX.getUserApproval(poGRider);
-            if (!"success".equals((String) poJSON.get("result"))) {
-                return poJSON;
-            }
-        }
+//        if (poGRider.getUserLevel() <= UserRight.ENCODER) {
+//            poJSON = ShowDialogFX.getUserApproval(poGRider);
+//            if (!"success".equals((String) poJSON.get("result"))) {
+//                return poJSON;
+//            }
+//        }
         poJSON = setValueToOthers(lsStatus);
         if (!"success".equals((String) poJSON.get("result"))) {
             return poJSON;
@@ -1138,9 +1138,9 @@ public class PaymentRequest extends Transaction {
 
         poRecurringIssuances.add(RecurringIssuance());
 //            poRecurringIssuances.get(poRecurringIssuances.size() - 1).initialize();
-        System.out.println("editmode = " + Particular + branch + payee + AccoutNo);
+        System.out.println("particular = " + Particular + "branch " + branch + "payee " + payee + "account " + AccoutNo);
         poJSON = poRecurringIssuances.get(poRecurringIssuances.size() - 1).poModel.openRecord(Particular, branch, payee, AccoutNo);
-        System.out.print(poJSON.clone());
+        System.out.println(poJSON.clone());
         System.out.println("editmode = " + poRecurringIssuances.get(poRecurringIssuances.size() - 1).poModel.getEditMode());
         poRecurringIssuances.get(poRecurringIssuances.size() - 1).poModel.updateRecord();
         lnCtr = poRecurringIssuances.size() - 1;
@@ -1154,15 +1154,7 @@ public class PaymentRequest extends Transaction {
         poRecurringIssuances.get(lnCtr).poModel.setModifyingId(poGRider.getUserID());
         poRecurringIssuances.get(lnCtr).poModel.setModifiedDate(poGRider.getServerDate());
 
-//                 for (lnCtr = 0; lnCtr <= poRecurringIssuances.size() - 1; lnCtr++) {
-//                    poRecurringIssuances.get(lnCtr).poModel.setParticularID(Particular);
-//                    poRecurringIssuances.get(lnCtr).poModel.setBranchCode(branch);
-//                    poRecurringIssuances.get(lnCtr).poModel.setPayeeID(payee);
-//                    poRecurringIssuances.get(lnCtr).poModel.setAccountNo(AccoutNo);
-//                    poRecurringIssuances.get(lnCtr).poModel.setLastPRFTrans(Master().getTransactionNo());
-//                    poRecurringIssuances.get(lnCtr).poModel.setModifyingId(poGRider.getUserID());
-//                    poRecurringIssuances.get(lnCtr).poModel.setModifiedDate(poGRider.getServerDate());
-//                }
+
     }
 
     private JSONObject saveUpdates()

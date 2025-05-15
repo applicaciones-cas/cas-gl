@@ -248,7 +248,7 @@ public class Model_Recurring_Issuance extends Model {
         String lsSQL = MiscUtil.makeSelect(this);
 
         //replace the condition based on the primary key column of the record
-        lsSQL = MiscUtil.addCondition(lsSQL, "sTransNox = " + SQLUtil.toSQL(Id1) +
+        lsSQL = MiscUtil.addCondition(lsSQL, "sPrtclrID = " + SQLUtil.toSQL(Id1) +
                                                 " AND sBranchCd = " + SQLUtil.toSQL(Id2) + 
                                                  " AND sPayeeIDx = " + SQLUtil.toSQL(Id3));
 

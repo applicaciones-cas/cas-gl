@@ -166,7 +166,7 @@ public class Model_Payment_Request_Detail extends Model {
             return poParticular;
         }
     }
-
+    
     public Model_Recurring_Issuance Recurring() throws GuanzonException, SQLException {
         if (!"".equals((String) getValue("sPrtclrID"))) {
             if (poRecurring.getEditMode() == EditMode.READY
@@ -186,4 +186,24 @@ public class Model_Payment_Request_Detail extends Model {
             return poRecurring;
         }
     }
+
+//    public Model_Recurring_Issuance Recurring() throws GuanzonException, SQLException {
+//        if (!"".equals((String) getValue("sPrtclrID"))) {
+//            if (poRecurring.getEditMode() == EditMode.READY
+//                    && poRecurring.getParticularID().equals((String) getValue("sPrtclrID"))) {
+//                return poRecurring;
+//            } else {
+//                poJSON = poRecurring.openRecordByParticular((String) getValue("sPrtclrID"),poGRider.getBranchCode(),(String) getValue("sPayeeIDx"));
+//                if ("success".equals((String) poJSON.get("result"))) {
+//                    return poRecurring;
+//                } else {
+//                    poRecurring.initialize();
+//                    return poRecurring;
+//                }
+//            }
+//        } else {
+//            poRecurring.initialize();
+//            return poRecurring;
+//        }
+//    }
 }
