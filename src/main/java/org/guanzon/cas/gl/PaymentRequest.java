@@ -24,6 +24,7 @@ import org.guanzon.cas.gl.model.Model_Payment_Request_Master;
 import org.guanzon.cas.gl.model.Model_Recurring_Issuance;
 import org.guanzon.cas.gl.services.GLControllers;
 import org.guanzon.cas.gl.services.GLModels;
+import org.guanzon.cas.gl.status.PaymentRequestStaticData;
 import org.guanzon.cas.gl.status.PaymentRequestStatus;
 import org.guanzon.cas.gl.validator.PaymentRequestValidator;
 import org.guanzon.cas.parameter.Department;
@@ -1201,7 +1202,7 @@ private boolean isRecurringIssuance(String particularID, String branch, String p
                 "sBranchCd = " + SQLUtil.toSQL(Master().getBranchCode())
                 + " ORDER BY sSeriesNo DESC LIMIT 1");
 
-        String branchSeriesNo = "0000000001";  // default value
+        String branchSeriesNo = PaymentRequestStaticData.default_Branch_Series_No;  // default value
 
         ResultSet loRS = null;
         try {
