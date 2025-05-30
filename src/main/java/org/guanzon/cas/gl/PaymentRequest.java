@@ -239,7 +239,15 @@ public class PaymentRequest extends Transaction {
         if (!"success".equals((String) poJSON.get("result"))) {
             return poJSON;
         }
-
+        if(PaymentRequestStatus.CONFIRMED.equals((String) poMaster.getValue("cTranStat"))){
+            if (poGRider.getUserLevel() <= UserRight.ENCODER) {
+                poJSON = ShowDialogFX.getUserApproval(poGRider);
+                if (!"success".equals((String) poJSON.get("result"))) {
+                    return poJSON;
+                }
+            }
+        }
+        
         poJSON = statusChange(poMaster.getTable(), (String) poMaster.getValue("sTransNox"), remarks, lsStatus, !lbConfirm);
 
         if (!"success".equals((String) poJSON.get("result"))) {
