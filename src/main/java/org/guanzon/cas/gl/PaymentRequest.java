@@ -1011,7 +1011,8 @@ public class PaymentRequest extends Transaction {
 
         initSQL();
         String lsFilterCondition = String.join(" AND ", "a.sPayeeIDx LIKE " + SQLUtil.toSQL("%" + fsPayee),
-                " a.sTransNox  LIKE " + SQLUtil.toSQL("%" + fsTransactionNo));
+                " a.sTransNox  LIKE " + SQLUtil.toSQL("%" + fsTransactionNo),
+         " a.sBranchCd = " +  SQLUtil.toSQL( poGRider.getBranchCode()));
         String lsSQL = MiscUtil.addCondition(SQL_BROWSE, lsFilterCondition);
 
         lsSQL = MiscUtil.addCondition(lsSQL, lsFilterCondition);
