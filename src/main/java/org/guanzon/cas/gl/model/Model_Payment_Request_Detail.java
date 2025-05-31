@@ -34,10 +34,10 @@ public class Model_Payment_Request_Detail extends Model {
 
             //assign default values
             poEntity.updateObject("nEntryNox", 0);
-            poEntity.updateObject("nAmountxx", 0.0);
-            poEntity.updateObject("nDiscount", 0.0);
-            poEntity.updateObject("nAddDiscx", 0.0);
-            poEntity.updateObject("nTWithHld", 0.0);
+            poEntity.updateObject("nAmountxx", 0.00);
+            poEntity.updateObject("nDiscount", 0.00);
+            poEntity.updateObject("nAddDiscx", 0.00);
+            poEntity.updateObject("nTWithHld", 0.00);
             poEntity.updateObject("cVATaxabl", "0");
 
             //end - assign default values
@@ -166,7 +166,7 @@ public class Model_Payment_Request_Detail extends Model {
             return poParticular;
         }
     }
-    
+
     public Model_Recurring_Issuance Recurring() throws GuanzonException, SQLException {
         if (!"".equals((String) getValue("sPrtclrID"))) {
             if (poRecurring.getEditMode() == EditMode.READY

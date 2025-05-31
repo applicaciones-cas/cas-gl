@@ -15,7 +15,6 @@ import org.junit.runners.MethodSorters;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class testPRFUpdateTransaction {
 
-    
     static GRiderCAS poApp;
     static GLControllers poPaymentRequest;
 
@@ -27,6 +26,7 @@ public class testPRFUpdateTransaction {
 
         poPaymentRequest = new GLControllers(poApp, null);
     }
+
     @Test
     public void testUpdateTransaction() throws GuanzonException {
         JSONObject loJSON;
@@ -38,7 +38,7 @@ public class testPRFUpdateTransaction {
                 Assert.fail();
             }
 
-            loJSON = (JSONObject) poPaymentRequest.PaymentRequest().OpenTransaction("GCC225000001");
+            loJSON = (JSONObject) poPaymentRequest.PaymentRequest().OpenTransaction("V00125000008");
             if (!"success".equals((String) loJSON.get("result"))) {
                 System.err.println((String) loJSON.get("message"));
                 Assert.fail();
@@ -50,16 +50,33 @@ public class testPRFUpdateTransaction {
                 Assert.fail();
             }
 
-            poPaymentRequest.PaymentRequest().Detail(1).setParticularID("M001250002");
-            poPaymentRequest.PaymentRequest().Detail(2).setParticularID("M001250003");
-            poPaymentRequest.PaymentRequest().Detail(0).setAmount(1000);
-            poPaymentRequest.PaymentRequest().Detail(1).setAmount(2000);
-            poPaymentRequest.PaymentRequest().Detail(2).setAmount(3000);
-            
-            poPaymentRequest.PaymentRequest().Detail(0).setModifiedDate(poApp.getServerDate());
-            poPaymentRequest.PaymentRequest().Detail(1).setModifiedDate(poApp.getServerDate());
-            poPaymentRequest.PaymentRequest().Detail(2).setModifiedDate(poApp.getServerDate());
-            
+            for (int lnCtr = 0; lnCtr < poPaymentRequest.PaymentRequest().getDetailCount(); lnCtr++) {
+                System.out.println(poPaymentRequest.PaymentRequest().Detail(lnCtr).getEntryNo());
+            }
+
+            int totalDetailCount = poPaymentRequest.PaymentRequest().getDetailCount();
+            System.out.println("total detail count after loop: " + totalDetailCount);
+//            poPaymentRequest.PaymentRequest().Detail(1).setParticularID("M001250002");
+//            poPaymentRequest.PaymentRequest().Detail(2).setParticularID("M001250003");
+//            poPaymentRequest.PaymentRequest().Detail(0).setAmount(1000);
+//            poPaymentRequest.PaymentRequest().Detail(1).setAmount(2000);
+//            poPaymentRequest.PaymentRequest().Detail(2).setAmount(3000);
+//
+//            poPaymentRequest.PaymentRequest().Detail(0).setModifiedDate(poApp.getServerDate());
+//            poPaymentRequest.PaymentRequest().Detail(1).setModifiedDate(poApp.getServerDate());
+//            poPaymentRequest.PaymentRequest().Detail(2).setModifiedDate(poApp.getServerDate());
+
+            loJSON = poPaymentRequest.PaymentRequest().Detail(0).setAmount(4000.00);
+            if (!"success".equals((String) loJSON.get("result"))) {
+                System.err.println((String) loJSON.get("message"));
+                Assert.fail();
+            }
+
+            totalDetailCount = poPaymentRequest.PaymentRequest().getDetailCount();
+            System.out.println("after update: " + totalDetailCount);
+
+            System.out.println("------------------- end ----------------------");
+
             loJSON = poPaymentRequest.PaymentRequest().SaveTransaction();
             if (!"success".equals((String) loJSON.get("result"))) {
                 System.err.println((String) loJSON.get("message"));
@@ -70,7 +87,9 @@ public class testPRFUpdateTransaction {
             Assert.fail();
         }
 
-    }    @AfterClass
+    }
+
+    @AfterClass
     public static void tearDownClass() {
         poPaymentRequest = null;
         poApp = null;

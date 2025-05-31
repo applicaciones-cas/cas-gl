@@ -12,135 +12,145 @@ import org.guanzon.cas.gl.RecurringIssuance;
 import org.guanzon.cas.gl.TransactionAccountChart;
 
 public class GLControllers {
-    public GLControllers(GRiderCAS applicationDriver, LogWrapper logWrapper){
+
+    public GLControllers(GRiderCAS applicationDriver, LogWrapper logWrapper) {
         poGRider = applicationDriver;
         poLogWrapper = logWrapper;
     }
-    
-    public AccountChart AccountChart() throws SQLException, GuanzonException{
-        if (poGRider == null){
+
+    public AccountChart AccountChart() throws SQLException, GuanzonException {
+        if (poGRider == null) {
             poLogWrapper.severe("GLControllers.AccountChart: Application driver is not set.");
             return null;
         }
-        
-        if (poAccountChart != null) return poAccountChart;
-        
+
+        if (poAccountChart != null) {
+            return poAccountChart;
+        }
+
         poAccountChart = new AccountChart();
         poAccountChart.setApplicationDriver(poGRider);
         poAccountChart.setWithParentClass(false);
         poAccountChart.setLogWrapper(poLogWrapper);
         poAccountChart.initialize();
         poAccountChart.newRecord();
-        return poAccountChart;        
+        return poAccountChart;
     }
-    
-    public TransactionAccountChart TransactionAccountChart() throws SQLException, GuanzonException{
-        if (poGRider == null){
+
+    public TransactionAccountChart TransactionAccountChart() throws SQLException, GuanzonException {
+        if (poGRider == null) {
             poLogWrapper.severe("GLControllers.TransactionAccountChart: Application driver is not set.");
             return null;
         }
-        
-        if (poGeneralLedger != null) return poGeneralLedger;
-        
+
+        if (poGeneralLedger != null) {
+            return poGeneralLedger;
+        }
+
         poGeneralLedger = new TransactionAccountChart();
         poGeneralLedger.setApplicationDriver(poGRider);
         poGeneralLedger.setWithParentClass(false);
         poGeneralLedger.setLogWrapper(poLogWrapper);
         poGeneralLedger.initialize();
         poGeneralLedger.newRecord();
-        return poGeneralLedger;        
+        return poGeneralLedger;
     }
-    
-    public Payee Payee() throws SQLException, GuanzonException{
-        if (poGRider == null){
+
+    public Payee Payee() throws SQLException, GuanzonException {
+        if (poGRider == null) {
             poLogWrapper.severe("GLControllers.Payee: Application driver is not set.");
             return null;
         }
-        
-        if (poPayee != null) return poPayee;
-        
+
+        if (poPayee != null) {
+            return poPayee;
+        }
+
         poPayee = new Payee();
         poPayee.setApplicationDriver(poGRider);
         poPayee.setWithParentClass(true);
         poPayee.setLogWrapper(poLogWrapper);
         poPayee.initialize();
         poPayee.newRecord();
-        return poPayee;        
+        return poPayee;
     }
-    
-    
 
-    
-    public Particular Particular() throws SQLException, GuanzonException{
-        if (poGRider == null){
+    public Particular Particular() throws SQLException, GuanzonException {
+        if (poGRider == null) {
             poLogWrapper.severe("GLControllers.Particular: Application driver is not set.");
             return null;
         }
-        
-        if (poParticular != null) return poParticular;
-        
+
+        if (poParticular != null) {
+            return poParticular;
+        }
+
         poParticular = new Particular();
         poParticular.setApplicationDriver(poGRider);
         poParticular.setWithParentClass(true);
         poParticular.setLogWrapper(poLogWrapper);
         poParticular.initialize();
         poParticular.newRecord();
-        return poParticular;        
+        return poParticular;
     }
-    
-    public RecurringIssuance RecurringIssuance() throws SQLException, GuanzonException{
-        if (poGRider == null){
+
+    public RecurringIssuance RecurringIssuance() throws SQLException, GuanzonException {
+        if (poGRider == null) {
             poLogWrapper.severe("GLControllers.RecurringIssuance: Application driver is not set.");
             return null;
         }
-        
-        if (poRecurringIssuance != null) return poRecurringIssuance;
-        
+
+        if (poRecurringIssuance != null) {
+            return poRecurringIssuance;
+        }
+
         poRecurringIssuance = new RecurringIssuance();
         poRecurringIssuance.setApplicationDriver(poGRider);
         poRecurringIssuance.setWithParentClass(true);
         poRecurringIssuance.setLogWrapper(poLogWrapper);
         poRecurringIssuance.initialize();
 //        poRecurringIssuance.newRecord();
-        return poRecurringIssuance;        
+        return poRecurringIssuance;
     }
-    
-    public PaymentRequest PaymentRequest() throws SQLException, GuanzonException{
-        if (poGRider == null){
-            poLogWrapper.severe("GLControllers.Particular: Application driver is not set.");
+
+    public PaymentRequest PaymentRequest() throws SQLException, GuanzonException {
+        if (poGRider == null) {
+            poLogWrapper.severe("GLControllers.PaymentRequest: Application driver is not set.");
             return null;
         }
-        
-        if (poPaymentRequest != null) return poPaymentRequest;
-        
+
+        if (poPaymentRequest != null) {
+            return poPaymentRequest;
+        }
+
         poPaymentRequest = new PaymentRequest();
         poPaymentRequest.setApplicationDriver(poGRider);
         poPaymentRequest.setBranchCode(poGRider.getBranchCode());
         poPaymentRequest.setLogWrapper(poLogWrapper);
         poPaymentRequest.setVerifyEntryNo(true);
         poPaymentRequest.setWithParent(false);
-        return poPaymentRequest;        
+        return poPaymentRequest;
     }
 
     @Override
     protected void finalize() throws Throwable {
-        try {                    
+        try {
             poAccountChart = null;
             poGeneralLedger = null;
             poParticular = null;
             poPayee = null;
             poRecurringIssuance = null;
-            
+
             poLogWrapper = null;
             poGRider = null;
         } finally {
             super.finalize();
         }
     }
-    
+
     private GRiderCAS poGRider;
     private LogWrapper poLogWrapper;
-    
+
     private AccountChart poAccountChart;
     private TransactionAccountChart poGeneralLedger;
     private Particular poParticular;
