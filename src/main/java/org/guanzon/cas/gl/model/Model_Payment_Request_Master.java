@@ -41,11 +41,11 @@ public class Model_Payment_Request_Master extends Model {
 
             //assign default values
             poEntity.updateString("cTranStat", PaymentRequestStatus.OPEN);
-            poEntity.updateObject("nTranTotl", 0.00);
-            poEntity.updateObject("nDiscAmtx", 0.00);
-            poEntity.updateObject("nTaxAmntx", 0.00);
-            poEntity.updateObject("nNetTotal", 0.00);
-            poEntity.updateObject("nAmtPaidx", 0.00);
+            poEntity.updateObject("nTranTotl", 0.0000);
+            poEntity.updateObject("nDiscAmtx", 0.0000);
+            poEntity.updateObject("nTaxAmntx", 0.0000);
+            poEntity.updateObject("nNetTotal", 0.0000);
+            poEntity.updateObject("nAmtPaidx", 0.0000);
             poEntity.updateObject("nEntryNox", 0);
             poEntity.updateObject("dTransact", SQLUtil.toDate(xsDateShort(poGRider.getServerDate()), SQLUtil.FORMAT_SHORT_DATE));
             poEntity.updateObject("sBranchCd", poGRider.getBranchCode());

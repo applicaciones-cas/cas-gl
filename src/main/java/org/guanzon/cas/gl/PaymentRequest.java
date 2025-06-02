@@ -901,18 +901,18 @@ public class PaymentRequest extends Transaction {
 
     public JSONObject computeMasterFields() {
         poJSON = new JSONObject();
-        double totalAmount = 0.00;
-        double totalDiscountAmount = 0.00;
-        double detailTaxAmount = 0.00;
-        double detailNetAmount = 0.00;
+        double totalAmount = 0.0000;
+        double totalDiscountAmount = 0.0000;
+        double detailTaxAmount = 0.0000;
+        double detailNetAmount = 0.0000;
 
         for (int lnCtr = 0; lnCtr <= getDetailCount() - 1; lnCtr++) {
             totalAmount += Detail(lnCtr).getAmount().doubleValue();
             totalDiscountAmount += Detail(lnCtr).getAddDiscount().doubleValue();
 //            if (Detail(lnCtr).getVatable().equals("1")) {
-//                poJSON = computeNetPayableDetails(Detail(lnCtr).getAmount().doubleValue() - Detail(lnCtr).getAddDiscount().doubleValue(), true, 0.12, 0.00);
+//                poJSON = computeNetPayableDetails(Detail(lnCtr).getAmount().doubleValue() - Detail(lnCtr).getAddDiscount().doubleValue(), true, 0.12, 0.0000);
 //            } else {
-//                poJSON = computeNetPayableDetails(Detail(lnCtr).getAmount().doubleValue() - Detail(lnCtr).getAddDiscount().doubleValue(), false, 0.12, 0.00);
+//                poJSON = computeNetPayableDetails(Detail(lnCtr).getAmount().doubleValue() - Detail(lnCtr).getAddDiscount().doubleValue(), false, 0.12, 0.0000);
 //            }
 //            detailTaxAmount += Double.parseDouble(poJSON.get("vat").toString());
 //            detailNetAmount += Double.parseDouble(poJSON.get("netPayable").toString());
@@ -920,8 +920,8 @@ public class PaymentRequest extends Transaction {
         }
 
         Master().setTranTotal(totalAmount);
-        Master().setDiscountAmount(0.00);
-        Master().setTaxAmount(0.00);
+        Master().setDiscountAmount(0.0000);
+        Master().setTaxAmount(0.0000);
         Master().setNetTotal(totalAmount);
         return poJSON;
     }

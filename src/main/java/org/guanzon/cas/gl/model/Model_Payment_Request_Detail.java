@@ -34,10 +34,10 @@ public class Model_Payment_Request_Detail extends Model {
 
             //assign default values
             poEntity.updateObject("nEntryNox", 0);
-            poEntity.updateObject("nAmountxx", 0.00);
-            poEntity.updateObject("nDiscount", 0.00);
-            poEntity.updateObject("nAddDiscx", 0.00);
-            poEntity.updateObject("nTWithHld", 0.00);
+            poEntity.updateObject("nAmountxx", 0.0000);
+            poEntity.updateObject("nDiscount", 0.0000);
+            poEntity.updateObject("nAddDiscx", 0.0000);
+            poEntity.updateObject("nTWithHld", 0.0000);
             poEntity.updateObject("cVATaxabl", "0");
 
             //end - assign default values
