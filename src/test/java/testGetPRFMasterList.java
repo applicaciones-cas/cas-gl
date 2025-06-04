@@ -40,13 +40,20 @@ public class testGetPRFMasterList {
     @Test
     public void testGetPurchaseOrder() {
         JSONObject loJSON;
+        
+        String industryId = "03";
+        String companyId = "0003";
         try {
             loJSON = poPaymentRequest.PaymentRequest().InitTransaction();
             if (!"success".equals((String) loJSON.get("result"))) {
                 System.err.println((String) loJSON.get("message"));
                 Assert.fail();
             }
-            
+            poPaymentRequest.PaymentRequest().Master().setIndustryID(industryId); //direct assignment of value
+            Assert.assertEquals(poPaymentRequest.PaymentRequest().Master().getIndustryID(), industryId);
+
+            poPaymentRequest.PaymentRequest().Master().setCompanyID(companyId); //direct assignment of value
+            Assert.assertEquals(poPaymentRequest.PaymentRequest().Master().getCompanyID(), companyId);
             loJSON = poPaymentRequest.PaymentRequest().getPaymentRequest("", "");
 
             if ("success".equals((String) loJSON.get("result"))) {

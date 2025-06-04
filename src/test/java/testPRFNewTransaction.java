@@ -39,6 +39,8 @@ public class testPRFNewTransaction {
         double adddiscount = 3.00;
         double withholddingtax = 4.00;
         int entryno = 3;
+        String industryId = "03";
+        String companyId = "0003";
 
         JSONObject loJSON;
 
@@ -54,6 +56,12 @@ public class testPRFNewTransaction {
                 System.err.println((String) loJSON.get("message"));
                 Assert.fail();
             }
+            poPaymentRequest.PaymentRequest().Master().setIndustryID(industryId); //direct assignment of value
+            Assert.assertEquals(poPaymentRequest.PaymentRequest().Master().getIndustryID(), industryId);
+
+            poPaymentRequest.PaymentRequest().Master().setCompanyID(companyId); //direct assignment of value
+            Assert.assertEquals(poPaymentRequest.PaymentRequest().Master().getCompanyID(), companyId);
+            
             poPaymentRequest.PaymentRequest().Master().setPayeeID("001");
             Assert.assertEquals( poPaymentRequest.PaymentRequest().Master().getPayeeID(),"001");
             

@@ -15,7 +15,9 @@ import org.guanzon.appdriver.constant.EditMode;
 import org.guanzon.cas.gl.services.GLModels;
 import org.guanzon.cas.gl.status.PaymentRequestStatus;
 import org.guanzon.cas.parameter.model.Model_Branch;
+import org.guanzon.cas.parameter.model.Model_Company;
 import org.guanzon.cas.parameter.model.Model_Department;
+import org.guanzon.cas.parameter.model.Model_Industry;
 import org.guanzon.cas.parameter.services.ParamModels;
 import org.json.simple.JSONObject;
 
@@ -28,6 +30,8 @@ public class Model_Payment_Request_Master extends Model {
     Model_Department poDepartment;
     Model_Payee poPayee;
     Model_Branch poBranch;
+    Model_Industry poIndustry;
+    Model_Company poCompany;
 
     @Override
     public void initialize() {
@@ -64,14 +68,8 @@ public class Model_Payment_Request_Master extends Model {
             poBranch = model.Branch();
             GLModels gl = new GLModels(poGRider);
             poPayee = gl.Payee();
-//            poCategory = model.Category();
-//            poCompany = model.Company();
-//            poTerm = model.Term();
-//
-//            ClientModel clientModel = new ClientModel(poGRider);
-//            poSupplier = clientModel.ClientMaster();
-//            poSupplierAdress = clientModel.ClientAddress();
-//            poSupplierContactPerson = clientModel.ClientInstitutionContact();
+            poIndustry = model.Industry();
+            poCompany = model.Company();
 
             //end - initialize reference objects
             pnEditMode = EditMode.UNKNOWN;
@@ -95,6 +93,22 @@ public class Model_Payment_Request_Master extends Model {
         return (String) getValue("sTransNox");
     }
 
+    public JSONObject setIndustryID(String industryID) {
+        return setValue("sIndstCdx", industryID);
+    }
+
+    public String getIndustryID() {
+        return (String) getValue("sIndstCdx");
+    }
+    
+    public JSONObject setCompanyID(String companyID) {
+        return setValue("sCompnyID", companyID);
+    }
+
+    public String getCompanyID() {
+        return (String) getValue("sCompnyID");
+    }
+    
     public JSONObject setTransactionDate(Date transactionDate) {
         return setValue("dTransact", transactionDate);
     }
@@ -301,6 +315,45 @@ public class Model_Payment_Request_Master extends Model {
         } else {
             poBranch.initialize();
             return poBranch;
+        }
+    }
+        public Model_Company Company() throws GuanzonException, SQLException {
+        if (!"".equals((String) getValue("sCompnyID"))) {
+            if (poCompany.getEditMode() == EditMode.READY
+                    && poCompany.getCompanyId().equals((String) getValue("sCompnyID"))) {
+                return poCompany;
+            } else {
+                poJSON = poCompany.openRecord((String) getValue("sCompnyID"));
+                if ("success".equals((String) poJSON.get("result"))) {
+                    return poCompany;
+                } else {
+                    poCompany.initialize();
+                    return poCompany;
+                }
+            }
+        } else {
+            poCompany.initialize();
+            return poCompany;
+        }
+    }
+    
+        public Model_Industry Industry() throws GuanzonException, SQLException {
+        if (!"".equals((String) getValue("sIndstCdx"))) {
+            if (poIndustry.getEditMode() == EditMode.READY
+                    && poIndustry.getIndustryId().equals((String) getValue("sIndstCdx"))) {
+                return poIndustry;
+            } else {
+                poJSON = poIndustry.openRecord((String) getValue("sIndstCdx"));
+                if ("success".equals((String) poJSON.get("result"))) {
+                    return poIndustry;
+                } else {
+                    poIndustry.initialize();
+                    return poIndustry;
+                }
+            }
+        } else {
+            poIndustry.initialize();
+            return poIndustry;
         }
     }
 }
