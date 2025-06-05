@@ -193,7 +193,7 @@ public class Model_AP_Payment_Adjustment extends Model {
 
     public Number getDebitAmount() {
         if (getValue("nDebitAmt") == null || "".equals(getValue("nDebitAmt"))) {
-            return 0.00;
+            return 0.0000;
         }
         return (Number) getValue("nDebitAmt");
     }
@@ -204,7 +204,7 @@ public class Model_AP_Payment_Adjustment extends Model {
 
     public Number getCreditAmount() {
         if (getValue("nCredtAmt") == null || "".equals(getValue("nCredtAmt"))) {
-            return 0.00;
+            return 0.0000;
         }
         return (Number) getValue("nCredtAmt");
     }
@@ -215,7 +215,7 @@ public class Model_AP_Payment_Adjustment extends Model {
 
     public Number getAppliedAmount() {
         if (getValue("nAppliedx") == null || "".equals(getValue("nAppliedx"))) {
-            return 0.00;
+            return 0.0000;
         }
         return (Number) getValue("nAppliedx");
     }
@@ -226,7 +226,7 @@ public class Model_AP_Payment_Adjustment extends Model {
 
     public Number getTransactionTotal() {
         if (getValue("nTranTotl") == null || "".equals(getValue("nTranTotl"))) {
-            return 0.00;
+            return 0.0000;
         }
         return (Number) getValue("nTranTotl");
     }
@@ -248,7 +248,7 @@ public class Model_AP_Payment_Adjustment extends Model {
 
     public Number getDiscountAmount() {
         if (getValue("nDiscAmnt") == null || "".equals(getValue("nDiscAmnt"))) {
-            return 0.00;
+            return 0.0000;
         }
         return (Number) getValue("nDiscAmnt");
     }
@@ -292,7 +292,7 @@ public class Model_AP_Payment_Adjustment extends Model {
 
     public Number getTaxAmount() {
         if (getValue("nTaxAmntx") == null || "".equals(getValue("nTaxAmntx"))) {
-            return 0.00;
+            return 0.0000;
         }
         return (Number) getValue("nTaxAmntx");
     }
@@ -303,7 +303,7 @@ public class Model_AP_Payment_Adjustment extends Model {
 
     public Number getNetTotal() {
         if (getValue("nNetTotal") == null || "".equals(getValue("nNetTotal"))) {
-            return 0.00;
+            return 0.0000;
         }
         return (Number) getValue("nNetTotal");
     }
