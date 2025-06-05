@@ -57,14 +57,16 @@ public class Model_AP_Payment_Master extends Model {
             poEntity.updateObject("dTransact", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
             poEntity.updateObject("dModified", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
             poEntity.updateObject("nEntryNox", 0);
-            poEntity.updateObject("sPRFNoxxx", 0);
-            poEntity.updateObject("nTranTotl", 0.00);
-            poEntity.updateObject("nAmtPaidX", 0.00);
-            poEntity.updateObject("nCashAmtx", 0.00);
-            poEntity.updateObject("nCheckAmt", 0.00);
-            poEntity.updateObject("nCredtAmt", 0.00);
-            poEntity.updateObject("nGiftChck", 0.00);
-            poEntity.updateObject("nTWithHld", 0.00);
+            poEntity.updateObject("nTranTotl", 0.0000);
+            poEntity.updateObject("nTranTotl", 0.0000);
+            poEntity.updateObject("nDiscAmnt", 0.0000);
+            poEntity.updateObject("nAmtPaidX", 0.0000);
+            poEntity.updateObject("nTaxAmntx", 0.0000);
+            poEntity.updateObject("nNetTotal", 0.0000);
+            poEntity.updateObject("nFreightx", 0.00);
+            poEntity.updateObject("nVATAmtxx", 0.00);
+            poEntity.updateObject("nVatExmpt", 0.00);
+            poEntity.updateObject("nZeroRted", 0.00);
             poEntity.updateString("cTranStat", SOATaggingStatus.OPEN);
             //end - assign default values
 
@@ -117,17 +119,25 @@ public class Model_AP_Payment_Master extends Model {
     public String getBranchCode() {
         return (String) getValue("sBranchCD");
     }
+    
+    public JSONObject setTransactionDate(Date transactionDate) {
+        return setValue("dTransact", transactionDate);
+    }
 
-    public JSONObject setCompanyId(String companyID) {
-        return setValue("sCompnyID", companyID);
+    public Date getTransactionDate() {
+        return (Date) getValue("dTransact");
+    }
+
+    public JSONObject setCompanyId(String companyId) {
+        return setValue("sCompnyID", companyId);
     }
 
     public String getCompanyId() {
         return (String) getValue("sCompnyID");
     }
 
-    public JSONObject setClientId(String clientID) {
-        return setValue("sClientID", clientID);
+    public JSONObject setClientId(String clientId) {
+        return setValue("sClientID", clientId);
     }
 
     public String getClientId() {
@@ -150,22 +160,6 @@ public class Model_AP_Payment_Master extends Model {
         return (String) getValue("sIssuedTo");
     }
 
-    public JSONObject setPRFNumber(String prfNumber) {
-        return setValue("sPRFNoxxx", prfNumber);
-    }
-
-    public String getPRFNumber() {
-        return (String) getValue("sPRFNoxxx");
-    }
-
-    public JSONObject setTransactionDate(Date transactionDate) {
-        return setValue("dTransact", transactionDate);
-    }
-
-    public Date getTransactionDate() {
-        return (Date) getValue("dTransact");
-    }
-
     public JSONObject setRemarks(String remarks) {
         return setValue("sRemarksx", remarks);
     }
@@ -179,47 +173,43 @@ public class Model_AP_Payment_Master extends Model {
     }
 
     public Number getTransactionTotal() {
+        if (getValue("nTranTotl") == null || "".equals(getValue("nTranTotl"))) {
+            return 0.0000;
+        }
         return (Number) getValue("nTranTotl");
     }
 
-    public JSONObject setAmountPaid(Number amountPaid) {
-        return setValue("nAmtPaidX", amountPaid);
+    public JSONObject setFreightAmount(Number freightAmount) {
+        return setValue("nFreightx", freightAmount);
     }
 
-    public Number getAmountPaid() {
-        return (Number) getValue("nAmtPaidX");
+    public Number getFreightAmount() {
+        if (getValue("nFreightx") == null || "".equals(getValue("nFreightx"))) {
+            return 0.00;
+        }
+        return (Number) getValue("nFreightx");
     }
 
-    public JSONObject setTaxAmount(Number taxAmount) {
-        return setValue("nTaxAmntx", taxAmount);
+    public JSONObject setDiscountAmount(Number discountAmount) {
+        return setValue("nDiscAmnt", discountAmount);
     }
 
-    public Number getTaxAmount() {
-        return (Number) getValue("nTaxAmntx");
+    public Number getDiscountAmount() {
+        if (getValue("nDiscAmnt") == null || "".equals(getValue("nDiscAmnt"))) {
+            return 0.0000;
+        }
+        return (Number) getValue("nDiscAmnt");
     }
-
+    
     public JSONObject setVATAmt(Number vatAmount) {
         return setValue("nVATAmtxx", vatAmount);
     }
 
     public Number getVATAmt() {
+        if (getValue("nVATAmtxx") == null || "".equals(getValue("nVATAmtxx"))) {
+            return 0.00;
+        }
         return (Number) getValue("nVATAmtxx");
-    }
-
-    public JSONObject setNonVATSale(Number nonVATSale) {
-        return setValue("nNonVATSl", nonVATSale);
-    }
-
-    public Number getNonVATSale() {
-        return (Number) getValue("nNonVATSl");
-    }
-
-    public JSONObject setZeroVATSale(Number zeroVATSale) {
-        return setValue("nZroVATSl", zeroVATSale);
-    }
-
-    public Number getZeroVATSale() {
-        return (Number) getValue("nZroVATSl");
     }
 
     public JSONObject setVATExempt(Number vatExempt) {
@@ -227,7 +217,54 @@ public class Model_AP_Payment_Master extends Model {
     }
 
     public Number getVATExempt() {
+        if (getValue("nVatExmpt") == null || "".equals(getValue("nVatExmpt"))) {
+            return 0.00;
+        }
         return (Number) getValue("nVatExmpt");
+    }
+
+    public JSONObject setZeroVATSale(Number zeroVATSale) {
+        return setValue("nZroVATSl", zeroVATSale);
+    }
+
+    public Number getZeroVATSale() {
+        if (getValue("nZroVATSl") == null || "".equals(getValue("nZroVATSl"))) {
+            return 0.00;
+        }
+        return (Number) getValue("nZroVATSl");
+    }
+    
+    public JSONObject setTaxAmount(Number taxAmount) {
+        return setValue("nTaxAmntx", taxAmount);
+    }
+
+    public Number getTaxAmount() {
+        if (getValue("nTaxAmntx") == null || "".equals(getValue("nTaxAmntx"))) {
+            return 0.0000;
+        }
+        return (Number) getValue("nTaxAmntx");
+    }
+    
+    public JSONObject setNetTotal(Number netTotal) {
+        return setValue("nNetTotal", netTotal);
+    }
+
+    public Number getNetTotal() {
+        if (getValue("nNetTotal") == null || "".equals(getValue("nNetTotal"))) {
+            return 0.0000;
+        }
+        return (Number) getValue("nNetTotal");
+    }
+
+    public JSONObject setAmountPaid(Number amountPaid) {
+        return setValue("nAmtPaidX", amountPaid);
+    }
+
+    public Number getAmountPaid() {
+        if (getValue("nAmtPaidX") == null || "".equals(getValue("nAmtPaidX"))) {
+            return 0.0000;
+        }
+        return (Number) getValue("nAmtPaidX");
     }
 
     public JSONObject setEntryNo(Number entryNo) {
@@ -244,6 +281,14 @@ public class Model_AP_Payment_Master extends Model {
 
     public String getTransactionStatus() {
         return (String) getValue("cTranStat");
+    }
+    
+    public JSONObject isProcessed(boolean isProcessed) {
+        return setValue("cProcessd", isProcessed ? "1" : "0");
+    }
+
+    public boolean isProcessed() {
+        return ((String) getValue("cProcessd")).equals("1");
     }
 
     public JSONObject setModifyingId(String modifiedBy) {
