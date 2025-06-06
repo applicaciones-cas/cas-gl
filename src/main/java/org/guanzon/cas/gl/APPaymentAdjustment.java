@@ -18,12 +18,18 @@ import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.base.SQLUtil;
 import org.guanzon.appdriver.constant.EditMode;
 import org.guanzon.appdriver.constant.Logical;
+import org.guanzon.appdriver.constant.RecordStatus;
 import org.guanzon.appdriver.constant.UserRight;
 import org.guanzon.appdriver.iface.GValidator;
+import org.guanzon.cas.client.Client;
+import org.guanzon.cas.client.services.ClientControllers;
 import org.guanzon.cas.gl.model.Model_AP_Payment_Adjustment;
+import org.guanzon.cas.gl.services.GLControllers;
 import org.guanzon.cas.gl.services.GLModels;
 import org.guanzon.cas.gl.status.APPaymentAdjustmentStatus;
 import org.guanzon.cas.gl.validator.APPaymentAdjustmentValidator;
+import org.guanzon.cas.parameter.Company;
+import org.guanzon.cas.parameter.services.ParamControllers;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
@@ -32,9 +38,10 @@ import org.json.simple.parser.ParseException;
  * @author Arsiela 06052025
  */
 public class APPaymentAdjustment extends Parameter {
+
     private String psIndustryId = "";
     private String psCompanyId = "";
-    
+
     Model_AP_Payment_Adjustment poModel;
     List<Model_AP_Payment_Adjustment> paModel;
 
@@ -44,10 +51,10 @@ public class APPaymentAdjustment extends Parameter {
         pbInitRec = true;
 
         poModel = new GLModels(poGRider).APPaymentAdjustment();
-        
+
         paModel = new ArrayList<>();
     }
-    
+
     public JSONObject NewTransaction()
             throws CloneNotSupportedException, SQLException, GuanzonException {
         return newRecord();
@@ -70,7 +77,7 @@ public class APPaymentAdjustment extends Parameter {
     public JSONObject UpdateTransaction() {
         return updateRecord();
     }
-    
+
     public JSONObject ConfirmTransaction(String remarks)
             throws ParseException,
             SQLException,
@@ -114,9 +121,8 @@ public class APPaymentAdjustment extends Parameter {
             poGRider.rollbackTrans();
             return poJSON;
         }
-        
-        //Create Cache_Payables TODO
 
+        //Create Cache_Payables TODO
         poGRider.commitTrans();
 
         poJSON = new JSONObject();
@@ -175,9 +181,8 @@ public class APPaymentAdjustment extends Parameter {
             poGRider.rollbackTrans();
             return poJSON;
         }
-        
-        //Update Cache Payables?
 
+        //Update Cache Payables?
         poGRider.commitTrans();
 
         poJSON = new JSONObject();
@@ -227,24 +232,22 @@ public class APPaymentAdjustment extends Parameter {
             poGRider.rollbackTrans();
             return poJSON;
         }
-        
+
         //Update Cache Payables?
-        
-        
         poJSON = poModel.openRecord(poModel.getTransactionNo());
         if (!"success".equals((String) poJSON.get("result"))) {
             poGRider.rollbackTrans();
             return poJSON;
         }
-        
+
         poJSON = poModel.updateRecord();
         if (!"success".equals((String) poJSON.get("result"))) {
             poGRider.rollbackTrans();
             return poJSON;
         }
-        
+
         poModel.isProcessed(true);
-        
+
         poJSON = poModel.saveRecord();
         if (!"success".equals((String) poJSON.get("result"))) {
             poGRider.rollbackTrans();
@@ -291,7 +294,7 @@ public class APPaymentAdjustment extends Parameter {
         if (!"success".equals((String) poJSON.get("result"))) {
             return poJSON;
         }
-        
+
         if (APPaymentAdjustmentStatus.CONFIRMED.equals(poModel.getTransactionStatus())) {
             if (poGRider.getUserLevel() == UserRight.ENCODER) {
                 poJSON = ShowDialogFX.getUserApproval(poGRider);
@@ -309,10 +312,10 @@ public class APPaymentAdjustment extends Parameter {
             poGRider.rollbackTrans();
             return poJSON;
         }
-        
+
         if (APPaymentAdjustmentStatus.CONFIRMED.equals(poModel.getTransactionStatus())) {
             //Update Cache Payables
-            
+
         }
 
         poGRider.commitTrans();
@@ -373,11 +376,11 @@ public class APPaymentAdjustment extends Parameter {
             poGRider.rollbackTrans();
             return poJSON;
         }
-        
+
         if (APPaymentAdjustmentStatus.CONFIRMED.equals(poModel.getTransactionStatus())) {
             //Update Cache Payables
         }
-        
+
         poGRider.commitTrans();
 
         poJSON = new JSONObject();
@@ -390,7 +393,7 @@ public class APPaymentAdjustment extends Parameter {
 
         return poJSON;
     }
-    
+
     public void setIndustryId(String industryId) {
         psIndustryId = industryId;
     }
@@ -398,9 +401,9 @@ public class APPaymentAdjustment extends Parameter {
     public void setCompanyId(String companyId) {
         psCompanyId = companyId;
     }
-    
+
     @Override
-    public JSONObject initFields(){
+    public JSONObject initFields() {
         try {
             /*Put initial model values here*/
             poJSON = new JSONObject();
@@ -420,21 +423,21 @@ public class APPaymentAdjustment extends Parameter {
         poJSON.put("result", "success");
         return poJSON;
     }
-    
-    public JSONObject computeFields(){
+
+    public JSONObject computeFields() {
         poJSON = new JSONObject();
-        
+
         poJSON.put("result", "success");
         return poJSON;
     }
-    
-    public JSONObject SaveRecord(){
+
+    public JSONObject SaveRecord() {
         poJSON = new JSONObject();
-        
+
         poJSON.put("result", "success");
         return poJSON;
-    }  
-    
+    }
+
     private Model_AP_Payment_Adjustment APPaymentAdjustment() {
         return new GLModels(poGRider).APPaymentAdjustment();
     }
@@ -446,8 +449,8 @@ public class APPaymentAdjustment extends Parameter {
     public int getAPPaymentAdjustmentCount() {
         return this.paModel.size();
     }
-    
-    public JSONObject loadAPPaymentAdjustment(String companyId, String supplierId, String referenceNo){
+
+    public JSONObject loadAPPaymentAdjustment(String companyId, String supplierId, String referenceNo) {
         poJSON = new JSONObject();
         try {
             if (companyId == null) {
@@ -459,7 +462,7 @@ public class APPaymentAdjustment extends Parameter {
             if (referenceNo == null) {
                 referenceNo = "";
             }
-            
+
             String lsTransStat = "";
             if (psRecdStat != null) {
                 if (psRecdStat.length() > 1) {
@@ -471,15 +474,15 @@ public class APPaymentAdjustment extends Parameter {
                     lsTransStat = " AND a.cTranStat = " + SQLUtil.toSQL(psRecdStat);
                 }
             }
-            
+
             String lsSQL = MiscUtil.addCondition(getSQ_Browse(), //" a.sIndstCdx = " + SQLUtil.toSQL(psIndustryId)
-                    " a.sCompnyID LIKE " + SQLUtil.toSQL("%"+companyId)
+                    " a.sCompnyID LIKE " + SQLUtil.toSQL("%" + companyId)
                     + " AND a.sClientID LIKE " + SQLUtil.toSQL("%" + supplierId)
                     + " AND a.sTransNox LIKE " + SQLUtil.toSQL("%" + referenceNo)
             );
-            
+
             lsSQL = lsSQL + "" + lsTransStat + " ORDER BY a.dTransact DESC ";
-            
+
             System.out.println("Executing SQL: " + lsSQL);
             ResultSet loRS = poGRider.executeQuery(lsSQL);
             poJSON = new JSONObject();
@@ -522,7 +525,7 @@ public class APPaymentAdjustment extends Parameter {
         poJSON.put("result", "success");
         return poJSON;
     }
-    
+
     public JSONObject isEntryOkay(String status) throws SQLException {
         poJSON = new JSONObject();
 
@@ -539,7 +542,7 @@ public class APPaymentAdjustment extends Parameter {
         poJSON = new JSONObject();
         poModel.setModifyingBy(poGRider.Encrypt(poGRider.getUserID()));
         poModel.setModifiedDate(poGRider.getServerDate());
-        
+
         poJSON.put("result", "success");
         return poJSON;
     }
@@ -549,19 +552,46 @@ public class APPaymentAdjustment extends Parameter {
         return poModel;
     }
 
-    public JSONObject searchTransaction() throws SQLException, GuanzonException {
+//    public JSONObject searchTransaction() throws SQLException, GuanzonException {
+//        String lsSQL = getSQ_Browse();
+//
+//        poJSON = ShowDialogFX.Search(poGRider,
+//                lsSQL,
+//                "",
+//                "ID»Description»Account",
+//                "sPrtclrID»sDescript»xAcctDesc",
+//                "a.sPrtclrID»a.sDescript»IFNULL(b.sDescript, '')",
+//                1);
+//
+//        if (poJSON != null) {
+//            return poModel.openRecord((String) poJSON.get("sPrtclrID"));
+//        } else {
+//            poJSON = new JSONObject();
+//            poJSON.put("result", "error");
+//            poJSON.put("message", "No record loaded.");
+//            return poJSON;
+//        }
+//    }
+
+    public JSONObject searchTransaction()
+            throws CloneNotSupportedException,
+            SQLException,
+            GuanzonException {
+        poJSON = new JSONObject();
+        String lsTransStat = "";
         String lsSQL = getSQ_Browse();
 
-        poJSON = ShowDialogFX.Search(poGRider,
+        System.out.println("Executing SQL: " + lsSQL);
+        poJSON = ShowDialogFX.Browse(poGRider,
                 lsSQL,
                 "",
-                "ID»Description»Account",
-                "sPrtclrID»sDescript»xAcctDesc",
-                "a.sPrtclrID»a.sDescript»IFNULL(b.sDescript, '')",
-                 1);
+                "Transaction Date»Transaction No»Payee»Company",
+                "dTransact»sTransNox»sPayeeNme»sSupplrNm",
+                "a.dTransact»a.sTransNox»c.sPayeeNme»b.sCompnyNm»",
+                1);
 
         if (poJSON != null) {
-            return poModel.openRecord((String) poJSON.get("sPrtclrID"));
+            return OpenTransaction((String) poJSON.get("sTransNox"));
         } else {
             poJSON = new JSONObject();
             poJSON.put("result", "error");
@@ -570,20 +600,64 @@ public class APPaymentAdjustment extends Parameter {
         }
     }
 
+    public JSONObject SearchClient(String value, boolean byCode)
+            throws SQLException,
+            GuanzonException {
+        poJSON = new JSONObject();
+
+        Client object = new ClientControllers(poGRider, logwrapr).Client();
+        object.Master().setRecordStatus(RecordStatus.ACTIVE);
+        object.Master().setClientType("1");
+        poJSON = object.Master().searchRecord(value, byCode);
+        if ("success".equals((String) poJSON.get("result"))) {
+            getModel().setClientId(object.Master().getModel().getClientId());
+//            getModel().setAddressId(object.ClientAddress().getModel().getAddressId()); //TODO
+//            getModel().setContactId(object.ClientInstitutionContact().getModel().getClientId()); //TODO
+        }
+
+        return poJSON;
+    }
+
+    public JSONObject SearchCompany(String value, boolean byCode)
+            throws SQLException,
+            GuanzonException {
+        poJSON = new JSONObject();
+
+        Company object = new ParamControllers(poGRider, logwrapr).Company();
+        object.setRecordStatus(RecordStatus.ACTIVE);
+        poJSON = object.searchRecord(value, byCode);
+        if ("success".equals((String) poJSON.get("result"))) {
+            getModel().setCompanyId(object.getModel().getCompanyId());
+        }
+        return poJSON;
+    }
+
+    public JSONObject SearchPayee(String value, boolean byCode) throws ExceptionInInitializerError, SQLException, GuanzonException {
+        Payee object = new GLControllers(poGRider, logwrapr).Payee();
+        object.setRecordStatus("1");
+
+        poJSON = object.searchRecord(value, byCode);
+        if ("success".equals((String) poJSON.get("result"))) {
+            getModel().setIssuedTo(object.getModel().getPayeeID());
+            getModel().setPayerCode(object.getModel().getRecordStatus());
+        }
+        return poJSON;
+    }
+
     @Override
     public String getSQ_Browse() {
-        return   " SELECT "                                               
-            + " a.dTransact "                                          
-            + " , a.sTransNox "                                        
-            + " , a.sIndstCdx "                                        
-            + " , b.sCompnyNm  AS sSupplrNm "                          
-            + " , c.sCompnyNm  AS sIssuedTo "                          
-            + " , d.sCompnyNm  AS sCompnyNm "                          
-            + " , e.sDescript  AS sIndustry "                          
-            + " FROM ap_payment_adjustment a "                         
-            + " LEFT JOIN client_master b ON b.sClientID = a.sClientID "
-            + " LEFT JOIN client_master c ON c.sClientID = a.sIssuedTo "
-            + " LEFT JOIN company d ON d.sCompnyID = a.sCompnyID  "    
-            + " LEFT JOIN industry e ON e.sIndstCdx = a.sIndstCdx "    ;
+        return " SELECT "
+                + " a.dTransact "
+                + " , a.sTransNox "
+                + " , a.sIndstCdx "
+                + " , b.sCompnyNm  AS sSupplrNm "
+                + " , c.sPayeeNme  AS sPayeeNme "
+                + " , d.sCompnyNm  AS sCompnyNm "
+                + " , e.sDescript  AS sIndustry "
+                + " FROM ap_payment_adjustment a "
+                + " LEFT JOIN client_master b ON b.sClientID = a.sClientID "
+                + " LEFT JOIN payee c ON c.sPayeeIDx = a.sIssuedTo "
+                + " LEFT JOIN company d ON d.sCompnyID = a.sCompnyID  "
+                + " LEFT JOIN industry e ON e.sIndstCdx = a.sIndstCdx ";
     }
 }

@@ -16,6 +16,7 @@ import org.guanzon.cas.client.model.Model_Client_Address;
 import org.guanzon.cas.client.model.Model_Client_Institution_Contact;
 import org.guanzon.cas.client.model.Model_Client_Master;
 import org.guanzon.cas.client.services.ClientModels;
+import org.guanzon.cas.gl.services.GLModels;
 import org.guanzon.cas.gl.status.APPaymentAdjustmentStatus;
 import org.guanzon.cas.parameter.model.Model_Branch;
 import org.guanzon.cas.parameter.model.Model_Category;
@@ -29,15 +30,15 @@ import org.json.simple.JSONObject;
  * @author Arsiela 06/05/2025
  */
 public class Model_AP_Payment_Adjustment extends Model {
-    
+
     Model_Branch poBranch;
     Model_Industry poIndustry;
     Model_Company poCompany;
     Model_Client_Master poSupplier;
-    Model_Client_Master poPayee;
+    Model_Payee poPayee;
     Model_Client_Address poSupplierAdress;
     Model_Client_Institution_Contact poSupplierContactPerson;
-    
+
     @Override
     public void initialize() {
         try {
@@ -78,10 +79,13 @@ public class Model_AP_Payment_Adjustment extends Model {
             poCompany = model.Company();
 
             ClientModels clientModel = new ClientModels(poGRider);
-            poPayee = clientModel.ClientMaster();
+
             poSupplier = clientModel.ClientMaster();
             poSupplierAdress = clientModel.ClientAddress();
             poSupplierContactPerson = clientModel.ClientInstitutionContact();
+
+            GLModels gl = new GLModels(poGRider);
+            poPayee = gl.Payee();
 //            end - initialize reference objects
 
             pnEditMode = EditMode.UNKNOWN;
@@ -90,7 +94,7 @@ public class Model_AP_Payment_Adjustment extends Model {
             System.exit(1);
         }
     }
-    
+
     public JSONObject setTransactionNo(String transactionNo) {
         return setValue("sTransNox", transactionNo);
     }
@@ -307,7 +311,7 @@ public class Model_AP_Payment_Adjustment extends Model {
         }
         return (Number) getValue("nNetTotal");
     }
-    
+
     public JSONObject isProcessed(boolean isProcessed) {
         return setValue("cProcessd", isProcessed ? "1" : "0");
     }
@@ -315,7 +319,7 @@ public class Model_AP_Payment_Adjustment extends Model {
     public boolean isProcessed() {
         return ((String) getValue("cProcessd")).equals("1");
     }
-    
+
     public JSONObject setTransactionStatus(String transactionStatus) {
         return setValue("cTranStat", transactionStatus);
     }
@@ -431,10 +435,10 @@ public class Model_AP_Payment_Adjustment extends Model {
         }
     }
 
-    public Model_Client_Master Payee() throws SQLException, GuanzonException {
+    public Model_Payee Payee() throws SQLException, GuanzonException {
         if (!"".equals((String) getValue("sIssuedTo"))) {
             if (poPayee.getEditMode() == EditMode.READY
-                    && poPayee.getClientId().equals((String) getValue("sIssuedTo"))) {
+                    && poPayee.getPayeeID().equals((String) getValue("sIssuedTo"))) {
                 return poPayee;
             } else {
                 poJSON = poPayee.openRecord((String) getValue("sIssuedTo"));
