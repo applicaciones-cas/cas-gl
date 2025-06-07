@@ -29,7 +29,7 @@ public class Model_Disbursement_Master extends Model{
     Model_Branch poBranch;
     Model_Company poCompany;    
     Model_Industry poIndustry;
-    
+    private String oldDisbursementType ;
     
     @Override
     public void initialize() {
@@ -205,6 +205,7 @@ public class Model_Disbursement_Master extends Model{
     public JSONObject setNonVATSale(Number nonVATSale){
         return setValue("nNonVATSl", nonVATSale);
     }
+
     
 //    public Number getNonVATSale(){
 //        return (Number) getValue("nNonVATSl");
@@ -338,12 +339,20 @@ public class Model_Disbursement_Master extends Model{
     public Date getModifiedDate(){
         return (Date) getValue("dModified");
     }
-        @Override
+        
+    @Override
     public String getNextCode() {
         return MiscUtil.getNextCode(this.getTable(), ID, true, poGRider.getGConnection().getConnection(), poGRider.getBranchCode());
     }
 
+    // getter and setter below is only cache
+    public void setOldDisbursementType(String oldDisbursementType) {
+        this.oldDisbursementType = oldDisbursementType;
+    }
 
+    public String getOldDisbursementType() {
+        return this.oldDisbursementType;
+    }
 
     public Model_Payee Payee() throws GuanzonException, SQLException {
         if (!"".equals((String) getValue("sPayeeIDx"))) {

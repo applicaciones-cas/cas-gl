@@ -1,9 +1,11 @@
 
 import java.sql.SQLException;
+import java.util.Date;
 import org.guanzon.appdriver.base.GRiderCAS;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.cas.gl.services.GLControllers;
+import org.guanzon.cas.gl.status.DisbursementStatic;
 import org.json.simple.JSONObject;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -16,7 +18,7 @@ import org.junit.runners.MethodSorters;
 public class testDisbursementUpdateTransaction {
 
     static GRiderCAS poApp;
-    static GLControllers poPaymentRequest;
+    static GLControllers poDisbursement;
 
     @BeforeClass
     public static void setUpClass() {
@@ -24,60 +26,91 @@ public class testDisbursementUpdateTransaction {
 
         poApp = MiscUtil.Connect();
 
-        poPaymentRequest = new GLControllers(poApp, null);
+        poDisbursement = new GLControllers(poApp, null);
     }
 
     @Test
     public void testUpdateTransaction() throws GuanzonException {
         JSONObject loJSON;
 
+        Date currentDate = new Date(); 
         try {
-            loJSON = (JSONObject) poPaymentRequest.PaymentRequest().InitTransaction();
+            loJSON = (JSONObject) poDisbursement.Disbursement().InitTransaction();
             if (!"success".equals((String) loJSON.get("result"))) {
                 System.err.println((String) loJSON.get("message"));
                 Assert.fail();
             }
 
-            loJSON = (JSONObject) poPaymentRequest.PaymentRequest().OpenTransaction("V00125000008");
+            loJSON = (JSONObject) poDisbursement.Disbursement().OpenTransaction("P0w125000013");
             if (!"success".equals((String) loJSON.get("result"))) {
                 System.err.println((String) loJSON.get("message"));
                 Assert.fail();
             }
 
-            loJSON = (JSONObject) poPaymentRequest.PaymentRequest().UpdateTransaction();
+            loJSON = (JSONObject) poDisbursement.Disbursement().UpdateTransaction();
             if (!"success".equals((String) loJSON.get("result"))) {
                 System.err.println((String) loJSON.get("message"));
                 Assert.fail();
             }
-
-            for (int lnCtr = 0; lnCtr < poPaymentRequest.PaymentRequest().getDetailCount(); lnCtr++) {
-                System.out.println(poPaymentRequest.PaymentRequest().Detail(lnCtr).getEntryNo());
+            poDisbursement.Disbursement().Master().setOldDisbursementType(poDisbursement.Disbursement().Master().getDisbursementType());
+            
+            loJSON = poDisbursement.Disbursement().Master().setTransactionTotal(5000.0000);
+            if (!"success".equals((String) loJSON.get("result"))) {
+                System.err.println((String) loJSON.get("message"));
+                Assert.fail();
+            }
+             loJSON = poDisbursement.Disbursement().Master().setNetTotal(5000.0000);
+            if (!"success".equals((String) loJSON.get("result"))) {
+                System.err.println((String) loJSON.get("message"));
+                Assert.fail();
+            }
+            loJSON = poDisbursement.Disbursement().Master().setDisbursementType(DisbursementStatic.DisbursementType.CHECK);
+            poDisbursement.Disbursement().CheckPayments();
+            if (!"success".equals((String) loJSON.get("result"))) {
+                System.err.println((String) loJSON.get("message"));
+                Assert.fail();
+            }
+            
+            loJSON = poDisbursement.Disbursement().Master().setModifiedDate(poApp.getServerDate());
+            if (!"success".equals((String) loJSON.get("result"))) {
+                System.err.println((String) loJSON.get("message"));
+                Assert.fail();
+            }
+            
+            for (int lnCtr = 0; lnCtr < poDisbursement.Disbursement().getDetailCount(); lnCtr++) {
+                System.out.println(poDisbursement.Disbursement().Detail(lnCtr).getEntryNo());
             }
 
-            int totalDetailCount = poPaymentRequest.PaymentRequest().getDetailCount();
+            int totalDetailCount = poDisbursement.Disbursement().getDetailCount();
             System.out.println("total detail count after loop: " + totalDetailCount);
-//            poPaymentRequest.PaymentRequest().Detail(1).setParticularID("M001250002");
-//            poPaymentRequest.PaymentRequest().Detail(2).setParticularID("M001250003");
-//            poPaymentRequest.PaymentRequest().Detail(0).setAmount(1000);
-//            poPaymentRequest.PaymentRequest().Detail(1).setAmount(2000);
-//            poPaymentRequest.PaymentRequest().Detail(2).setAmount(3000);
+//            poDisbursement.Disbursement().Detail(1).setParticularID("M001250002");
+//            poDisbursement.Disbursement().Detail(2).setParticularID("M001250003");
+//            poDisbursement.Disbursement().Detail(0).setAmount(1000);
+//            poDisbursement.Disbursement().Detail(1).setAmount(2000);
+//            poDisbursement.Disbursement().Detail(2).setAmount(3000);
 //
-//            poPaymentRequest.PaymentRequest().Detail(0).setModifiedDate(poApp.getServerDate());
-//            poPaymentRequest.PaymentRequest().Detail(1).setModifiedDate(poApp.getServerDate());
-//            poPaymentRequest.PaymentRequest().Detail(2).setModifiedDate(poApp.getServerDate());
+//            poDisbursement.Disbursement().Detail(0).setModifiedDate(poApp.getServerDate());
+//            poDisbursement.Disbursement().Detail(1).setModifiedDate(poApp.getServerDate());
+//            poDisbursement.Disbursement().Detail(2).setModifiedDate(poApp.getServerDate());
 
-            loJSON = poPaymentRequest.PaymentRequest().Detail(0).setAmount(4000.00);
+            loJSON = poDisbursement.Disbursement().Detail(0).setAmount(5000.0000);
             if (!"success".equals((String) loJSON.get("result"))) {
                 System.err.println((String) loJSON.get("message"));
                 Assert.fail();
             }
+            
+//            loJSON = poDisbursement.Disbursement().Detail(1).setAmount(5000.0000);
+//            if (!"success".equals((String) loJSON.get("result"))) {
+//                System.err.println((String) loJSON.get("message"));
+//                Assert.fail();
+//            }
 
-            totalDetailCount = poPaymentRequest.PaymentRequest().getDetailCount();
+            totalDetailCount = poDisbursement.Disbursement().getDetailCount();
             System.out.println("after update: " + totalDetailCount);
 
             System.out.println("------------------- end ----------------------");
 
-            loJSON = poPaymentRequest.PaymentRequest().SaveTransaction();
+            loJSON = poDisbursement.Disbursement().SaveTransaction();
             if (!"success".equals((String) loJSON.get("result"))) {
                 System.err.println((String) loJSON.get("message"));
                 Assert.fail();
@@ -91,7 +124,7 @@ public class testDisbursementUpdateTransaction {
 
     @AfterClass
     public static void tearDownClass() {
-        poPaymentRequest = null;
+        poDisbursement = null;
         poApp = null;
     }
 }

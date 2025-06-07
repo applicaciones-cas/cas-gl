@@ -333,7 +333,8 @@ public class Disbursement extends Transaction {
 //        }
     }
     public CheckPayments CheckPayments() throws SQLException, GuanzonException {
-        if (Master().getDisbursementType().equals(DisbursementStatic.DisbursementType.CHECK)) {
+        if (Master().getOldDisbursementType().equals(DisbursementStatic.DisbursementType.CHECK)
+                || Master().getDisbursementType().equals(DisbursementStatic.DisbursementType.CHECK)) {
             // Only initialize if null, or you want to force recreate each time
             if (checkPayments == null) {
                 checkPayments = new GLControllers(poGRider, logwrapr).CheckPayments();
@@ -341,14 +342,33 @@ public class Disbursement extends Transaction {
 
                 if (Master().getEditMode() == EditMode.ADDNEW) {
                     checkPayments.newRecord();
-                    
+
                     CheckPayments().getModel().setSourceNo(Master().getTransactionNo());
                     CheckPayments().getModel().setSourceCode(SOURCE_CODE);
                 } else if (Master().getEditMode() == EditMode.UPDATE || Master().getEditMode() == EditMode.READY) {
-                    String checkPaymentTransactionNo = checkPayments.getTransactionNoOfCheckPayment(Master().getTransactionNo(), SOURCE_CODE);
+                    String transactionNo = Master().getTransactionNo();
+                    String checkPaymentTransactionNo = checkPayments.getTransactionNoOfCheckPayment(transactionNo, SOURCE_CODE);
+
                     checkPayments.openRecord(checkPaymentTransactionNo);
-                    CheckPayments().getModel().setSourceNo(Master().getTransactionNo());
-                    CheckPayments().getModel().setSourceCode(SOURCE_CODE);
+
+                    if (Master().getEditMode() == EditMode.UPDATE) {
+                        checkPayments.updateRecord();
+                        
+
+                        boolean disbursementTypeChanged = !Master().getDisbursementType().equals(Master().getOldDisbursementType());
+                        if (disbursementTypeChanged) {
+                                    //change status
+
+                            if(Master().getDisbursementType().equals(DisbursementStatic.DisbursementType.CHECK)){
+                              checkPayments.getModel().setTransactionStatus(DisbursementStatic.OPEN);
+                            } else{
+                             checkPayments.getModel().setTransactionStatus(DisbursementStatic.VOID);
+                            }
+                        }
+                    }
+
+                    checkPayments.getModel().setSourceNo(transactionNo);
+                    checkPayments.getModel().setSourceCode(SOURCE_CODE);
                 }
             }
         }
@@ -357,7 +377,6 @@ public class Disbursement extends Transaction {
 
     public JSONObject saveCheckPayments() throws SQLException, GuanzonException, CloneNotSupportedException {
         System.out.println("checkPayments save: " + checkPayments.getEditMode());
-        
         if ("error".equals(checkPayments.saveRecord().get("result"))) {
             poJSON.put("result", "error");
             return poJSON;
@@ -412,7 +431,8 @@ public class Disbursement extends Transaction {
         try {
             /*Only modify this if there are other tables to modify except the master and detail tables*/
 
-            if (Master().getDisbursementType().equals(DisbursementStatic.DisbursementType.CHECK)) {
+            if (Master().getOldDisbursementType().equals(DisbursementStatic.DisbursementType.CHECK)
+                    || Master().getDisbursementType().equals(DisbursementStatic.DisbursementType.CHECK)) {
                 poJSON = new JSONObject();
                 poJSON = saveCheckPayments();
                 if ("error".equals(poJSON.get("result"))) {
