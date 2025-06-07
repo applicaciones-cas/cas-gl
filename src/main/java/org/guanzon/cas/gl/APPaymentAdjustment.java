@@ -575,9 +575,9 @@ public class APPaymentAdjustment extends Parameter {
         poJSON = ShowDialogFX.Browse(poGRider,
                 lsSQL,
                 "",
-                "Transaction Date»Transaction No»Company»Supplier»Payee",
-                "dTransact»sTransNox»sCompnyNm»sSupplrNm»sPayeeNme",
-                "a.dTransact»a.sTransNox»d.sCompnyNm»b.sCompnyNm»c.sPayeeNme",
+                "Transaction Date»Transaction No»Company»Supplier",
+                "dTransact»sTransNox»sCompnyNm»sSupplrNm",
+                "a.dTransact»a.sTransNox»d.sCompnyNm»b.sCompnyNm",
                 1);
 
         if (poJSON != null) {
@@ -615,9 +615,9 @@ public class APPaymentAdjustment extends Parameter {
         poJSON = ShowDialogFX.Browse(poGRider,
                 lsSQL,
                 "",
-                "Transaction Date»Transaction No»Company»Supplier»Payee",
-                "dTransact»sTransNox»sCompnyNm»sSupplrNm»sPayeeNme",
-                "a.dTransact»a.sTransNox»d.sCompnyNm»b.sCompnyNm»c.sPayeeNme",
+                "Transaction Date»Transaction No»Company»Supplier",
+                "dTransact»sTransNox»sCompnyNm»sSupplrNm",
+                "a.dTransact»a.sTransNox»d.sCompnyNm»b.sCompnyNm",
                 byCode ? 0 : 1);
 
         if (poJSON != null) {
@@ -630,24 +630,25 @@ public class APPaymentAdjustment extends Parameter {
         }
     }
 
-    public JSONObject searchTransaction(String industryId, String companyId, String supplier, String referenceNo)
+    public JSONObject searchTransaction(String industryId, String companyName, String supplierName, String referenceNo)
             throws CloneNotSupportedException,
             SQLException,
             GuanzonException {
         poJSON = new JSONObject();
-        if(supplier == null){
-            supplier = "";
-        }
-        if(referenceNo == null){
-            referenceNo = "";
-        }
         
         if(industryId == null || "".equals(industryId)){
             industryId = psIndustryId;
         }
         
-        if(companyId == null || "".equals(companyId)){
-            companyId = psCompanyId;
+        if(supplierName == null){
+            supplierName = "";
+        }
+        if(referenceNo == null){
+            referenceNo = "";
+        }
+        
+        if(companyName == null){
+            companyName = "";
         }
         String lsTransStat = "";
         if (psRecdStat != null) {
@@ -662,8 +663,10 @@ public class APPaymentAdjustment extends Parameter {
         }
         String lsSQL = MiscUtil.addCondition(getSQ_Browse(), 
                 " a.sIndstCdx = " + SQLUtil.toSQL(industryId)
-                + " AND a.sCompnyID LIKE " + SQLUtil.toSQL("%" + companyId)
-                + " AND b.sCompnyNm LIKE " + SQLUtil.toSQL("%" + supplier)
+                + " AND d.sCompnyNm LIKE " + SQLUtil.toSQL("%" + companyName)
+                + " AND b.sCompnyNm LIKE " + SQLUtil.toSQL("%" + supplierName)
+//                + " AND a.sCompnyID LIKE " + SQLUtil.toSQL("%" + companyId)
+//                + " AND b.sCompnyNm LIKE " + SQLUtil.toSQL("%" + supplier)
                 + " AND a.sTransNox LIKE " + SQLUtil.toSQL("%" + referenceNo)
                 ) + lsTransStat;
 
@@ -671,9 +674,9 @@ public class APPaymentAdjustment extends Parameter {
         poJSON = ShowDialogFX.Browse(poGRider,
                 lsSQL,
                 "",
-                "Transaction Date»Transaction No»Company»Supplier»Payee",
-                "dTransact»sTransNox»sCompnyNm»sSupplrNm»sPayeeNme",
-                "a.dTransact»a.sTransNox»d.sCompnyNm»b.sCompnyNm»c.sPayeeNme",
+                "Transaction Date»Transaction No»Company»Supplier",
+                "dTransact»sTransNox»sCompnyNm»sSupplrNm",
+                "a.dTransact»a.sTransNox»d.sCompnyNm»b.sCompnyNm",
                 1);
 
         if (poJSON != null) {
@@ -698,14 +701,14 @@ public class APPaymentAdjustment extends Parameter {
         return this.paModel.size();
     }
 
-    public JSONObject loadAPPaymentAdjustment(String companyId, String supplierId, String referenceNo) {
+    public JSONObject loadAPPaymentAdjustment(String company, String supplier, String referenceNo) {
         poJSON = new JSONObject();
         try {
-            if (companyId == null) {
-                companyId = "";
+            if (company == null) {
+                company = "";
             }
-            if (supplierId == null) {
-                supplierId = "";
+            if (supplier == null) {
+                supplier = "";
             }
             if (referenceNo == null) {
                 referenceNo = "";
@@ -723,9 +726,10 @@ public class APPaymentAdjustment extends Parameter {
                 }
             }
 
-            String lsSQL = MiscUtil.addCondition(getSQ_Browse(), //" a.sIndstCdx = " + SQLUtil.toSQL(psIndustryId)
-                    " a.sCompnyID LIKE " + SQLUtil.toSQL("%" + companyId)
-                    + " AND a.sClientID LIKE " + SQLUtil.toSQL("%" + supplierId)
+            String lsSQL = MiscUtil.addCondition(getSQ_Browse(), 
+                    " a.sIndstCdx = " + SQLUtil.toSQL(psIndustryId)
+                    + " AND d.sCompnyNm LIKE " + SQLUtil.toSQL("%" + company)
+                    + " AND b.sCompnyNm LIKE " + SQLUtil.toSQL("%" + supplier)
                     + " AND a.sTransNox LIKE " + SQLUtil.toSQL("%" + referenceNo)
             );
 
