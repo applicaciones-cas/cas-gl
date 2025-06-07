@@ -41,7 +41,7 @@ public class testDisbursementVerifyTransaction {
                 Assert.fail();
             }
 
-            loJSON = poDisbursement.Disbursement().OpenTransaction("M00125000001");
+            loJSON = poDisbursement.Disbursement().OpenTransaction("P0w125000013");
             if (!"success".equals((String) loJSON.get("result"))) {
                 System.err.println((String) loJSON.get("message"));
                 Assert.fail();
@@ -65,7 +65,7 @@ public class testDisbursementVerifyTransaction {
                  }
             }
             
-            loJSON = poDisbursement.Disbursement().ConfirmTransaction("Confirm");
+            loJSON = poDisbursement.Disbursement().VerifyTransaction("Verify");
             if (!"success".equals((String) loJSON.get("result"))) {
                 System.err.println((String) loJSON.get("message"));
                 Assert.fail();

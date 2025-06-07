@@ -29,7 +29,7 @@ public class Model_Disbursement_Master extends Model{
     Model_Branch poBranch;
     Model_Company poCompany;    
     Model_Industry poIndustry;
-    private String oldDisbursementType ;
+    private String oldDisbursementType = DisbursementStatic.DisbursementType.CHECK;
     
     @Override
     public void initialize() {
@@ -44,7 +44,7 @@ public class Model_Disbursement_Master extends Model{
             poEntity.updateObject("nEntryNox", DisbursementStatic.DefaultValues.default_value_integer );
             poEntity.updateObject("nTranTotl", DisbursementStatic.DefaultValues.default_value_double_0000);
             poEntity.updateObject("nDiscTotl", DisbursementStatic.DefaultValues.default_value_double_0000);
-//            poEntity.updateObject("nWTaxTotl", DisbursementStatic.DefaultValues.default_value_double_0000);
+            poEntity.updateObject("nWTaxTotl", DisbursementStatic.DefaultValues.default_value_double_0000);
 //            poEntity.updateObject("nNonVATSl", DisbursementStatic.DefaultValues.default_value_double_0000);
             poEntity.updateObject("nVATSales", DisbursementStatic.DefaultValues.default_value_double_0000);
             poEntity.updateObject("nVATRatex", DisbursementStatic.DefaultValues.default_value_double);

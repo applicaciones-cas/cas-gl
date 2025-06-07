@@ -51,6 +51,7 @@ public class Model_Payment_Request_Master extends Model {
             poEntity.updateObject("nNetTotal", 0.0000);
             poEntity.updateObject("nAmtPaidx", 0.0000);
             poEntity.updateObject("nEntryNox", 0);
+            poEntity.updateObject("cProcessd", 0);
             poEntity.updateObject("dTransact", SQLUtil.toDate(xsDateShort(poGRider.getServerDate()), SQLUtil.FORMAT_SHORT_DATE));
             poEntity.updateObject("sBranchCd", poGRider.getBranchCode());
             //end - assign default values
@@ -237,6 +238,14 @@ public class Model_Payment_Request_Master extends Model {
         return (String) getValue("sRemarksx");
     }
 
+    public JSONObject setProcess(String process) {
+        return setValue("cProcessd", process);
+    }
+
+    public String getProcess() {
+        return (String) getValue("cProcessd");
+    }
+    
     public JSONObject setModifyingId(String modifyingId) {
         return setValue("sModified", modifyingId);
     }

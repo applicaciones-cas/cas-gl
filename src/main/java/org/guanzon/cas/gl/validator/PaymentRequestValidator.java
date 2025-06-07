@@ -78,12 +78,12 @@ public class PaymentRequestValidator implements GValidator{
             return poJSON;
         }
         
-        if (poGrider.isMainOffice() || poGrider.isWarehouse()){
-            if (poMaster.getDepartmentID()== null || poMaster.getDepartmentID().isEmpty()) {
-                poJSON.put("message", "Department is not set");
-                return poJSON;
-            }
-        }
+//        if (poGrider.isMainOffice() || poGrider.isWarehouse()){
+//            if (poMaster.getDepartmentID()== null || poMaster.getDepartmentID().isEmpty()) {
+//                poJSON.put("message", "Department is not set");
+//                return poJSON;
+//            }
+//        }
         
         if (poMaster.getPayeeID()== null || poMaster.getPayeeID().isEmpty()) {
             poJSON.put("message", "Payee information is missing or not set.");
