@@ -19,23 +19,19 @@ import org.junit.runners.MethodSorters;
 public class testAddtoDisbursementDetail {
 
     static GRiderCAS poApp;
-    static Disbursement poDisbursement;
+    static GLControllers poDisbursement;
 
     @BeforeClass
     public static void setUpClass() {
-        try {
-            System.setProperty("sys.default.path.metadata", "D:/GGC_Maven_Systems/config/metadata/new/");
-            
-            poApp = MiscUtil.Connect();
-            poDisbursement = new GLControllers(poApp, null).Disbursement();
-        } catch (SQLException ex) {
-            Logger.getLogger(testPRFOpenIsuance.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (GuanzonException ex) {
-            Logger.getLogger(testPRFOpenIsuance.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
+
+        System.setProperty("sys.default.path.metadata", "D:/GGC_Maven_Systems/config/metadata/new/");
+
+        poApp = MiscUtil.Connect();
+
+        poDisbursement = new GLControllers(poApp, null);
+
     }
-    
+
     @Test
     public void testOpenTransaction() {
         JSONObject loJSON;
@@ -43,27 +39,43 @@ public class testAddtoDisbursementDetail {
         String TransactionType = "PRF";
 
         try {
-           loJSON = poDisbursement.addUnifiedPaymentToDisbursement(transactionNo,TransactionType);
+            loJSON = poDisbursement.Disbursement().InitTransaction();
             if (!"success".equals((String) loJSON.get("result"))) {
                 System.err.println((String) loJSON.get("message"));
                 Assert.fail();
             }
-//            loJSON = poRecurringIssuance.openRecord(particularNo, Branch, payeeID, AcctNo);
-//            if (!"success".equals((String) loJSON.get("result"))) {
-//                System.err.println((String) loJSON.get("message"));
-//                Assert.fail();
-//            }
+
+            loJSON = poDisbursement.Disbursement().NewTransaction();
+            if (!"success".equals((String) loJSON.get("result"))) {
+                System.err.println((String) loJSON.get("message"));
+                Assert.fail();
+            }
+            loJSON = poDisbursement.Disbursement().addUnifiedPaymentToDisbursement(transactionNo, TransactionType);
+            if (!"success".equals((String) loJSON.get("result"))) {
+                System.err.println((String) loJSON.get("message"));
+                Assert.fail();
+            }
+            
+            for (int i = 0; i < poDisbursement.Disbursement().getDetailCount(); i++) {
+                System.out.println("Detail #" + (i + 1));
+                System.out.println("  Source No   : " + poDisbursement.Disbursement().Detail(i).getSourceNo());
+                System.out.println("  Source Code : " + poDisbursement.Disbursement().Detail(i).getSourceCode());
+                System.out.println("  Account Code: " + poDisbursement.Disbursement().Detail(i).getAccountCode());
+                System.out.println("  Amount      : " + poDisbursement.Disbursement().Detail(i).getAmount());
+                System.out.println("------------------------------------");
+            }
+            
         } catch (SQLException | GuanzonException | CloneNotSupportedException e) {
             Logger.getLogger(MiscUtil.getException(e));
             System.err.println(MiscUtil.getException(e));
             Assert.fail();
-        } 
+        }
 
     }
+
     @AfterClass
     public static void tearDownClass() {
         poDisbursement = null;
         poApp = null;
     }
 }
-

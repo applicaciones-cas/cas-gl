@@ -15,6 +15,8 @@ import org.guanzon.appdriver.constant.EditMode;
 import org.guanzon.cas.gl.services.GLModels;
 import org.guanzon.cas.gl.status.DisbursementStatic;
 import org.guanzon.cas.parameter.model.Model_Branch;
+import org.guanzon.cas.parameter.model.Model_Company;
+import org.guanzon.cas.parameter.model.Model_Industry;
 import org.guanzon.cas.parameter.services.ParamModels;
 import org.json.simple.JSONObject;
 
@@ -25,6 +27,8 @@ import org.json.simple.JSONObject;
 public class Model_Disbursement_Master extends Model{
     Model_Payee poPayee;    
     Model_Branch poBranch;
+    Model_Company poCompany;    
+    Model_Industry poIndustry;
     
     
     @Override
@@ -67,6 +71,8 @@ public class Model_Disbursement_Master extends Model{
 
             ParamModels model = new ParamModels(poGRider);
             poBranch = model.Branch();
+            poCompany = model.Company();
+            poIndustry = model.Industry();
             GLModels gl = new GLModels(poGRider);
             poPayee = gl.Payee();            
             
@@ -105,6 +111,14 @@ public class Model_Disbursement_Master extends Model{
     
     public String getBranchCode(){
         return (String) getValue("sBranchCd");
+    }
+        
+    public JSONObject setCompanyID(String companyID){
+        return setValue("sCompnyID", companyID);
+    }
+    
+    public String getCompanyID(){
+        return (String) getValue("sCompnyID");
     }
     
     public JSONObject setTransactionDate(Date transactionDate){
@@ -371,4 +385,44 @@ public class Model_Disbursement_Master extends Model{
         }
     }
     
+    public Model_Company Company() throws SQLException, GuanzonException {
+        if (!"".equals((String) getValue("sCompnyID"))) {
+            if (poCompany.getEditMode() == EditMode.READY
+                    && poCompany.getCompanyId().equals((String) getValue("sCompnyID"))) {
+                return poCompany;
+            } else {
+                poJSON = poCompany.openRecord((String) getValue("sCompnyID"));
+
+                if ("success".equals((String) poJSON.get("result"))) {
+                    return poCompany;
+                } else {
+                    poCompany.initialize();
+                    return poCompany;
+                }
+            }
+        } else {
+            poCompany.initialize();
+            return poCompany;
+        }
+    }
+    public Model_Industry Industry() throws SQLException, GuanzonException {
+        if (!"".equals((String) getValue("sIndstCdx"))) {
+            if (poIndustry.getEditMode() == EditMode.READY
+                    && poIndustry.getIndustryId().equals((String) getValue("sIndstCdx"))) {
+                return poIndustry;
+            } else {
+                poJSON = poIndustry.openRecord((String) getValue("sIndstCdx"));
+
+                if ("success".equals((String) poJSON.get("result"))) {
+                    return poIndustry;
+                } else {
+                    poIndustry.initialize();
+                    return poIndustry;
+                }
+            }
+        } else {
+            poIndustry.initialize();
+            return poIndustry;
+        }
+    }
 }
