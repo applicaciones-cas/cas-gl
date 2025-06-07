@@ -2,6 +2,9 @@ package org.guanzon.cas.gl.services;
 
 import org.guanzon.appdriver.base.GRiderCAS;
 import org.guanzon.cas.gl.model.Model_Account_Chart;
+import org.guanzon.cas.gl.model.Model_Check_Payments;
+import org.guanzon.cas.gl.model.Model_Disbursement_Detail;
+import org.guanzon.cas.gl.model.Model_Disbursement_Master;
 import org.guanzon.cas.gl.model.Model_Journal_Detail;
 import org.guanzon.cas.gl.model.Model_Journal_Master;
 import org.guanzon.cas.gl.model.Model_Particular;
@@ -168,6 +171,57 @@ public class GLModels {
         return poPaymentRequestDetail;
     }
     
+    public Model_Disbursement_Master DisbursementMaster(){
+        if (poGRider == null){
+            System.err.println("GLModels.PaymentRequestMaster: Application driver is not set.");
+            return null;
+        }
+        
+        if (poDisbursementMaster == null){
+            poDisbursementMaster = new Model_Disbursement_Master();
+            poDisbursementMaster.setApplicationDriver(poGRider);
+            poDisbursementMaster.setXML("Model_Disbursement_Master");
+            poDisbursementMaster.setTableName("Disbursement_Master");
+            poDisbursementMaster.initialize();
+        }
+
+        return poDisbursementMaster;
+    }
+
+    public Model_Disbursement_Detail DisbursementDetail(){
+        if (poGRider == null){
+            System.err.println("GLModels.PaymentRequestDetail: Application driver is not set.");
+            return null;
+        }
+        
+        if (poDisbursementDetail == null){
+            poDisbursementDetail = new Model_Disbursement_Detail();
+            poDisbursementDetail.setApplicationDriver(poGRider);
+            poDisbursementDetail.setXML("Model_Disbursement_Detail");
+            poDisbursementDetail.setTableName("Disbursement_Detail");
+            poDisbursementDetail.initialize();
+        }
+
+        return poDisbursementDetail;
+    }
+    
+    public Model_Check_Payments CheckPayments(){
+        if (poGRider == null){
+            System.err.println("GLModels.CheckPayments: Application driver is not set.");
+            return null;
+        }
+        
+        if (poCheckPayments == null){
+            poCheckPayments = new Model_Check_Payments();
+            poCheckPayments.setApplicationDriver(poGRider);
+            poCheckPayments.setXML("Model_Check_Payments");
+            poCheckPayments.setTableName("Check_Payments");
+            poCheckPayments.initialize();
+        }
+
+        return poCheckPayments;
+    }
+    
     private final GRiderCAS poGRider;
     
     private Model_Account_Chart poAccountChart;
@@ -179,4 +233,7 @@ public class GLModels {
     private Model_Recurring_Issuance poRecurringIssuance;
     private Model_Payment_Request_Master poPaymentRequestMaster;    
     private Model_Payment_Request_Detail poPaymentRequestDetail;
+    private Model_Disbursement_Master poDisbursementMaster;    
+    private Model_Disbursement_Detail poDisbursementDetail; 
+    private Model_Check_Payments poCheckPayments;
 }
