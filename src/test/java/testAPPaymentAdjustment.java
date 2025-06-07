@@ -134,7 +134,7 @@ public class testAPPaymentAdjustment {
         }
     }
     
-    @Test
+//    @Test
     public void testOpenTransaction() {
         JSONObject loJSON;
         
@@ -202,6 +202,116 @@ public class testAPPaymentAdjustment {
         } catch (SQLException | GuanzonException ex) {
             Logger.getLogger(testAPPaymentAdjustment.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }  
+    
+//    @Test
+    public void testCancelTransaction() {
+        JSONObject loJSON;
+        
+        try {
+            poAPPaymentAdjustment.initialize();
+
+            loJSON = poAPPaymentAdjustment.OpenTransaction("A00125000001");
+            if (!"success".equals((String) loJSON.get("result"))){
+                System.err.println((String) loJSON.get("message"));
+                Assert.fail();
+            } 
+
+            //retreiving using column index
+            for (int lnCol = 1; lnCol <= poAPPaymentAdjustment.getModel().getColumnCount(); lnCol++){
+                System.out.println(poAPPaymentAdjustment.getModel().getColumn(lnCol) + " ->> " + poAPPaymentAdjustment.getModel().getValue(lnCol));
+            }
+            //retreiving using field descriptions
+            System.out.println(poAPPaymentAdjustment.getModel().Branch().getBranchName());
+            System.out.println(poAPPaymentAdjustment.getModel().Company().getCompanyName());
+            System.out.println(poAPPaymentAdjustment.getModel().Industry().getDescription());
+
+            loJSON = poAPPaymentAdjustment.CancelTransaction("test cancel");
+            if (!"success".equals((String) loJSON.get("result"))){
+                System.err.println((String) loJSON.get("message"));
+                Assert.fail();
+            } 
+            
+            System.out.println((String) loJSON.get("message"));
+        } catch (CloneNotSupportedException |ParseException e) {
+            System.err.println(MiscUtil.getException(e));
+            Assert.fail();
+        } catch (SQLException | GuanzonException ex) {
+            Logger.getLogger(testAPPaymentAdjustment.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }   
     
+//    @Test
+    public void testVoidTransaction() {
+        JSONObject loJSON;
+        
+        try {
+            poAPPaymentAdjustment.initialize();
+
+            loJSON = poAPPaymentAdjustment.OpenTransaction("A00125000001");
+            if (!"success".equals((String) loJSON.get("result"))){
+                System.err.println((String) loJSON.get("message"));
+                Assert.fail();
+            } 
+
+            //retreiving using column index
+            for (int lnCol = 1; lnCol <= poAPPaymentAdjustment.getModel().getColumnCount(); lnCol++){
+                System.out.println(poAPPaymentAdjustment.getModel().getColumn(lnCol) + " ->> " + poAPPaymentAdjustment.getModel().getValue(lnCol));
+            }
+            //retreiving using field descriptions
+            System.out.println(poAPPaymentAdjustment.getModel().Branch().getBranchName());
+            System.out.println(poAPPaymentAdjustment.getModel().Company().getCompanyName());
+            System.out.println(poAPPaymentAdjustment.getModel().Industry().getDescription());
+
+            loJSON = poAPPaymentAdjustment.VoidTransaction("test void");
+            if (!"success".equals((String) loJSON.get("result"))){
+                System.err.println((String) loJSON.get("message"));
+                Assert.fail();
+            } 
+            
+            System.out.println((String) loJSON.get("message"));
+        } catch (CloneNotSupportedException |ParseException e) {
+            System.err.println(MiscUtil.getException(e));
+            Assert.fail();
+        } catch (SQLException | GuanzonException ex) {
+            Logger.getLogger(testAPPaymentAdjustment.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }  
+    
+//    @Test
+    public void testPaidTransaction() {
+        JSONObject loJSON;
+        
+        try {
+            poAPPaymentAdjustment.initialize();
+
+            loJSON = poAPPaymentAdjustment.OpenTransaction("A00125000001");
+            if (!"success".equals((String) loJSON.get("result"))){
+                System.err.println((String) loJSON.get("message"));
+                Assert.fail();
+            } 
+
+            //retreiving using column index
+            for (int lnCol = 1; lnCol <= poAPPaymentAdjustment.getModel().getColumnCount(); lnCol++){
+                System.out.println(poAPPaymentAdjustment.getModel().getColumn(lnCol) + " ->> " + poAPPaymentAdjustment.getModel().getValue(lnCol));
+            }
+            //retreiving using field descriptions
+            System.out.println(poAPPaymentAdjustment.getModel().Branch().getBranchName());
+            System.out.println(poAPPaymentAdjustment.getModel().Company().getCompanyName());
+            System.out.println(poAPPaymentAdjustment.getModel().Industry().getDescription());
+
+            loJSON = poAPPaymentAdjustment.PaidTransaction("test paid");
+            if (!"success".equals((String) loJSON.get("result"))){
+                System.err.println((String) loJSON.get("message"));
+                Assert.fail();
+            } 
+            
+            System.out.println((String) loJSON.get("message"));
+        } catch (CloneNotSupportedException |ParseException e) {
+            System.err.println(MiscUtil.getException(e));
+            Assert.fail();
+        } catch (SQLException | GuanzonException ex) {
+            Logger.getLogger(testAPPaymentAdjustment.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    } 
 }

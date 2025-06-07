@@ -112,18 +112,30 @@ public class APPaymentAdjustment extends Parameter {
                 return poJSON;
             }
         }
-
-        poGRider.beginTrans("UPDATE STATUS", "ConfirmTransaction", SOURCE_CODE, poModel.getTransactionNo());
-
-        //change status
-//        poJSON = statusChange(poModel.getTable(), (String) poModel.getValue("sTransNox"), remarks, lsStatus, !lbConfirm, true);
+        
+        poJSON = UpdateTransaction();
         if (!"success".equals((String) poJSON.get("result"))) {
-            poGRider.rollbackTrans();
+            return poJSON;
+        }
+        
+        poModel.setTransactionStatus(APPaymentAdjustmentStatus.CONFIRMED);
+        
+        poJSON = SaveTransaction();
+        if (!"success".equals((String) poJSON.get("result"))) {
             return poJSON;
         }
 
-        //Create Cache_Payables TODO
-        poGRider.commitTrans();
+//        poGRider.beginTrans("UPDATE STATUS", "ConfirmTransaction", SOURCE_CODE, poModel.getTransactionNo());
+//
+//        //change status
+////        poJSON = statusChange(poModel.getTable(), (String) poModel.getValue("sTransNox"), remarks, lsStatus, !lbConfirm, true);
+//        if (!"success".equals((String) poJSON.get("result"))) {
+//            poGRider.rollbackTrans();
+//            return poJSON;
+//        }
+//
+//        //Create Cache_Payables TODO
+//        poGRider.commitTrans();
 
         poJSON = new JSONObject();
         poJSON.put("result", "success");
@@ -172,18 +184,30 @@ public class APPaymentAdjustment extends Parameter {
                 }
             }
         }
-
-        poGRider.beginTrans("UPDATE STATUS", "ReturnTransaction", SOURCE_CODE, poModel.getTransactionNo());
-
-        //change status
-//        poJSON = statusChange(poModel.getTable(), (String) poModel.getValue("sTransNox"), remarks, lsStatus, !lbReturn, true);
+        
+        poJSON = UpdateTransaction();
         if (!"success".equals((String) poJSON.get("result"))) {
-            poGRider.rollbackTrans();
+            return poJSON;
+        }
+        
+        poModel.setTransactionStatus(APPaymentAdjustmentStatus.RETURNED);
+        
+        poJSON = SaveTransaction();
+        if (!"success".equals((String) poJSON.get("result"))) {
             return poJSON;
         }
 
-        //Update Cache Payables?
-        poGRider.commitTrans();
+//        poGRider.beginTrans("UPDATE STATUS", "ReturnTransaction", SOURCE_CODE, poModel.getTransactionNo());
+//
+//        //change status
+////        poJSON = statusChange(poModel.getTable(), (String) poModel.getValue("sTransNox"), remarks, lsStatus, !lbReturn, true);
+//        if (!"success".equals((String) poJSON.get("result"))) {
+//            poGRider.rollbackTrans();
+//            return poJSON;
+//        }
+//
+//        //Update Cache Payables?
+//        poGRider.commitTrans();
 
         poJSON = new JSONObject();
         poJSON.put("result", "success");
@@ -223,38 +247,51 @@ public class APPaymentAdjustment extends Parameter {
         if (!"success".equals((String) poJSON.get("result"))) {
             return poJSON;
         }
-
-        poGRider.beginTrans("UPDATE STATUS", "PaidTransaction", SOURCE_CODE, poModel.getTransactionNo());
-
-        //change status
-//        poJSON = statusChange(poModel.getTable(), (String) poModel.getValue("sTransNox"), remarks, lsStatus, !lbPaid, true);
+        
+        poJSON = UpdateTransaction();
         if (!"success".equals((String) poJSON.get("result"))) {
-            poGRider.rollbackTrans();
             return poJSON;
         }
+        
+        poModel.setTransactionStatus(APPaymentAdjustmentStatus.PAID);
+        poModel.isProcessed(true);
+        
+        poJSON = SaveTransaction();
+        if (!"success".equals((String) poJSON.get("result"))) {
+            return poJSON;
+        }
+//
+//        poGRider.beginTrans("UPDATE STATUS", "PaidTransaction", SOURCE_CODE, poModel.getTransactionNo());
+//
+//        //change status
+////        poJSON = statusChange(poModel.getTable(), (String) poModel.getValue("sTransNox"), remarks, lsStatus, !lbPaid, true);
+//        if (!"success".equals((String) poJSON.get("result"))) {
+//            poGRider.rollbackTrans();
+//            return poJSON;
+//        }
 
         //Update Cache Payables?
-        poJSON = poModel.openRecord(poModel.getTransactionNo());
-        if (!"success".equals((String) poJSON.get("result"))) {
-            poGRider.rollbackTrans();
-            return poJSON;
-        }
+//        poJSON = poModel.openRecord(poModel.getTransactionNo());
+//        if (!"success".equals((String) poJSON.get("result"))) {
+//            poGRider.rollbackTrans();
+//            return poJSON;
+//        }
 
-        poJSON = poModel.updateRecord();
-        if (!"success".equals((String) poJSON.get("result"))) {
-            poGRider.rollbackTrans();
-            return poJSON;
-        }
-
-        poModel.isProcessed(true);
-
-        poJSON = poModel.saveRecord();
-        if (!"success".equals((String) poJSON.get("result"))) {
-            poGRider.rollbackTrans();
-            return poJSON;
-        }
-
-        poGRider.commitTrans();
+//        poJSON = poModel.updateRecord();
+//        if (!"success".equals((String) poJSON.get("result"))) {
+//            poGRider.rollbackTrans();
+//            return poJSON;
+//        }
+//
+//        poModel.isProcessed(true);
+//
+//        poJSON = poModel.saveRecord();
+//        if (!"success".equals((String) poJSON.get("result"))) {
+//            poGRider.rollbackTrans();
+//            return poJSON;
+//        }
+//
+//        poGRider.commitTrans();
 
         poJSON = new JSONObject();
         poJSON.put("result", "success");
@@ -303,22 +340,34 @@ public class APPaymentAdjustment extends Parameter {
                 }
             }
         }
-
-        poGRider.beginTrans("UPDATE STATUS", "CancelTransaction", SOURCE_CODE, poModel.getTransactionNo());
-
-        //change status
-//        poJSON = statusChange(poModel.getTable(), (String) poModel.getValue("sTransNox"), remarks, lsStatus, !lbCancelled, true);
+        
+        poJSON = UpdateTransaction();
         if (!"success".equals((String) poJSON.get("result"))) {
-            poGRider.rollbackTrans();
+            return poJSON;
+        }
+        
+        poModel.setTransactionStatus(APPaymentAdjustmentStatus.CANCELLED);
+        
+        poJSON = SaveTransaction();
+        if (!"success".equals((String) poJSON.get("result"))) {
             return poJSON;
         }
 
-        if (APPaymentAdjustmentStatus.CONFIRMED.equals(poModel.getTransactionStatus())) {
-            //Update Cache Payables
-
-        }
-
-        poGRider.commitTrans();
+//        poGRider.beginTrans("UPDATE STATUS", "CancelTransaction", SOURCE_CODE, poModel.getTransactionNo());
+//
+//        //change status
+////        poJSON = statusChange(poModel.getTable(), (String) poModel.getValue("sTransNox"), remarks, lsStatus, !lbCancelled, true);
+//        if (!"success".equals((String) poJSON.get("result"))) {
+//            poGRider.rollbackTrans();
+//            return poJSON;
+//        }
+//
+//        if (APPaymentAdjustmentStatus.CONFIRMED.equals(poModel.getTransactionStatus())) {
+//            //Update Cache Payables
+//
+//        }
+//
+//        poGRider.commitTrans();
 
         poJSON = new JSONObject();
         poJSON.put("result", "success");
@@ -367,21 +416,33 @@ public class APPaymentAdjustment extends Parameter {
                 }
             }
         }
-
-        poGRider.beginTrans("UPDATE STATUS", "VoidTransaction", SOURCE_CODE, poModel.getTransactionNo());
-
-        //change status
-//        poJSON = statusChange(poModel.getTable(), (String) poModel.getValue("sTransNox"), remarks, lsStatus, !lbVoid, true);
+        
+        poJSON = UpdateTransaction();
         if (!"success".equals((String) poJSON.get("result"))) {
-            poGRider.rollbackTrans();
+            return poJSON;
+        }
+        
+        poModel.setTransactionStatus(APPaymentAdjustmentStatus.VOID);
+        
+        poJSON = SaveTransaction();
+        if (!"success".equals((String) poJSON.get("result"))) {
             return poJSON;
         }
 
-        if (APPaymentAdjustmentStatus.CONFIRMED.equals(poModel.getTransactionStatus())) {
-            //Update Cache Payables
-        }
-
-        poGRider.commitTrans();
+//        poGRider.beginTrans("UPDATE STATUS", "VoidTransaction", SOURCE_CODE, poModel.getTransactionNo());
+//
+//        //change status
+////        poJSON = statusChange(poModel.getTable(), (String) poModel.getValue("sTransNox"), remarks, lsStatus, !lbVoid, true);
+//        if (!"success".equals((String) poJSON.get("result"))) {
+//            poGRider.rollbackTrans();
+//            return poJSON;
+//        }
+//
+//        if (APPaymentAdjustmentStatus.CONFIRMED.equals(poModel.getTransactionStatus())) {
+//            //Update Cache Payables
+//        }
+//
+//        poGRider.commitTrans();
 
         poJSON = new JSONObject();
         poJSON.put("result", "success");
@@ -412,6 +473,7 @@ public class APPaymentAdjustment extends Parameter {
             poModel.setCompanyId(psCompanyId);
             poModel.setTransactionDate(poGRider.getServerDate());
             poModel.setTransactionStatus(APPaymentAdjustmentStatus.OPEN);
+            poModel.isProcessed(false);
 
         } catch (SQLException ex) {
             Logger.getLogger(APPaymentAdjustment.class.getName()).log(Level.SEVERE, MiscUtil.getException(ex), ex);
