@@ -64,6 +64,12 @@ public class APPaymentAdjustment extends Parameter {
             throws SQLException,
             GuanzonException,
             CloneNotSupportedException {
+        poJSON = new JSONObject();
+        poJSON = isEntryOkay(poModel.getTransactionStatus());
+        if (!"success".equals((String) poJSON.get("result"))) {
+            return poJSON;
+        }
+        
         return saveRecord();
     }
 

@@ -114,11 +114,12 @@ public class APPaymentAdjustmentValidator  implements GValidator{
             return poJSON;
         }
         
-        if (poMaster.getIssuedTo() == null || poMaster.getIssuedTo().isEmpty()) {
-            poJSON.put("result","error");
-            poJSON.put("message", "Payee information is missing or not set.");
-            return poJSON;
-        }
+        //TODO
+//        if (poMaster.getIssuedTo() == null || poMaster.getIssuedTo().isEmpty()) {
+//            poJSON.put("result","error");
+//            poJSON.put("message", "Payee information is missing or not set.");
+//            return poJSON;
+//        }
         
         if(poMaster.getDebitAmount().doubleValue() <= 0.0000 && poMaster.getCreditAmount().doubleValue() <= 0.0000){
             poJSON.put("result","error"); 
