@@ -462,6 +462,10 @@ public class APPaymentAdjustment extends Parameter {
     public void setCompanyId(String companyId) {
         psCompanyId = companyId;
     }
+    
+    public void resetMaster() {
+        poModel = new GLModels(poGRider).APPaymentAdjustment();
+    }
 
     @Override
     public Model_AP_Payment_Adjustment getModel() {

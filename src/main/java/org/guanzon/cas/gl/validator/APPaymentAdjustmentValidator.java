@@ -65,10 +65,8 @@ public class APPaymentAdjustmentValidator  implements GValidator{
                 return validateCancelled();
             case APPaymentAdjustmentStatus.VOID:
                 return validateVoid();
-//            case APPaymentAdjustmentStatus.POSTED:
-//                return validatePosted();
-            case APPaymentAdjustmentStatus.RETURNED:
-                return validateReturned();
+//            case APPaymentAdjustmentStatus.RETURNED:
+//                return validateReturned();
             default:
                 poJSON = new JSONObject();
                 poJSON.put("result", "success");
@@ -80,14 +78,57 @@ public class APPaymentAdjustmentValidator  implements GValidator{
     private JSONObject validateNew(){
         poJSON = new JSONObject();
         
+        if (poMaster.getTransactionNo()== null || poMaster.getTransactionNo().isEmpty()) {
+            poJSON.put("result","error");
+            poJSON.put("message", "Invalid Transaction No");
+            return poJSON;
+        }
+        
+        if (poMaster.getIndustryId() == null || poMaster.getIndustryId().isEmpty()) {
+            poJSON.put("result","error");
+            poJSON.put("message", "Invalid Industry ID");
+            return poJSON;
+        }
+        
+        if (poMaster.getCompanyId()== null || poMaster.getCompanyId().isEmpty()) {
+            poJSON.put("result","error");
+            poJSON.put("message", "Invalid Company ID");
+            return poJSON;
+        }
         
         if (poMaster.getBranchCode()== null || poMaster.getBranchCode().isEmpty()) {
+            poJSON.put("result","error");
             poJSON.put("message", "Invalid Branch");
             return poJSON;
         }
         
-        if (poMaster.getIssuedTo()== null || poMaster.getIssuedTo().isEmpty()) {
+        if (poMaster.getClientId()== null || poMaster.getClientId().isEmpty()) {
+            poJSON.put("result","error");
+            poJSON.put("message", "Invalid Supplier ID");
+            return poJSON;
+        }
+        
+        if (poMaster.getReferenceNo()== null || poMaster.getReferenceNo().isEmpty()) {
+            poJSON.put("result","error");
+            poJSON.put("message", "Invalid Reference No");
+            return poJSON;
+        }
+        
+        if (poMaster.getIssuedTo() == null || poMaster.getIssuedTo().isEmpty()) {
+            poJSON.put("result","error");
             poJSON.put("message", "Payee information is missing or not set.");
+            return poJSON;
+        }
+        
+        if(poMaster.getDebitAmount().doubleValue() <= 0.0000 && poMaster.getCreditAmount().doubleValue() <= 0.0000){
+            poJSON.put("result","error"); 
+            poJSON.put("message", "Both debit and credit amount cannot be empty.");
+            return poJSON;
+        }
+        
+        if(poMaster.getDebitAmount().doubleValue() > 0.0000 && poMaster.getCreditAmount().doubleValue() > 0.0000){
+            poJSON.put("result","error"); 
+            poJSON.put("message", "Debit and credit amounts cannot both have values at the same time.");
             return poJSON;
         }
         
