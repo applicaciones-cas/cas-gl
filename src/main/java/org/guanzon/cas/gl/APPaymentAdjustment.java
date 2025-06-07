@@ -464,13 +464,17 @@ public class APPaymentAdjustment extends Parameter {
     }
 
     @Override
+    public Model_AP_Payment_Adjustment getModel() {
+        return poModel;
+    }
+
+    @Override
     public JSONObject initFields() {
         try {
             /*Put initial model values here*/
             poJSON = new JSONObject();
             poModel.setBranchCode(poGRider.getBranchCode());
             poModel.setIndustryId(psIndustryId);
-            poModel.setCompanyId(psCompanyId);
             poModel.setTransactionDate(poGRider.getServerDate());
             poModel.setTransactionStatus(APPaymentAdjustmentStatus.OPEN);
             poModel.isProcessed(false);
@@ -492,14 +496,186 @@ public class APPaymentAdjustment extends Parameter {
         poJSON.put("result", "success");
         return poJSON;
     }
-
-    public JSONObject SaveRecord() {
+    
+    public JSONObject SearchClient(String value, boolean byCode)
+            throws SQLException,
+            GuanzonException {
         poJSON = new JSONObject();
 
-        poJSON.put("result", "success");
+        Client object = new ClientControllers(poGRider, logwrapr).Client();
+        object.Master().setRecordStatus(RecordStatus.ACTIVE);
+        object.Master().setClientType("1");
+        poJSON = object.Master().searchRecord(value, byCode);
+        if ("success".equals((String) poJSON.get("result"))) {
+            getModel().setClientId(object.Master().getModel().getClientId());
+//            getModel().setAddressId(object.ClientAddress().getModel().getAddressId()); //TODO
+//            getModel().setContactId(object.ClientInstitutionContact().getModel().getClientId()); //TODO
+        }
+
         return poJSON;
     }
 
+    public JSONObject SearchCompany(String value, boolean byCode)
+            throws SQLException,
+            GuanzonException {
+        poJSON = new JSONObject();
+
+        Company object = new ParamControllers(poGRider, logwrapr).Company();
+        object.setRecordStatus(RecordStatus.ACTIVE);
+        poJSON = object.searchRecord(value, byCode);
+        if ("success".equals((String) poJSON.get("result"))) {
+            getModel().setCompanyId(object.getModel().getCompanyId());
+        }
+        return poJSON;
+    }
+
+    public JSONObject SearchPayee(String value, boolean byCode) throws ExceptionInInitializerError, SQLException, GuanzonException {
+        Payee object = new GLControllers(poGRider, logwrapr).Payee();
+        object.setRecordStatus("1");
+
+        poJSON = object.searchRecord(value, byCode);
+        if ("success".equals((String) poJSON.get("result"))) {
+            getModel().setIssuedTo(object.getModel().getPayeeID());
+            getModel().setPayerCode(object.getModel().getRecordStatus());
+        }
+        return poJSON;
+    }
+
+    public JSONObject searchTransaction()
+            throws CloneNotSupportedException,
+            SQLException,
+            GuanzonException {
+        poJSON = new JSONObject();
+        String lsTransStat = "";
+        if (psRecdStat != null) {
+            if (psRecdStat.length() > 1) {
+                for (int lnCtr = 0; lnCtr <= psRecdStat.length() - 1; lnCtr++) {
+                    lsTransStat += ", " + SQLUtil.toSQL(Character.toString(psRecdStat.charAt(lnCtr)));
+                }
+                lsTransStat = " AND a.cTranStat IN (" + lsTransStat.substring(2) + ")";
+            } else {
+                lsTransStat = " AND a.cTranStat = " + SQLUtil.toSQL(psRecdStat);
+            }
+        }
+        String lsSQL = MiscUtil.addCondition(getSQ_Browse(), 
+                " a.sIndstCdx = " + SQLUtil.toSQL(psIndustryId))
+                + lsTransStat;
+        
+        System.out.println("Executing SQL: " + lsSQL);
+        poJSON = ShowDialogFX.Browse(poGRider,
+                lsSQL,
+                "",
+                "Transaction Date»Transaction No»Company»Supplier»Payee",
+                "dTransact»sTransNox»sCompnyNm»sSupplrNm»sPayeeNme",
+                "a.dTransact»a.sTransNox»d.sCompnyNm»b.sCompnyNm»c.sPayeeNme",
+                1);
+
+        if (poJSON != null) {
+            return OpenTransaction((String) poJSON.get("sTransNox"));
+        } else {
+            poJSON = new JSONObject();
+            poJSON.put("result", "error");
+            poJSON.put("message", "No record loaded.");
+            return poJSON;
+        }
+    }
+
+    public JSONObject searchTransaction(String value, boolean byCode)
+            throws CloneNotSupportedException,
+            SQLException,
+            GuanzonException {
+        poJSON = new JSONObject();
+        String lsTransStat = "";
+        if (psRecdStat != null) {
+            if (psRecdStat.length() > 1) {
+                for (int lnCtr = 0; lnCtr <= psRecdStat.length() - 1; lnCtr++) {
+                    lsTransStat += ", " + SQLUtil.toSQL(Character.toString(psRecdStat.charAt(lnCtr)));
+                }
+                lsTransStat = " AND a.cTranStat IN (" + lsTransStat.substring(2) + ")";
+            } else {
+                lsTransStat = " AND a.cTranStat = " + SQLUtil.toSQL(psRecdStat);
+            }
+        }
+        String lsSQL = MiscUtil.addCondition(getSQ_Browse(), 
+                " a.sIndstCdx = " + SQLUtil.toSQL(psIndustryId)
+                + " AND a.sTransNox LIKE " + SQLUtil.toSQL("%"+ value))
+                + lsTransStat;
+        
+        System.out.println("Executing SQL: " + lsSQL);
+        poJSON = ShowDialogFX.Browse(poGRider,
+                lsSQL,
+                "",
+                "Transaction Date»Transaction No»Company»Supplier»Payee",
+                "dTransact»sTransNox»sCompnyNm»sSupplrNm»sPayeeNme",
+                "a.dTransact»a.sTransNox»d.sCompnyNm»b.sCompnyNm»c.sPayeeNme",
+                byCode ? 0 : 1);
+
+        if (poJSON != null) {
+            return OpenTransaction((String) poJSON.get("sTransNox"));
+        } else {
+            poJSON = new JSONObject();
+            poJSON.put("result", "error");
+            poJSON.put("message", "No record loaded.");
+            return poJSON;
+        }
+    }
+
+    public JSONObject searchTransaction(String industryId, String companyId, String supplier, String referenceNo)
+            throws CloneNotSupportedException,
+            SQLException,
+            GuanzonException {
+        poJSON = new JSONObject();
+        if(supplier == null){
+            supplier = "";
+        }
+        if(referenceNo == null){
+            referenceNo = "";
+        }
+        
+        if(industryId == null || "".equals(industryId)){
+            industryId = psIndustryId;
+        }
+        
+        if(companyId == null || "".equals(companyId)){
+            companyId = psCompanyId;
+        }
+        String lsTransStat = "";
+        if (psRecdStat != null) {
+            if (psRecdStat.length() > 1) {
+                for (int lnCtr = 0; lnCtr <= psRecdStat.length() - 1; lnCtr++) {
+                    lsTransStat += ", " + SQLUtil.toSQL(Character.toString(psRecdStat.charAt(lnCtr)));
+                }
+                lsTransStat = " AND a.cTranStat IN (" + lsTransStat.substring(2) + ")";
+            } else {
+                lsTransStat = " AND a.cTranStat = " + SQLUtil.toSQL(psRecdStat);
+            }
+        }
+        String lsSQL = MiscUtil.addCondition(getSQ_Browse(), 
+                " a.sIndstCdx = " + SQLUtil.toSQL(industryId)
+                + " AND a.sCompnyID LIKE " + SQLUtil.toSQL("%" + companyId)
+                + " AND b.sCompnyNm LIKE " + SQLUtil.toSQL("%" + supplier)
+                + " AND a.sTransNox LIKE " + SQLUtil.toSQL("%" + referenceNo)
+                ) + lsTransStat;
+
+        System.out.println("Executing SQL: " + lsSQL);
+        poJSON = ShowDialogFX.Browse(poGRider,
+                lsSQL,
+                "",
+                "Transaction Date»Transaction No»Company»Supplier»Payee",
+                "dTransact»sTransNox»sCompnyNm»sSupplrNm»sPayeeNme",
+                "a.dTransact»a.sTransNox»d.sCompnyNm»b.sCompnyNm»c.sPayeeNme",
+                1);
+
+        if (poJSON != null) {
+            return OpenTransaction((String) poJSON.get("sTransNox"));
+        } else {
+            poJSON = new JSONObject();
+            poJSON.put("result", "error");
+            poJSON.put("message", "No record loaded.");
+            return poJSON;
+        }
+    }
+    
     private Model_AP_Payment_Adjustment APPaymentAdjustment() {
         return new GLModels(poGRider).APPaymentAdjustment();
     }
@@ -587,7 +763,7 @@ public class APPaymentAdjustment extends Parameter {
         poJSON.put("result", "success");
         return poJSON;
     }
-
+    
     public JSONObject isEntryOkay(String status) throws SQLException {
         poJSON = new JSONObject();
 
@@ -606,103 +782,6 @@ public class APPaymentAdjustment extends Parameter {
         poModel.setModifiedDate(poGRider.getServerDate());
 
         poJSON.put("result", "success");
-        return poJSON;
-    }
-
-    @Override
-    public Model_AP_Payment_Adjustment getModel() {
-        return poModel;
-    }
-
-//    public JSONObject searchTransaction() throws SQLException, GuanzonException {
-//        String lsSQL = getSQ_Browse();
-//
-//        poJSON = ShowDialogFX.Search(poGRider,
-//                lsSQL,
-//                "",
-//                "ID»Description»Account",
-//                "sPrtclrID»sDescript»xAcctDesc",
-//                "a.sPrtclrID»a.sDescript»IFNULL(b.sDescript, '')",
-//                1);
-//
-//        if (poJSON != null) {
-//            return poModel.openRecord((String) poJSON.get("sPrtclrID"));
-//        } else {
-//            poJSON = new JSONObject();
-//            poJSON.put("result", "error");
-//            poJSON.put("message", "No record loaded.");
-//            return poJSON;
-//        }
-//    }
-
-    public JSONObject searchTransaction()
-            throws CloneNotSupportedException,
-            SQLException,
-            GuanzonException {
-        poJSON = new JSONObject();
-        String lsTransStat = "";
-        String lsSQL = getSQ_Browse();
-
-        System.out.println("Executing SQL: " + lsSQL);
-        poJSON = ShowDialogFX.Browse(poGRider,
-                lsSQL,
-                "",
-                "Transaction Date»Transaction No»Payee»Company",
-                "dTransact»sTransNox»sPayeeNme»sSupplrNm",
-                "a.dTransact»a.sTransNox»c.sPayeeNme»b.sCompnyNm»",
-                1);
-
-        if (poJSON != null) {
-            return OpenTransaction((String) poJSON.get("sTransNox"));
-        } else {
-            poJSON = new JSONObject();
-            poJSON.put("result", "error");
-            poJSON.put("message", "No record loaded.");
-            return poJSON;
-        }
-    }
-
-    public JSONObject SearchClient(String value, boolean byCode)
-            throws SQLException,
-            GuanzonException {
-        poJSON = new JSONObject();
-
-        Client object = new ClientControllers(poGRider, logwrapr).Client();
-        object.Master().setRecordStatus(RecordStatus.ACTIVE);
-        object.Master().setClientType("1");
-        poJSON = object.Master().searchRecord(value, byCode);
-        if ("success".equals((String) poJSON.get("result"))) {
-            getModel().setClientId(object.Master().getModel().getClientId());
-//            getModel().setAddressId(object.ClientAddress().getModel().getAddressId()); //TODO
-//            getModel().setContactId(object.ClientInstitutionContact().getModel().getClientId()); //TODO
-        }
-
-        return poJSON;
-    }
-
-    public JSONObject SearchCompany(String value, boolean byCode)
-            throws SQLException,
-            GuanzonException {
-        poJSON = new JSONObject();
-
-        Company object = new ParamControllers(poGRider, logwrapr).Company();
-        object.setRecordStatus(RecordStatus.ACTIVE);
-        poJSON = object.searchRecord(value, byCode);
-        if ("success".equals((String) poJSON.get("result"))) {
-            getModel().setCompanyId(object.getModel().getCompanyId());
-        }
-        return poJSON;
-    }
-
-    public JSONObject SearchPayee(String value, boolean byCode) throws ExceptionInInitializerError, SQLException, GuanzonException {
-        Payee object = new GLControllers(poGRider, logwrapr).Payee();
-        object.setRecordStatus("1");
-
-        poJSON = object.searchRecord(value, byCode);
-        if ("success".equals((String) poJSON.get("result"))) {
-            getModel().setIssuedTo(object.getModel().getPayeeID());
-            getModel().setPayerCode(object.getModel().getRecordStatus());
-        }
         return poJSON;
     }
 
