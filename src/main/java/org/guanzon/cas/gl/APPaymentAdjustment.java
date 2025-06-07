@@ -731,6 +731,7 @@ public class APPaymentAdjustment extends Parameter {
                     + " AND d.sCompnyNm LIKE " + SQLUtil.toSQL("%" + company)
                     + " AND b.sCompnyNm LIKE " + SQLUtil.toSQL("%" + supplier)
                     + " AND a.sTransNox LIKE " + SQLUtil.toSQL("%" + referenceNo)
+                    + " AND a.cProcessd = '0' "
             );
 
             lsSQL = lsSQL + "" + lsTransStat + " ORDER BY a.dTransact DESC ";
