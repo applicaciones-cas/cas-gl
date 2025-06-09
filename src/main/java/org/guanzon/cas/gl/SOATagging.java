@@ -1158,13 +1158,13 @@ public class SOATagging extends Transaction {
                     paPaymentRequest.get(paPaymentRequest.size()-1).InitTransaction();
                     paPaymentRequest.get(paPaymentRequest.size()-1).OpenTransaction(Detail(lnCtr).getSourceNo());
                     paPaymentRequest.get(paPaymentRequest.size()-1).UpdateTransaction();
-                    paPaymentRequest.get(paPaymentRequest.size()-1).Master().isProcessed(true);
+                    paPaymentRequest.get(paPaymentRequest.size()-1).Master().setProcess("1");
                     
                     switch(status){
                         case SOATaggingStatus.VOID:
                         case SOATaggingStatus.CANCELLED:
                         case SOATaggingStatus.RETURNED:
-                            paPaymentRequest.get(paPaymentRequest.size()-1).Master().isProcessed(false);
+                            paPaymentRequest.get(paPaymentRequest.size()-1).Master().setProcess("0");
 //                            paPaymentRequest.get(paPaymentRequest.size()-1).Master().isProcessed(false);
                         break;
                         case SOATaggingStatus.CONFIRMED:
@@ -1210,7 +1210,7 @@ public class SOATagging extends Transaction {
                     paPaymentRequest.get(paPaymentRequest.size()-1).InitTransaction();
                     paPaymentRequest.get(paPaymentRequest.size()-1).OpenTransaction(Detail(lnCtr).getSourceNo());
                     paPaymentRequest.get(paPaymentRequest.size()-1).UpdateTransaction();
-                    paPaymentRequest.get(paPaymentRequest.size()-1).Master().isProcessed(false);
+                    paPaymentRequest.get(paPaymentRequest.size()-1).Master().setProcess("0");
                     break;
                 case SOATaggingStatic.CachePayable:
 //                    paCachePayable.add(CachePayableMaster());

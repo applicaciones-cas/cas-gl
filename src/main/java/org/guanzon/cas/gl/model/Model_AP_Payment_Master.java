@@ -12,15 +12,11 @@ import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.base.SQLUtil;
 import org.guanzon.appdriver.constant.EditMode;
-import org.guanzon.appdriver.constant.Logical;
-import org.guanzon.cas.client.model.Model_Client_Address;
-import org.guanzon.cas.client.model.Model_Client_Institution_Contact;
 import org.guanzon.cas.client.model.Model_Client_Master;
 import org.guanzon.cas.client.services.ClientModels;
-import org.guanzon.cas.gl.services.SOATaggingModels;
+import org.guanzon.cas.gl.services.GLModels;
 import org.guanzon.cas.gl.status.SOATaggingStatus;
 import org.guanzon.cas.parameter.model.Model_Branch;
-import org.guanzon.cas.parameter.model.Model_Category;
 import org.guanzon.cas.parameter.model.Model_Company;
 import org.guanzon.cas.parameter.model.Model_Industry;
 import org.guanzon.cas.parameter.services.ParamModels;
@@ -30,18 +26,16 @@ import org.json.simple.JSONObject;
 
 /**
  *
- * @author Aldrich || Arsiela Team 2 05-23-2025
+ * @author Aldrich || Arsiela Team 2 05232025
  */
 public class Model_AP_Payment_Master extends Model {
 
     //reference objects
     Model_Branch poBranch;
     Model_Industry poIndustry;
-    Model_Category poCategory;
     Model_Company poCompany;
     Model_Client_Master poSupplier;
-    Model_Client_Address poSupplierAdress;
-    Model_Client_Institution_Contact poSupplierContactPerson;
+    Model_Payee poPayee;
 
     @Override
     public void initialize() {
@@ -58,11 +52,10 @@ public class Model_AP_Payment_Master extends Model {
             poEntity.updateObject("dModified", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
             poEntity.updateObject("nEntryNox", 0);
             poEntity.updateObject("nTranTotl", 0.0000);
-            poEntity.updateObject("nTranTotl", 0.0000);
             poEntity.updateObject("nDiscAmnt", 0.0000);
-            poEntity.updateObject("nAmtPaidX", 0.0000);
             poEntity.updateObject("nTaxAmntx", 0.0000);
             poEntity.updateObject("nNetTotal", 0.0000);
+            poEntity.updateObject("nAmtPaidX", 0.0000);
             poEntity.updateObject("nFreightx", 0.00);
             poEntity.updateObject("nVATAmtxx", 0.00);
             poEntity.updateObject("nVatExmpt", 0.00);
@@ -80,13 +73,13 @@ public class Model_AP_Payment_Master extends Model {
             ParamModels model = new ParamModels(poGRider);
             poBranch = model.Branch();
             poIndustry = model.Industry();
-            poCategory = model.Category();
             poCompany = model.Company();
 
             ClientModels clientModel = new ClientModels(poGRider);
             poSupplier = clientModel.ClientMaster();
-            poSupplierAdress = clientModel.ClientAddress();
-            poSupplierContactPerson = clientModel.ClientInstitutionContact();
+            
+            GLModels gl = new GLModels(poGRider);
+            poPayee = gl.Payee();
 //            end - initialize reference objects
 
             pnEditMode = EditMode.UNKNOWN;
@@ -113,11 +106,11 @@ public class Model_AP_Payment_Master extends Model {
     }
 
     public JSONObject setBranchCode(String branchCode) {
-        return setValue("sBranchCD", branchCode);
+        return setValue("sBranchCd", branchCode);
     }
 
     public String getBranchCode() {
-        return (String) getValue("sBranchCD");
+        return (String) getValue("sBranchCd");
     }
     
     public JSONObject setTransactionDate(Date transactionDate) {
@@ -201,33 +194,33 @@ public class Model_AP_Payment_Master extends Model {
         return (Number) getValue("nDiscAmnt");
     }
     
-    public JSONObject setVATAmt(Number vatAmount) {
+    public JSONObject setVatAmount(Number vatAmount) {
         return setValue("nVATAmtxx", vatAmount);
     }
 
-    public Number getVATAmt() {
+    public Number getVatAmount() {
         if (getValue("nVATAmtxx") == null || "".equals(getValue("nVATAmtxx"))) {
             return 0.00;
         }
         return (Number) getValue("nVATAmtxx");
     }
 
-    public JSONObject setVATExempt(Number vatExempt) {
+    public JSONObject setVatExempt(Number vatExempt) {
         return setValue("nVatExmpt", vatExempt);
     }
 
-    public Number getVATExempt() {
+    public Number getVatExempt() {
         if (getValue("nVatExmpt") == null || "".equals(getValue("nVatExmpt"))) {
             return 0.00;
         }
         return (Number) getValue("nVatExmpt");
     }
 
-    public JSONObject setZeroVATSale(Number zeroVATSale) {
+    public JSONObject setZeroVaTSale(Number zeroVATSale) {
         return setValue("nZroVATSl", zeroVATSale);
     }
 
-    public Number getZeroVATSale() {
+    public Number getZeroVaTSale() {
         if (getValue("nZroVATSl") == null || "".equals(getValue("nZroVATSl"))) {
             return 0.00;
         }
@@ -356,27 +349,6 @@ public class Model_AP_Payment_Master extends Model {
         }
     }
 
-    public Model_Category Category() throws SQLException, GuanzonException {
-        if (!"".equals((String) getValue("sCategrCd"))) {
-            if (poCategory.getEditMode() == EditMode.READY
-                    && poCategory.getCategoryId().equals((String) getValue("sCategrCd"))) {
-                return poCategory;
-            } else {
-                poJSON = poCategory.openRecord((String) getValue("sCategrCd"));
-
-                if ("success".equals((String) poJSON.get("result"))) {
-                    return poCategory;
-                } else {
-                    poCategory.initialize();
-                    return poCategory;
-                }
-            }
-        } else {
-            poCategory.initialize();
-            return poCategory;
-        }
-    }
-
     public Model_Company Company() throws SQLException, GuanzonException {
         if (!"".equals((String) getValue("sCompnyID"))) {
             if (poCompany.getEditMode() == EditMode.READY
@@ -418,46 +390,25 @@ public class Model_AP_Payment_Master extends Model {
             return poSupplier;
         }
     }
-
-//    public Model_Client_Address SupplierAddress() throws SQLException, GuanzonException {
-//        if (!"".equals((String) getValue("sAddressID"))) {
-//            if (poSupplierAdress.getEditMode() == EditMode.READY
-//                    && poSupplierAdress.getClientId().equals((String) getValue("sAddressID"))) {
-//                return poSupplierAdress;
-//            } else {
-//                poJSON = poSupplierAdress.openRecord((String) getValue("sAddressID"));
-//
-//                if ("success".equals((String) poJSON.get("result"))) {
-//                    return poSupplierAdress;
-//                } else {
-//                    poSupplierAdress.initialize();
-//                    return poSupplierAdress;
-//                }
-//            }
-//        } else {
-//            poSupplierAdress.initialize();
-//            return poSupplierAdress;
-//        }
-//    }
-
-    public Model_Client_Institution_Contact SupplierContactPerson() throws SQLException, GuanzonException {
-        if (!"".equals((String) getValue("sContctID"))) {
-            if (poSupplierContactPerson.getEditMode() == EditMode.READY
-                    && poSupplierContactPerson.getClientId().equals((String) getValue("sContctID"))) {
-                return poSupplierContactPerson;
+    
+    public Model_Payee Payee() throws SQLException, GuanzonException {
+        if (!"".equals((String) getValue("sIssuedTo"))) {
+            if (poPayee.getEditMode() == EditMode.READY
+                    && poPayee.getPayeeID().equals((String) getValue("sIssuedTo"))) {
+                return poPayee;
             } else {
-                poJSON = poSupplierContactPerson.openRecord((String) getValue("sContctID"));
+                poJSON = poPayee.openRecord((String) getValue("sIssuedTo"));
 
                 if ("success".equals((String) poJSON.get("result"))) {
-                    return poSupplierContactPerson;
+                    return poPayee;
                 } else {
-                    poSupplierContactPerson.initialize();
-                    return poSupplierContactPerson;
+                    poPayee.initialize();
+                    return poPayee;
                 }
             }
         } else {
-            poSupplierContactPerson.initialize();
-            return poSupplierContactPerson;
+            poPayee.initialize();
+            return poPayee;
         }
     }
     //end - reference object models
