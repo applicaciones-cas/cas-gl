@@ -23,12 +23,12 @@ import org.guanzon.cas.client.services.ClientControllers;
 import org.guanzon.cas.gl.model.Model_Check_Payments;
 import org.guanzon.cas.gl.model.Model_Disbursement_Detail;
 import org.guanzon.cas.gl.model.Model_Disbursement_Master;
+import org.guanzon.cas.gl.model.Model_Payment_Request_Master;
 import org.guanzon.cas.gl.services.GLControllers;
 import org.guanzon.cas.gl.services.GLModels;
 import org.guanzon.cas.gl.status.DisbursementStatic;
 import org.guanzon.cas.gl.status.PaymentRequestStatus;
 import org.guanzon.cas.gl.validator.DisbursementValidator;
-import org.guanzon.cas.parameter.Banks;
 import org.guanzon.cas.parameter.Branch;
 import org.guanzon.cas.parameter.TaxCode;
 import org.guanzon.cas.parameter.services.ParamControllers;
@@ -41,13 +41,17 @@ public class Disbursement extends Transaction {
     List<Model_Disbursement_Master> poDisbursementMaster;
     private Model_Check_Payments poCheckPayments;
     private CheckPayments checkPayments;
+    List<PaymentRequest> poPaymentRequest;
+    List<Model> paDetailRemoved;
 
     public JSONObject InitTransaction() throws SQLException, GuanzonException {
         SOURCE_CODE = "DISB";
 
         poMaster = new GLModels(poGRider).DisbursementMaster();
         poDetail = new GLModels(poGRider).DisbursementDetail();
-        paDetail = new ArrayList<>();
+        paDetail = new ArrayList<>();        
+        poPaymentRequest = new ArrayList<>();
+        
 
         return initialize();
     }
@@ -276,6 +280,8 @@ public class Disbursement extends Transaction {
         poJSON = object.searchRecord(value, byCode);
         if ("success".equals((String) poJSON.get("result"))) {
             Detail(row).setTAxCode(object.getModel().getTaxCode());
+            Detail(row).setTaxRates(object.getModel().getRegularRate());
+            Detail(row).setTaxAmount((Detail(row).getAmount().doubleValue() * object.getModel().getRegularRate() / 100));
         }
 
         return poJSON;
@@ -320,22 +326,13 @@ public class Disbursement extends Transaction {
     public Model_Disbursement_Master Master() {
         return (Model_Disbursement_Master) poMaster;
     }
-//
-//    @Override
-//    public Model_Disbursement_Detail Detail(int row) {
-//        return (Model_Disbursement_Detail) paDetail.get(row);
-//    }
 
 
     @Override
     public Model_Disbursement_Detail Detail(int row) {
          return (Model_Disbursement_Detail) paDetail.get(row);
-//        if (row >= 0 && row < paDetail.size()) {
-//            return (Model_Disbursement_Detail) paDetail.get(row);
-//        } else {
-//            throw new IndexOutOfBoundsException("Invalid row index: " + row + ", size: " + paDetail.size());
-//        }
     }
+    
     public CheckPayments CheckPayments() throws SQLException, GuanzonException {
         if (Master().getOldDisbursementType().equals(DisbursementStatic.DisbursementType.CHECK)
                 || Master().getDisbursementType().equals(DisbursementStatic.DisbursementType.CHECK)) {
@@ -380,7 +377,7 @@ public class Disbursement extends Transaction {
     }
 
     public JSONObject saveCheckPayments() throws SQLException, GuanzonException, CloneNotSupportedException {
-        System.out.println("checkPayments save: " + checkPayments.getEditMode());
+//        System.out.println("checkPayments save: " + checkPayments.getEditMode());
         if ("error".equals(checkPayments.saveRecord().get("result"))) {
             poJSON.put("result", "error");
             return poJSON;
@@ -388,75 +385,51 @@ public class Disbursement extends Transaction {
         poJSON.put("result", "success");
         return poJSON;
     }
-    public JSONObject updateDisbursementsSouurce() throws SQLException, GuanzonException, CloneNotSupportedException {
-      String sourceNo = "";
-      String sourceCode = "";
-      
-        for (int lnCtr = 0; lnCtr <= getDetailCount()-1; lnCtr++) {
-            sourceNo = Detail(lnCtr).getSourceNo();
-            sourceCode =  Detail(lnCtr).getSourceCode();
-        }
-        JSONObject poJSON = new JSONObject();
-        int detailCount = 0;
-
-        PaymentRequest poPaymentRequest = null;
-//    APPaymentMaster poAPPaymentMaster = null;
-//    CachePayableMaster poCachePayableMaster = null;
-
+    
+    private PaymentRequest PaymentRequest() throws SQLException, GuanzonException {
+        return new GLControllers(poGRider, logwrapr).PaymentRequest();
+    }
+    
+    public JSONObject updateDisbursementsSource(String sourceNo,String sourceCode,String particular,Boolean isAdd) throws SQLException, GuanzonException, CloneNotSupportedException {
+        
         switch (sourceCode) {
             case "PRF":
-                poPaymentRequest = new GLControllers(poGRider, logwrapr).PaymentRequest();
-                poPaymentRequest.setWithParent(true);
-                poJSON = poPaymentRequest.InitTransaction();
-                if (!"success".equals(poJSON.get("result"))) {
-                    poJSON.put("message", "No records found.");
-                    return poJSON;
+                int lnRow, lnList;
+                boolean lbExist = false;
+                for (lnRow = 0; lnRow <= poPaymentRequest.size() - 1; lnRow++) {
+                    if (poPaymentRequest.get(lnRow).Master().getTransactionNo() != null) {
+                        if (sourceNo.equals(poPaymentRequest.get(lnRow).Master().getTransactionNo())) {
+                            lbExist = true;
+                            break;
+                        }
+                    }
                 }
-                poJSON = poPaymentRequest.OpenTransaction(sourceNo);
-                if (!"success".equals(poJSON.get("result"))) {
-                    poJSON.put("message", "No records found.");
-                    return poJSON;
+                if (!lbExist) {
+                    poPaymentRequest.add(PaymentRequest());
+                    poPaymentRequest.get(poPaymentRequest.size() - 1).InitTransaction();
+                    poPaymentRequest.get(poPaymentRequest.size() - 1).OpenTransaction(sourceNo);
+                    poPaymentRequest.get(poPaymentRequest.size() - 1).UpdateTransaction();
+                    lnList = poPaymentRequest.size() - 1;
+                } else {
+                    lnList = lnRow;
                 }
-                poJSON = poPaymentRequest.UpdateTransaction();
-                if (!"success".equals(poJSON.get("result"))) {
-                    poJSON.put("message", "No records found.");
-                    return poJSON;
-                }
-                if(Master().getEditMode() == EditMode.ADDNEW){
-                    poJSON = poPaymentRequest.Master().setProcess(DisbursementStatic.DefaultValues.default_value_string_1);
-                    poJSON = poPaymentRequest.Master().setModifyingId(poGRider.getUserID());
-                    poJSON = poPaymentRequest.Master().setModifiedDate(poGRider.getServerDate());
+                if (isAdd) {
+                    poPaymentRequest.get(lnList).Master().setProcess(DisbursementStatic.DefaultValues.default_value_string_1);
+                    poPaymentRequest.get(lnList).Master().setModifyingId(poGRider.getUserID());
+                    poPaymentRequest.get(lnList).Master().setModifiedDate(poGRider.getServerDate());
+                } else {
+                    poPaymentRequest.get(lnList).Master().setProcess(DisbursementStatic.DefaultValues.default_value_string);
+                    poPaymentRequest.get(lnList).Master().setModifyingId(poGRider.getUserID());
+                    poPaymentRequest.get(lnList).Master().setModifiedDate(poGRider.getServerDate());
                 }
                 break;
 
             case "SOA":
-//            poAPPaymentMaster = new GLControllers(poGRider, logwrapr).APPaymentMaster();
-//            poJSON = poAPPaymentMaster.InitTransaction();
-//            if (!"success".equals(poJSON.get("result"))) {
-//                poJSON.put("message", "No records found.");
-//                return poJSON;
-//            }
-//            poJSON = poAPPaymentMaster.OpenTransaction(transactionNo);
-//            if (!"success".equals(poJSON.get("result"))) {
-//                poJSON.put("message", "No records found.");
-//                return poJSON;
-//            }
-//            detailCount = poAPPaymentMaster.getDetailCount();
+//              OBject is not available
                 break;
 
             case "CP":
-//            poCachePayableMaster = new GLControllers(poGRider, logwrapr).CachePayableMaster();
-//            poJSON = poCachePayableMaster.InitTransaction();
-//            if (!"success".equals(poJSON.get("result"))) {
-//                poJSON.put("message", "No records found.");
-//                return poJSON;
-//            }
-//            poJSON = poCachePayableMaster.OpenTransaction(transactionNo);
-//            if (!"success".equals(poJSON.get("result"))) {
-//                poJSON.put("message", "No records found.");
-//                return poJSON;
-//            }
-//            detailCount = poCachePayableMaster.getDetailCount();
+//              OBject is not available
                 break;
 
             default:
@@ -469,93 +442,54 @@ public class Disbursement extends Transaction {
         return poJSON;
     }
     
-    public JSONObject saveDisbursementsSouurce() throws SQLException, GuanzonException, CloneNotSupportedException {
-      String sourceNo = "";
-      String sourceCode = "";
-      
-        for (int lnCtr = 0; lnCtr <= getDetailCount()-1; lnCtr++) {
-            sourceNo = Detail(lnCtr).getSourceNo();
-            sourceCode =  Detail(lnCtr).getSourceCode();
-        }
-//        JSONObject poJSON = new JSONObject();
-        int detailCount = 0;
-
-        PaymentRequest poPaymentRequest = null;
-//    APPaymentMaster poAPPaymentMaster = null;
-//    CachePayableMaster poCachePayableMaster = null;
-
-        switch (sourceCode) {
-            case "PRF":
-//                 poPaymentRequest.setWithParent(true);
-                 poJSON = poPaymentRequest.SaveTransaction();
-                if (!"success".equals(poJSON.get("result"))) {
-                    poJSON.put("message", "No records found.");
+    
+    private JSONObject saveDisbursementsSource()
+            throws CloneNotSupportedException, SQLException, GuanzonException {
+        poJSON = new JSONObject();
+        int lnCtr;
+            for (lnCtr = 0; lnCtr <= poPaymentRequest.size() - 1; lnCtr++) {
+                poPaymentRequest.get(lnCtr).Master().setModifyingId(poGRider.getUserID());
+                poPaymentRequest.get(lnCtr).Master().setModifiedDate(poGRider.getServerDate());
+                poPaymentRequest.get(lnCtr).setWithParent(true);
+                poJSON = poPaymentRequest.get(lnCtr).SaveTransaction();
+                if ("error".equals((String) poJSON.get("result"))) {
                     return poJSON;
                 }
-                break;
+            }
 
-            case "SOA":
-//            poAPPaymentMaster = new GLControllers(poGRider, logwrapr).APPaymentMaster();
-//            poJSON = poAPPaymentMaster.InitTransaction();
-//            if (!"success".equals(poJSON.get("result"))) {
-//                poJSON.put("message", "No records found.");
-//                return poJSON;
-//            }
-//            poJSON = poAPPaymentMaster.OpenTransaction(transactionNo);
-//            if (!"success".equals(poJSON.get("result"))) {
-//                poJSON.put("message", "No records found.");
-//                return poJSON;
-//            }
-//            detailCount = poAPPaymentMaster.getDetailCount();
-                break;
-
-            case "CP":
-//            poCachePayableMaster = new GLControllers(poGRider, logwrapr).CachePayableMaster();
-//            poJSON = poCachePayableMaster.InitTransaction();
-//            if (!"success".equals(poJSON.get("result"))) {
-//                poJSON.put("message", "No records found.");
-//                return poJSON;
-//            }
-//            poJSON = poCachePayableMaster.OpenTransaction(transactionNo);
-//            if (!"success".equals(poJSON.get("result"))) {
-//                poJSON.put("message", "No records found.");
-//                return poJSON;
-//            }
-//            detailCount = poCachePayableMaster.getDetailCount();
-                break;
-
-            default:
-                poJSON.put("result", "error");
-                poJSON.put("message", "Invalid payment type.");
-                return poJSON;
-        }
-
+        
         poJSON.put("result", "success");
         return poJSON;
     }
+    
 
     @Override
     public JSONObject willSave() throws SQLException, GuanzonException, CloneNotSupportedException {
+      String sourceNo = "";
+      String sourceCode = "";
+      String particular = "";
         /*Put system validations and other assignments here*/
         poJSON = new JSONObject();
-
-        //remove items with no stockid or quantity order       
+        if (paDetailRemoved == null) {
+            paDetailRemoved = new ArrayList<>();
+        }
+        //remove items with no stockid or quantity order     
+        
         Iterator<Model> detail = Detail().iterator();
         while (detail.hasNext()) {
             Model item = detail.next(); // Store the item before checking conditions
+            sourceNo  = (String) item.getValue("sSourceNo");
+            Number amount = (Number) item.getValue("nAmountxx");
 
-            if ("".equals((String) item.getValue("sSourceNo"))
-                    || (double) item.getValue("nAmountxx") <= 0) {
-                detail.remove(); // Correctly remove the item
+            if (amount.doubleValue() <= 0 || "".equals(sourceNo)) {
+                detail.remove(); // Correctly remove the item    
+                if (Master().getEditMode()== EditMode.UPDATE){
+                paDetailRemoved.add(item);
+                }
             }
         }
 
-        //assign other info on detail
-        for (int lnCtr = 0; lnCtr <= getDetailCount() - 1; lnCtr++) {
-            Detail(lnCtr).setTransactionNo(Master().getTransactionNo());
-            Detail(lnCtr).setEntryNo(lnCtr + 1);
-        }
-//        
+
         if (getDetailCount() == 1){
             //do not allow a single item detail with no quantity order
             if (Detail(0).getAmount().doubleValue()== 0.0000) {
@@ -565,16 +499,60 @@ public class Disbursement extends Transaction {
             }
         }
         
-        poJSON = updateDisbursementsSouurce();
-        if ("error".equals(poJSON.get("result"))) {
-            poJSON.put("message", "Unable to update Disbursement source please inform MIS dept.");
-            return poJSON;
+        poJSON = setValueToOthers();
+            if (!"success".equals((String) poJSON.get("result"))) {
+                return poJSON;
+            }
+        
+                //assign other info on detail
+        for (int lnCtr = 0; lnCtr <= getDetailCount() - 1; lnCtr++) {
+            Detail(lnCtr).setTransactionNo(Master().getTransactionNo());
+            Detail(lnCtr).setEntryNo(lnCtr + 1);
         }
+
 
         poJSON.put("result", "success");
         return poJSON;
     }
+        public int getDetailRemovedCount() {
+        if (paDetailRemoved == null) {
+            paDetailRemoved = new ArrayList<>();
+        }
 
+        return paDetailRemoved.size();
+    }
+
+    public Model_Disbursement_Detail DetailRemove(int row) {
+        return (Model_Disbursement_Detail) paDetailRemoved.get(row);
+    }
+    private JSONObject setValueToOthers()
+            throws CloneNotSupportedException,
+            SQLException,
+            GuanzonException {
+        poJSON = new JSONObject();
+        poPaymentRequest = new ArrayList<>();
+        int lnCtr;
+
+        //Update Purchase Order exist in PO Receiving Detail
+        for (lnCtr = 0; lnCtr <= getDetailCount() - 1; lnCtr++) {
+            System.out.println("----------------------PURCHASE ORDER RECEIVING DETAIL---------------------- ");
+            System.out.println("TransNo : " + (lnCtr + 1) + " : " + Detail(lnCtr).getTransactionNo());
+            System.out.println("sourceno : " + (lnCtr + 1) + " : " + Detail(lnCtr).getSourceNo());
+            System.out.println("sourceCode : " + (lnCtr + 1) + " : " + Detail(lnCtr).getSourceCode());
+            System.out.println("------------------------------------------------------------------ ");
+        
+                updateDisbursementsSource(Detail(lnCtr).getSourceNo(), Detail(lnCtr).getSourceCode(), Detail(lnCtr).getParticular(), true);
+        }
+        //Update stock request removed 
+        for (lnCtr = 0; lnCtr <= getDetailRemovedCount() - 1; lnCtr++) {
+            //Purchase Order
+            updateDisbursementsSource(DetailRemove(lnCtr).getSourceNo(), DetailRemove(lnCtr).getSourceCode(), DetailRemove(lnCtr).getParticular(),false);
+        }
+        poJSON.put("result", "success");
+        return poJSON;
+    }
+
+    
     @Override
     public JSONObject save() {
         /*Put saving business rules here*/
@@ -585,9 +563,9 @@ public class Disbursement extends Transaction {
     public JSONObject saveOthers() {
         try {
             /*Only modify this if there are other tables to modify except the master and detail tables*/
-        poJSON = new JSONObject();
 
-            poJSON = saveDisbursementsSouurce();
+
+            poJSON = saveDisbursementsSource();
             if ("error".equals(poJSON.get("result"))) {
                 poGRider.rollbackTrans();
                 return poJSON;
@@ -614,15 +592,6 @@ public class Disbursement extends Transaction {
         /*This procedure was called when saving was complete*/
         System.out.println("Transaction saved successfully.");
     }
-//
-//    @Override
-//    public JSONObject initFields() {
-//        /*Put initial model values here*/
-//        poJSON = new JSONObject();
-//
-//        poJSON.put("result", "success");
-//        return poJSON;
-//    }
 
     @Override
     public void initSQL() {
@@ -736,7 +705,6 @@ public class Disbursement extends Transaction {
     public JSONObject addUnifiedPaymentToDisbursement(String transactionNo, String paymentType)
             throws CloneNotSupportedException, SQLException, GuanzonException {
 
-        JSONObject poJSON = new JSONObject();
         int detailCount = 0;
 
         PaymentRequest poPaymentRequest = null;

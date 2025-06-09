@@ -33,7 +33,6 @@ public class testDisbursementUpdateTransaction {
     public void testUpdateTransaction() throws GuanzonException {
         JSONObject loJSON;
 
-        Date currentDate = new Date(); 
         try {
             loJSON = (JSONObject) poDisbursement.Disbursement().InitTransaction();
             if (!"success".equals((String) loJSON.get("result"))) {
@@ -41,7 +40,7 @@ public class testDisbursementUpdateTransaction {
                 Assert.fail();
             }
 
-            loJSON = (JSONObject) poDisbursement.Disbursement().OpenTransaction("P0w125000013");
+            loJSON = (JSONObject) poDisbursement.Disbursement().OpenTransaction("P0w125000036");
             if (!"success".equals((String) loJSON.get("result"))) {
                 System.err.println((String) loJSON.get("message"));
                 Assert.fail();
@@ -93,7 +92,7 @@ public class testDisbursementUpdateTransaction {
 //            poDisbursement.Disbursement().Detail(1).setModifiedDate(poApp.getServerDate());
 //            poDisbursement.Disbursement().Detail(2).setModifiedDate(poApp.getServerDate());
 
-            loJSON = poDisbursement.Disbursement().Detail(0).setAmount(5000.0000);
+            loJSON = poDisbursement.Disbursement().Detail(2).setAmount(0.0000);
             if (!"success".equals((String) loJSON.get("result"))) {
                 System.err.println((String) loJSON.get("message"));
                 Assert.fail();

@@ -35,7 +35,7 @@ public class testAddtoDisbursementDetail {
     @Test
     public void testOpenTransaction() {
         JSONObject loJSON;
-        String transactionNo = "GCC225000007";
+        String transactionNo = "M00125000007";
         String TransactionType = "PRF";
 
         try {

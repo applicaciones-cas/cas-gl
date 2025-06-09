@@ -40,7 +40,7 @@ public class testDisbursementOpenTransaction {
                 Assert.fail();
             }
 
-            loJSON = poDisbursement.Disbursement().OpenTransaction("P0w125000001");
+            loJSON = poDisbursement.Disbursement().OpenTransaction("P0w125000024");
             if (!"success".equals((String) loJSON.get("result"))) {
                 System.err.println((String) loJSON.get("message"));
                 Assert.fail();
