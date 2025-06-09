@@ -899,7 +899,7 @@ public class SOATagging extends Transaction {
         return new GLModels(poGRider).PaymentRequestMaster();
     }
     
-    private Model_Payment_Request_Master PaymentRequestList(int row) {
+    public Model_Payment_Request_Master PaymentRequestList(int row) {
         return (Model_Payment_Request_Master) paPayablesList.get(row);
     }
     
