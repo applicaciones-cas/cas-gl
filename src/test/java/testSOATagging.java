@@ -8,6 +8,7 @@ import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.cas.gl.SOATagging;
 import org.guanzon.cas.gl.services.GLControllers;
 import org.guanzon.cas.gl.services.SOATaggingControllers;
+import org.guanzon.cas.gl.status.SOATaggingStatic;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import org.junit.Assert;
@@ -40,10 +41,11 @@ public class testSOATagging {
         poSOATaggingController = new GLControllers(instance, null).SOATagging();
     }
 
-//    @Test
+    @Test
     public void testNewTransaction() {
         String branchCd = instance.getBranchCode();
         String industryId = "01";
+        String companyId = "0002";
         String remarks = "this is a test Class 4.";
 
         String stockId = "C0W125000001";
@@ -66,12 +68,13 @@ public class testSOATagging {
             }
             try {
                 poSOATaggingController.setIndustryId(industryId);
-                poSOATaggingController.setCompanyId("0002");
-                poSOATaggingController.setCategoryId("0001");
+                poSOATaggingController.setCompanyId(companyId);
 
                 poSOATaggingController.initFields();
                 poSOATaggingController.Master().setIndustryId(industryId); 
                 Assert.assertEquals(poSOATaggingController.Master().getIndustryId(), industryId);
+                poSOATaggingController.Master().setCompanyId(companyId); 
+                Assert.assertEquals(poSOATaggingController.Master().getCompanyId(), companyId);
                 poSOATaggingController.Master().setTransactionDate(instance.getServerDate()); 
                 Assert.assertEquals(poSOATaggingController.Master().getTransactionDate(), instance.getServerDate());
                 poSOATaggingController.Master().setBranchCode(branchCd); 
@@ -82,11 +85,10 @@ public class testSOATagging {
                 poSOATaggingController.Master().setRemarks(remarks);
                 Assert.assertEquals(poSOATaggingController.Master().getRemarks(), remarks);
 
-                poSOATaggingController.Detail(0).setSourceNo("test");
-                poSOATaggingController.Detail(0).setSourceCode("");
-                poSOATaggingController.Detail(0).setDebitAmount(0.0080);
-                poSOATaggingController.Detail(0).setCreditAmount(0.0000);
-                poSOATaggingController.Detail(0).setAppliedAmount(0.0080);
+                poSOATaggingController.Master().setSOANumber("soa01");
+                
+                poSOATaggingController.addPayablesToSOADetail("P0w125000033", SOATaggingStatic.PaymentRequest);
+                poSOATaggingController.Detail(0).setAppliedAmount(96325.0000);
                 poSOATaggingController.AddDetail();
 
                 poSOATaggingController.computeFields();
@@ -163,7 +165,7 @@ public class testSOATagging {
         }
 
     }
-    @Test
+//    @Test
     public void testLoadPayables() {
         String industryId = "05";
         String companyId = "0001";

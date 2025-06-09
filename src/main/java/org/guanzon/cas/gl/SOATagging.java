@@ -926,7 +926,7 @@ public class SOATagging extends Transaction {
         try {
             paPayablesList = new ArrayList<>();
             paPayablesType = new ArrayList<>();
-            String lsSQL = getPayableSQL() + " ORDER BY a.dTransact DESC ";
+            String lsSQL = getPayableSQL() + " ORDER BY dTransact DESC ";
             System.out.println("Executing SQL: " + lsSQL);
             System.out.println("Payment Request List");
             ResultSet loRS = poGRider.executeQuery(lsSQL);
@@ -1113,7 +1113,7 @@ public class SOATagging extends Transaction {
             //Set value to por detail
             Detail(lnCtr).setTransactionNo(Master().getTransactionNo());
             Detail(lnCtr).setEntryNo(lnCtr + 1);
-            Detail(lnCtr).setModifiedDate(poGRider.getServerDate());
+//            Detail(lnCtr).setModifiedDate(poGRider.getServerDate());
         }
         
         //Update linked transactions
@@ -1277,7 +1277,7 @@ public class SOATagging extends Transaction {
             System.out.println("Dept ID : " + poGRider.getDepartment());
             Master().setBranchCode(poGRider.getBranchCode());
             Master().setIndustryId(psIndustryId);
-            Master().setCompanyId(psCompanyId);
+//            Master().setCompanyId(psCompanyId);
             Master().setTransactionDate(poGRider.getServerDate());
             Master().setTransactionStatus(SOATaggingStatus.OPEN);
 
