@@ -23,7 +23,7 @@ import org.junit.runners.MethodSorters;
  */
 /**
  *
- * @author Arsiela 03-12-2025
+ * @author Aldrich && Arsiela Team 2 05232025
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class testSOATagging {
@@ -40,7 +40,7 @@ public class testSOATagging {
         poSOATaggingController = new GLControllers(instance, null).SOATagging();
     }
 
-    @Test
+//    @Test
     public void testNewTransaction() {
         String branchCd = instance.getBranchCode();
         String industryId = "01";
@@ -70,12 +70,12 @@ public class testSOATagging {
                 poSOATaggingController.setCategoryId("0001");
 
                 poSOATaggingController.initFields();
+                poSOATaggingController.Master().setIndustryId(industryId); 
+                Assert.assertEquals(poSOATaggingController.Master().getIndustryId(), industryId);
+                poSOATaggingController.Master().setTransactionDate(instance.getServerDate()); 
+                Assert.assertEquals(poSOATaggingController.Master().getTransactionDate(), instance.getServerDate());
                 poSOATaggingController.Master().setBranchCode(branchCd); 
                 Assert.assertEquals(poSOATaggingController.Master().getBranchCode(), branchCd);
-//                poSOATaggingController.Master().setIndustryCode(industryId); 
-//                Assert.assertEquals(poSOATaggingController.Master().getIndustryCode(), industryId);
-//                poSOATaggingController.Master().setTransactionDate(instance.getServerDate()); 
-//                Assert.assertEquals(poSOATaggingController.Master().getTransactionDate(), instance.getServerDate());
                 poSOATaggingController.Master().setClientId("C00124000020"); 
                 Assert.assertEquals(poSOATaggingController.Master().getClientId(), "C00124000020");
 
@@ -84,58 +84,13 @@ public class testSOATagging {
 
                 poSOATaggingController.Detail(0).setSourceNo("test");
                 poSOATaggingController.Detail(0).setSourceCode("");
-                poSOATaggingController.Detail(0).setDebitAmount(0.0);
-                poSOATaggingController.Detail(0).setCreditAmount(0.0);
-                poSOATaggingController.Detail(0).setAppliedAmount(0.0);
-//                poSOATaggingController.Detail(0).setVATAmt(0.0);
-//                poSOATaggingController.Detail(0).setNonVATSale(0.0);
-//                poSOATaggingController.Detail(0).setVATExempt(0.0);
-//                poSOATaggingController.Detail(0).setZeroVATSale(0.0);
-//                poSOATaggingController.Detail(0).setTaxAmount(0.0);
+                poSOATaggingController.Detail(0).setDebitAmount(0.0080);
+                poSOATaggingController.Detail(0).setCreditAmount(0.0000);
+                poSOATaggingController.Detail(0).setAppliedAmount(0.0080);
                 poSOATaggingController.AddDetail();
-
-//                poSOATaggingController.Detail(1).setStockId("C0W125000004");
-//                poSOATaggingController.Detail(1).setQuantity(quantity);
-//                poSOATaggingController.Detail(1).isSerialized(true);
-//                poSOATaggingController.Detail(1).setQuantity(0);
-//                poSOATaggingController.AddDetail();
-//
-//                poSOATaggingController.Detail(2).setStockId("M00125000001");
-//                poSOATaggingController.Detail(2).setQuantity(quantity);
-//                poSOATaggingController.Detail(2).isSerialized(true);
-//                poSOATaggingController.Detail(2).setQuantity(0);
-//                poSOATaggingController.AddDetail();
-//
-//                poSOATaggingController.Detail(3).setStockId("M00124000002");
-//                poSOATaggingController.Detail(3).setQuantity(quantity);
-//                poSOATaggingController.Detail(3).isSerialized(true);
-//                poSOATaggingController.Detail(3).setQuantity(1);
-//                poSOATaggingController.AddDetail();
 
                 poSOATaggingController.computeFields();
 
-                //populate POR Serial
-//                loJSON = poSOATaggingController.getPurchaseOrderReceivingSerial(1);
-//                if("success".equals((String) loJSON.get("result"))){
-//                    System.out.println("inv serial cnt : " + poSOATaggingController.getPurchaseOrderReceivingSerialCount());
-//                    poSOATaggingController.PurchaseOrderReceivingSerialList(0).setLocationId("333");
-//                    poSOATaggingController.PurchaseOrderReceivingSerialList(0).setStockId(stockId);
-//                    poSOATaggingController.PurchaseOrderReceivingSerialList(0).setSerial01("mobilephone101");
-//                    poSOATaggingController.PurchaseOrderReceivingSerialList(0).setSerial02("mobilephone202");
-////                    poSOATaggingController.PurchaseOrderReceivingSerialList(0).setPlateNo("001sa1");
-////                    poSOATaggingController.PurchaseOrderReceivingSerialList(0).setConductionStickerNo("333");
-//                }
-                //populate POR Serial
-//                loJSON = poSOATaggingController.getPurchaseOrderReceivingSerial(4);
-//                if("success".equals((String) loJSON.get("result"))){
-//                    System.out.println("inv serial cnt : " + poSOATaggingController.getPurchaseOrderReceivingSerialCount());
-//                    poSOATaggingController.PurchaseOrderReceivingSerialList(1).setLocationId("333");
-//                    poSOATaggingController.PurchaseOrderReceivingSerialList(1).setStockId("M00124000002");
-//                    poSOATaggingController.PurchaseOrderReceivingSerialList(1).setSerial01("mob");
-//                    poSOATaggingController.PurchaseOrderReceivingSerialList(1).setSerial02("phone");
-////                    poSOATaggingController.PurchaseOrderReceivingSerialList(0).setPlateNo("001sa1");
-////                    poSOATaggingController.PurchaseOrderReceivingSerialList(0).setConductionStickerNo("333");
-//                }
                 System.out.println("Industry ID : " + instance.getIndustry());
                 System.out.println("Industry : " + poSOATaggingController.Master().Industry().getDescription());
                 System.out.println("TransNox : " + poSOATaggingController.Master().getTransactionNo());
@@ -186,22 +141,15 @@ public class testSOATagging {
             poSOATaggingController.Master().setSOANumber("soano"); 
             Assert.assertEquals(poSOATaggingController.Master().getSOANumber(), "soano");
             
-            //Populate purhcase receiving serials
-//            for(int lnCtr = 0; lnCtr <= poSOATaggingController.getDetailCount()-1; lnCtr++){
-//                poSOATaggingController.getPurchaseOrderReceivingSerial(poSOATaggingController.Detail(lnCtr).getEntryNo());
-//            }
-//            poSOATaggingController.Detail(1).setQuantity(0);
-//            poSOATaggingController.AddDetail();
-//            for(int lnCtr = 0;lnCtr <= poSOATaggingController.getDetailCount()-1; lnCtr++){
-//                poSOATaggingController.Detail(0).setQuantity(2);
-//                poSOATaggingController.Detail(1).setQuantity(5);
-//                System.out.println("DATA Before SAVE TRANSACTION Method");
-//                System.out.println("TransNo : " + (lnCtr+1) + " : " + poSOATaggingController.Detail(lnCtr).getTransactionNo());
-//                System.out.println("OrderNo : " + (lnCtr+1) + " : " + poSOATaggingController.Detail(lnCtr).getOrderNo());
-//                System.out.println("StockId : " + (lnCtr+1) + " : " + poSOATaggingController.Detail(lnCtr).getStockId());
-//                System.out.println("Quantty : " + (lnCtr+1) + " : " + poSOATaggingController.Detail(lnCtr).getQuantity());
-//                System.out.println("---------------------------------------------------------------------");
-//            }
+            for(int lnCtr = 0;lnCtr <= poSOATaggingController.getDetailCount()-1; lnCtr++){
+                System.out.println("DATA Before SAVE TRANSACTION Method");
+                System.out.println("TransNo : " + (lnCtr+1) + " : " + poSOATaggingController.Detail(lnCtr).getTransactionNo());
+                System.out.println("Source Code : " + (lnCtr+1) + " : " + poSOATaggingController.Detail(lnCtr).getSourceCode());
+                System.out.println("Source No : " + (lnCtr+1) + " : " + poSOATaggingController.Detail(lnCtr).getSourceNo());
+                System.out.println("Debit Amount : " + (lnCtr+1) + " : " + poSOATaggingController.Detail(lnCtr).getDebitAmount());
+                System.out.println("Credit Amount : " + (lnCtr+1) + " : " + poSOATaggingController.Detail(lnCtr).getCreditAmount());
+                System.out.println("---------------------------------------------------------------------");
+            }
             loJSON = poSOATaggingController.SaveTransaction();
             if (!"success".equals((String) loJSON.get("result"))) {
                 System.err.println((String) loJSON.get("message"));
@@ -215,42 +163,51 @@ public class testSOATagging {
         }
 
     }
-//
-////    @Test
-//    public void testgetCachePayablesList() {
-//        String industryId = "02";
-//        String companyId = "0001";
-//        String supplierId = "C00124000009";
-//
-//        JSONObject loJSON;
-//
-//        loJSON = poSOATaggingController.InitTransaction();
-//        if (!"success".equals((String) loJSON.get("result"))) {
-//            System.err.println((String) loJSON.get("message"));
-//            Assert.fail();
-//        }
-//
-////        poSOATaggingController.Master().setIndustryId(industryId); 
-////        poSOATaggingController.Master().setCompanyId(companyId); 
-////        poSOATaggingController.Master().setSupplierId(supplierId); 
-//
-////        loJSON = poSOATaggingController.getApprovedPurchaseOrder();
-////        if (!"success".equals((String) loJSON.get("result"))) {
-////            System.err.println((String) loJSON.get("message"));
-////            Assert.fail();
-////        }
-//
-//        //retreiving using column index
-//        for (int lnCtr = 0; lnCtr <= poSOATaggingController.getCachePayablesCount() - 1; lnCtr++) {
-//            System.out.println("PO Row No ->> " + lnCtr);
-////            System.out.println("PO Transaction No ->> " + poSOATaggingController.CachePayableList(lnCtr).getTransactionNo());
-////            System.out.println("PO Transaction Date ->> " + poSOATaggingController.CachePayableList(lnCtr).getTransactionDate());
-////            System.out.println("PO Industry ->> " + poSOATaggingController.CachePayableList(lnCtr).Industry().getDescription());
-////            System.out.println("PO Company ->> " + poSOATaggingController.CachePayableList(lnCtr).Company().getCompanyName());
-////            System.out.println("PO Supplier ->> " + poSOATaggingController.CachePayableList(lnCtr).Supplier().getCompanyName());
-//            System.out.println("----------------------------------------------------------------------------------");
-//        }
-//    }
+    @Test
+    public void testLoadPayables() {
+        String industryId = "05";
+        String companyId = "0001";
+        String supplierId = "C00124000009";
+        try {
+
+            JSONObject loJSON;
+
+            loJSON = poSOATaggingController.InitTransaction();
+            if (!"success".equals((String) loJSON.get("result"))) {
+                System.err.println((String) loJSON.get("message"));
+                Assert.fail();
+            }
+
+            poSOATaggingController.setIndustryId(industryId); 
+
+            loJSON = poSOATaggingController.loadPayables();
+            if (!"success".equals((String) loJSON.get("result"))) {
+                System.err.println((String) loJSON.get("message"));
+                Assert.fail();
+            }
+
+            //retreiving using column index
+            for (int lnCtr = 0; lnCtr <= poSOATaggingController.getPayablesCount()- 1; lnCtr++) {
+                if("PRF".equals(poSOATaggingController.PayableType(lnCtr))){
+                    System.out.println("Row No ->> " + lnCtr);
+                    System.out.println("Transaction No ->> " + poSOATaggingController.PaymentRequestList(lnCtr).getTransactionNo());
+                    System.out.println("Transaction Date ->> " + poSOATaggingController.PaymentRequestList(lnCtr).getTransactionDate());
+                    System.out.println("Payee ->> " + poSOATaggingController.PaymentRequestList(lnCtr).Payee().getPayeeName());
+                    System.out.println("----------------------------------------------------------------------------------");
+                } else {
+//                    System.out.println("Row No ->> " + lnCtr);
+//                    System.out.println("Transaction No ->> " + poSOATaggingController.CachePayable(lnCtr).getTransactionNo());
+//                    System.out.println("Transaction Date ->> " + poSOATaggingController.CachePayable(lnCtr).getTransactionDate());
+//                    System.out.println("Payee ->> " + poSOATaggingController.CachePayable(lnCtr).Client().getCompanyName);
+//                    System.out.println("----------------------------------------------------------------------------------");
+                }
+            }
+        } catch (GuanzonException ex) {
+            Logger.getLogger(testSOATagging.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(testSOATagging.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 //
 ////     @Test
 //    public void testOpenTransaction() {
@@ -315,7 +272,6 @@ public class testSOATagging {
             }
             //retreiving using field descriptions
             System.out.println(poSOATaggingController.Master().Branch().getBranchName());
-            System.out.println(poSOATaggingController.Master().Category().getDescription());
 
             //retreiving using column index
             for (int lnCtr = 0; lnCtr <= poSOATaggingController.Detail().size() - 1; lnCtr++) {
@@ -378,53 +334,6 @@ public class testSOATagging {
 ////            } 
 //            System.out.println((String) loJSON.get("message"));
 //        } catch (CloneNotSupportedException e) {
-//            System.err.println(MiscUtil.getException(e));
-//            Assert.fail();
-//        } catch (SQLException | GuanzonException ex) {
-//            Logger.getLogger(testSOATagging.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//    }
-
-//    @Test
-//    public void testApproveTransaction() {
-//        JSONObject loJSON;
-//        
-//        try {
-//            loJSON = poSOATaggingController.InitTransaction();
-//            if (!"success".equals((String) loJSON.get("result"))){
-//                System.err.println((String) loJSON.get("message"));
-//                Assert.fail();
-//            } 
-//
-//            loJSON = poSOATaggingController.OpenTransaction("M00125000016");
-//            if (!"success".equals((String) loJSON.get("result"))){
-//                System.err.println((String) loJSON.get("message"));
-//                Assert.fail();
-//            } 
-//
-//            //retreiving using column index
-//            for (int lnCol = 1; lnCol <= poSOATaggingController.Master().getColumnCount(); lnCol++){
-//                System.out.println(poSOATaggingController.Master().getColumn(lnCol) + " ->> " + poSOATaggingController.Master().getValue(lnCol));
-//            }
-//            //retreiving using field descriptions
-//            System.out.println(poSOATaggingController.Master().Branch().getBranchName());
-//            System.out.println(poSOATaggingController.Master().Category().getDescription());
-//
-//            //retreiving using column index
-//            for (int lnCtr = 0; lnCtr <= poSOATaggingController.Detail().size() - 1; lnCtr++){
-//                for (int lnCol = 1; lnCol <= poSOATaggingController.Detail(lnCtr).getColumnCount(); lnCol++){
-//                    System.out.println(poSOATaggingController.Detail(lnCtr).getColumn(lnCol) + " ->> " + poSOATaggingController.Detail(lnCtr).getValue(lnCol));
-//                }
-//            }
-//            
-//            loJSON = poSOATaggingController.ApproveTransaction("test approve");
-//            if (!"success".equals((String) loJSON.get("result"))){
-//                System.err.println((String) loJSON.get("message"));
-//                Assert.fail();
-//            } 
-//            
-//            System.out.println((String) loJSON.get("message"));
-//        } catch (CloneNotSupportedException |ParseException e) {
 //            System.err.println(MiscUtil.getException(e));
 //            Assert.fail();
 //        } catch (SQLException | GuanzonException ex) {

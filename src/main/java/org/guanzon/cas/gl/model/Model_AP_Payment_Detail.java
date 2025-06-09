@@ -13,26 +13,19 @@ import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.base.SQLUtil;
 import org.guanzon.appdriver.constant.EditMode;
-import org.guanzon.cas.inv.model.Model_Inv_Serial;
-import org.guanzon.cas.inv.model.Model_Inv_Serial_Registration;
-import org.guanzon.cas.inv.model.Model_Inventory;
-import org.guanzon.cas.inv.services.InvModels;
+import org.guanzon.cas.gl.services.GLModels;
 import org.json.simple.JSONObject;
 
 /**
  *
- * @author User
+ * @author Aldrich && Arsiela Team 2 05232025
  */
 public class Model_AP_Payment_Detail extends Model {
-
-    Number psReceiveQty = 1;
-
+    
     //reference objects
-    Model_Inventory poInventory;
-    Model_Inv_Serial poInvSerial;
     Model_Payment_Request_Master poPaymentRequest;
-    Model_Inv_Serial_Registration poInvSerialRegistration;
-
+    private String psPayableType = "";
+    
     @Override
     public void initialize() {
         try {
@@ -44,15 +37,12 @@ public class Model_AP_Payment_Detail extends Model {
             MiscUtil.initRowSet(poEntity);
 
             //assign default values
-            poEntity.updateObject("dModified", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
+//            poEntity.updateObject("dModified", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
             poEntity.updateObject("nEntryNox", 0);
-            poEntity.updateObject("nDebitAmt", 0.00);
-            poEntity.updateObject("nCredtAmt", 0.00);
-            poEntity.updateObject("nVatRatex", 0.00);
-            poEntity.updateObject("nVATAmtxx", 0.00);
-            poEntity.updateObject("nNonVATSl", 0.00);
-            poEntity.updateObject("nZroVATSl", 0.00);
-            poEntity.updateObject("nTWithHld", 0.00);
+            poEntity.updateObject("nDebitAmt", 0.0000);
+            poEntity.updateObject("nCredtAmt", 0.0000);
+            poEntity.updateObject("nTranTotl", 0.0000);
+            poEntity.updateObject("nAppliedx", 0.0000);
             //end - assign default values
 
             poEntity.insertRow();
@@ -63,10 +53,9 @@ public class Model_AP_Payment_Detail extends Model {
             ID2 = "nEntryNox";
 
             //initialize reference objects
-            InvModels invModel = new InvModels(poGRider);
-            poInventory = invModel.Inventory();
-            poInvSerial = invModel.InventorySerial();
-            poInvSerialRegistration = invModel.InventorySerialRegistration();
+            
+            GLModels gl = new GLModels(poGRider);
+            poPaymentRequest = gl.PaymentRequestMaster();
             //end - initialize reference objects
 
             pnEditMode = EditMode.UNKNOWN;
@@ -108,11 +97,25 @@ public class Model_AP_Payment_Detail extends Model {
         return (String) getValue("sSourceCd");
     }
 
+    public JSONObject setTransactionTotal(Number transactionTotal) {
+        return setValue("nTranTotl", transactionTotal);
+    }
+
+    public Number getTransactionTotal() {
+        if (getValue("nTranTotl") == null || "".equals(getValue("nTranTotl"))) {
+            return 0.0000;
+        }
+        return (Number) getValue("nTranTotl");
+    }
+
     public JSONObject setDebitAmount(Number debitAmount) {
         return setValue("nDebitAmt", debitAmount);
     }
 
     public Number getDebitAmount() {
+        if (getValue("nDebitAmt") == null || "".equals(getValue("nDebitAmt"))) {
+            return 0.0000;
+        }
         return (Number) getValue("nDebitAmt");
     }
 
@@ -121,6 +124,9 @@ public class Model_AP_Payment_Detail extends Model {
     }
 
     public Number getCreditAmount() {
+        if (getValue("nCredtAmt") == null || "".equals(getValue("nCredtAmt"))) {
+            return 0.0000;
+        }
         return (Number) getValue("nCredtAmt");
     }
 
@@ -129,47 +135,10 @@ public class Model_AP_Payment_Detail extends Model {
     }
 
     public Number getAppliedAmount() {
+        if (getValue("nAppliedx") == null || "".equals(getValue("nAppliedx"))) {
+            return 0.0000;
+        }
         return (Number) getValue("nAppliedx");
-    }
-
-    public JSONObject setVATAmount(Number vatAmount) {
-        return setValue("nVATAmtxx", vatAmount);
-    }
-
-    public Number getVATAmount() {
-        return (Number) getValue("nVATAmtxx");
-    }
-
-    public JSONObject setNonVATSale(Number nonVATSale) {
-        return setValue("nNonVATSl", nonVATSale);
-    }
-
-    public Number getNonVATSale() {
-        return (Number) getValue("nNonVATSl");
-    }
-
-    public JSONObject setVATExempt(Number vatExempt) {
-        return setValue("nVatExmpt", vatExempt);
-    }
-
-    public Number getVATExempt() {
-        return (Number) getValue("nVatExmpt");
-    }
-
-    public JSONObject setZeroVATSale(Number zeroVATSale) {
-        return setValue("nZroVATSl", zeroVATSale);
-    }
-
-    public Number getZeroVATSale() {
-        return (Number) getValue("nZroVATSl");
-    }
-
-    public JSONObject setTaxAmount(Number taxAmount) {
-        return setValue("nTaxAmntx", taxAmount);
-    }
-
-    public Number getTaxAmount() {
-        return (Number) getValue("nTaxAmntx");
     }
 
     public JSONObject setModifiedDate(Date modifiedDate) {
@@ -180,79 +149,27 @@ public class Model_AP_Payment_Detail extends Model {
         return (Date) getValue("dModified");
     }
 
+    public void setPayableType(String payableType) {
+        psPayableType = payableType;
+    }
+
+    public String getPayableType() {
+        return psPayableType;
+    }
+
     @Override
     public String getNextCode() {
         return "";
     }
 
     //reference object models
-//    public Model_Inventory Inventory() throws SQLException, GuanzonException {
-//        if (!"".equals((String) getValue("sStockIDx"))) {
-//            if (poInventory.getEditMode() == EditMode.READY
-//                    && poInventory.getStockId().equals((String) getValue("sStockIDx"))) {
-//                return poInventory;
-//            } else {
-//                poJSON = poInventory.openRecord((String) getValue("sStockIDx"));
-//
-//                if ("success".equals((String) poJSON.get("result"))) {
-//                    return poInventory;
-//                } else {
-//                    poInventory.initialize();
-//                    return poInventory;
-//                }
-//            }
-//        } else {
-//            poInventory.initialize();
-//            return poInventory;
-//        }
-//    }
-//    public Model_Inv_Serial InventorySerial() throws SQLException, GuanzonException {
-//        if (!"".equals((String) getValue("sSerialID"))) {
-//            if (poInvSerial.getEditMode() == EditMode.READY
-//                    && poInvSerial.getSerialId().equals((String) getValue("sSerialID"))) {
-//                return poInvSerial;
-//            } else {
-//                poJSON = poInvSerial.openRecord((String) getValue("sSerialID"));
-//
-//                if ("success".equals((String) poJSON.get("result"))) {
-//                    return poInvSerial;
-//                } else {
-//                    poInvSerial.initialize();
-//                    return poInvSerial;
-//                }
-//            }
-//        } else {
-//            poInvSerial.initialize();
-//            return poInvSerial;
-//        }
-//    }
-//    public Model_Inv_Serial_Registration InventorySerialRegistration() throws SQLException, GuanzonException {
-//        if (!"".equals((String) getValue("sSerialID"))) {
-//            if (poInvSerialRegistration.getEditMode() == EditMode.READY
-//                    && poInvSerialRegistration.getSerialId().equals((String) getValue("sSerialID"))) {
-//                return poInvSerialRegistration;
-//            } else {
-//                poJSON = poInvSerialRegistration.openRecord((String) getValue("sSerialID"));
-//
-//                if ("success".equals((String) poJSON.get("result"))) {
-//                    return poInvSerialRegistration;
-//                } else {
-//                    poInvSerialRegistration.initialize();
-//                    return poInvSerialRegistration;
-//                }
-//            }
-//        } else {
-//            poInvSerialRegistration.initialize();
-//            return poInvSerialRegistration;
-//        }
-//    }
     public Model_Payment_Request_Master PaymentRequestMaster() throws SQLException, GuanzonException {
-        if (!"".equals((String) getValue("sSourceCd"))) {
+        if (!"".equals((String) getValue("sSourceNo"))) {
             if (poPaymentRequest.getEditMode() == EditMode.READY
-                    && poPaymentRequest.getTransactionNo().equals((String) getValue("sSourceCd"))) {
+                    && poPaymentRequest.getTransactionNo().equals((String) getValue("sSourceNo"))) {
                 return poPaymentRequest;
             } else {
-                poJSON = poPaymentRequest.openRecord((String) getValue("sOrderNox"));
+                poJSON = poPaymentRequest.openRecord((String) getValue("sSourceNo"));
 
                 if ("success".equals((String) poJSON.get("result"))) {
                     return poPaymentRequest;
@@ -267,34 +184,5 @@ public class Model_AP_Payment_Detail extends Model {
         }
     }
 
-    public JSONObject openRecord(String transactionNo, String stockId) throws SQLException, GuanzonException {
-        poJSON = new JSONObject();
-        String lsSQL = MiscUtil.makeSelect(this);
-        lsSQL = MiscUtil.addCondition(lsSQL, " sTransNox = " + SQLUtil.toSQL(transactionNo)
-                + " AND sStockIDx = " + SQLUtil.toSQL(stockId));
-        System.out.println("Executing SQL: " + lsSQL);
-        ResultSet loRS = poGRider.executeQuery(lsSQL);
-        try {
-            if (loRS.next()) {
-                for (int lnCtr = 1; lnCtr <= loRS.getMetaData().getColumnCount(); lnCtr++) {
-                    setValue(lnCtr, loRS.getObject(lnCtr));
-                }
-                MiscUtil.close(loRS);
-                pnEditMode = EditMode.READY;
-                poJSON = new JSONObject();
-                poJSON.put("result", "success");
-                poJSON.put("message", "Record loaded successfully.");
-            } else {
-                poJSON = new JSONObject();
-                poJSON.put("result", "error");
-                poJSON.put("message", "No record to load.");
-            }
-        } catch (SQLException e) {
-            poJSON = new JSONObject();
-            poJSON.put("result", "error");
-            poJSON.put("message", e.getMessage());
-        }
-        return poJSON;
-    }
     //end reference object models
 }

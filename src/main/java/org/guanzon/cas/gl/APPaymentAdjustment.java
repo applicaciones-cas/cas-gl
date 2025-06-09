@@ -568,13 +568,15 @@ public class APPaymentAdjustment extends Parameter {
             }
         }
         String lsSQL = MiscUtil.addCondition(getSQ_Browse(), 
-                " a.sIndstCdx = " + SQLUtil.toSQL(psIndustryId))
-                + lsTransStat;
+                " a.sIndstCdx = " + SQLUtil.toSQL(psIndustryId));
+        if (lsTransStat != null && !"".equals(lsTransStat)) {
+            lsSQL = lsSQL + lsTransStat;
+        }
         
         System.out.println("Executing SQL: " + lsSQL);
         poJSON = ShowDialogFX.Browse(poGRider,
                 lsSQL,
-                "",
+                "%",
                 "Transaction Date»Transaction No»Company»Supplier",
                 "dTransact»sTransNox»sCompnyNm»sSupplrNm",
                 "a.dTransact»a.sTransNox»d.sCompnyNm»b.sCompnyNm",
@@ -608,13 +610,16 @@ public class APPaymentAdjustment extends Parameter {
         }
         String lsSQL = MiscUtil.addCondition(getSQ_Browse(), 
                 " a.sIndstCdx = " + SQLUtil.toSQL(psIndustryId)
-                + " AND a.sTransNox LIKE " + SQLUtil.toSQL("%"+ value))
-                + lsTransStat;
+                + " AND a.sTransNox LIKE " + SQLUtil.toSQL("%"+ value));
+        
+        if (lsTransStat != null && !"".equals(lsTransStat)) {
+            lsSQL = lsSQL + lsTransStat;
+        }
         
         System.out.println("Executing SQL: " + lsSQL);
         poJSON = ShowDialogFX.Browse(poGRider,
                 lsSQL,
-                "",
+                "%",
                 "Transaction Date»Transaction No»Company»Supplier",
                 "dTransact»sTransNox»sCompnyNm»sSupplrNm",
                 "a.dTransact»a.sTransNox»d.sCompnyNm»b.sCompnyNm",
@@ -668,12 +673,16 @@ public class APPaymentAdjustment extends Parameter {
 //                + " AND a.sCompnyID LIKE " + SQLUtil.toSQL("%" + companyId)
 //                + " AND b.sCompnyNm LIKE " + SQLUtil.toSQL("%" + supplier)
                 + " AND a.sTransNox LIKE " + SQLUtil.toSQL("%" + referenceNo)
-                ) + lsTransStat;
-
+                ) ;
+        
+        if (lsTransStat != null && !"".equals(lsTransStat)) {
+            lsSQL = lsSQL + lsTransStat;
+        }
+        
         System.out.println("Executing SQL: " + lsSQL);
         poJSON = ShowDialogFX.Browse(poGRider,
                 lsSQL,
-                "",
+                "%",
                 "Transaction Date»Transaction No»Company»Supplier",
                 "dTransact»sTransNox»sCompnyNm»sSupplrNm",
                 "a.dTransact»a.sTransNox»d.sCompnyNm»b.sCompnyNm",
