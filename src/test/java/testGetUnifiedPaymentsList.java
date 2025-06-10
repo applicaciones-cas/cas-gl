@@ -40,6 +40,21 @@ public class testGetUnifiedPaymentsList {
     @Test
     public void testGetUnifiedPayments_returnsSuccess() {
         try {
+            JSONObject loJSON;
+            loJSON = poDisbursement.Disbursement().InitTransaction();
+            if (!"success".equals((String) loJSON.get("result"))) {
+                System.err.println((String) loJSON.get("message"));
+                Assert.fail();
+            }
+
+            loJSON = poDisbursement.Disbursement().NewTransaction();
+            if (!"success".equals((String) loJSON.get("result"))) {
+                System.err.println((String) loJSON.get("message"));
+                Assert.fail();
+            }
+            
+            poDisbursement.Disbursement().Master().setIndustryID("01");
+            poDisbursement.Disbursement().Master().setCompanyID("0001");
             // Call the method
             JSONObject result = poDisbursement.Disbursement().getUnifiedPayments();
 
