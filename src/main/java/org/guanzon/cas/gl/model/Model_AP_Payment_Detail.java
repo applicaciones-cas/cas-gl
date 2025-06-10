@@ -149,13 +149,13 @@ public class Model_AP_Payment_Detail extends Model {
         return (Date) getValue("dModified");
     }
 
-    public void setPayableType(String payableType) {
-        psPayableType = payableType;
-    }
-
-    public String getPayableType() {
-        return psPayableType;
-    }
+//    public void setPayableType(String payableType) {
+//        psPayableType = payableType;
+//    }
+//
+//    public String getPayableType() {
+//        return psPayableType;
+//    }
 
     @Override
     public String getNextCode() {

@@ -742,7 +742,7 @@ public class SOATagging extends Transaction {
 
         //Compute Transaction Total
         for(int lnCtr = 0; lnCtr <= getDetailCount() - 1; lnCtr++){
-            switch(Detail(lnCtr).getPayableType()){
+            switch(Detail(lnCtr).getSourceCode()){
                 case SOATaggingStatic.PaymentRequest:
                     break;
                 case SOATaggingStatic.CachePayable:
@@ -1007,10 +1007,9 @@ public class SOATagging extends Transaction {
                 }
                 
                 Detail(getDetailCount()-1).setSourceNo(loPaymentRequest.Master().getTransactionNo());
-                Detail(getDetailCount()-1).setSourceCode(loPaymentRequest.Master().getSourceCode());
+                Detail(getDetailCount()-1).setSourceCode(loPaymentRequest.getSourceCode());
                 Detail(getDetailCount()-1).setTransactionTotal(loPaymentRequest.Master().getTranTotal());
                 Detail(getDetailCount()-1).setDebitAmount(loPaymentRequest.Master().getTranTotal());
-                Detail(getDetailCount()-1).setPayableType(payableType);
                 AddDetail();
                 
                 break;
@@ -1023,7 +1022,7 @@ public class SOATagging extends Transaction {
 //                }
 //                
 //                Detail(getDetailCount()-1).setSourceNo(loCachePayable.Master().getTransactionNo());
-//                Detail(getDetailCount()-1).setSourceCode(loCachePayable.Master().getSourceCode());
+//                Detail(getDetailCount()-1).setSourceCode(loCachePayable.getSourceCode());
 //                Detail(getDetailCount()-1).setTransactionTotal(loCachePayable.Master().getNetTotal());
 //                Detail(getDetailCount()-1).setDebitAmount(loCachePayable.Master().getPayableAmount());
 //                Detail(getDetailCount()-1).setDebitAmount(loCachePayable.Master().getReceivableAmount());
@@ -1180,11 +1179,10 @@ public class SOATagging extends Transaction {
         for (lnCtr = 0; lnCtr <= getDetailCount() - 1; lnCtr++) {
             System.out.println("----------------------SOA Detail---------------------- ");
             System.out.println("Source No : " + (lnCtr + 1) + " : " + Detail(lnCtr).getSourceNo());
-            System.out.println("Payable Type : " + (lnCtr + 1) + " : " + Detail(lnCtr).getPayableType());
             System.out.println("Source Code : " + (lnCtr + 1) + " : " + Detail(lnCtr).getSourceCode());
             System.out.println("------------------------------------------------------------------ ");
             
-            switch(Detail(lnCtr).getPayableType()){
+            switch(Detail(lnCtr).getSourceCode()){
                 case SOATaggingStatic.PaymentRequest:
                     paPaymentRequest.add(PaymentRequest());
                     paPaymentRequest.get(paPaymentRequest.size()-1).InitTransaction();
@@ -1232,11 +1230,10 @@ public class SOATagging extends Transaction {
             
             System.out.println("----------------------Removed SOA Detail---------------------- ");
             System.out.println("Source No : " + (lnCtr + 1) + " : " + Detail(lnCtr).getSourceNo());
-            System.out.println("Payable Type : " + (lnCtr + 1) + " : " + Detail(lnCtr).getPayableType());
             System.out.println("Source Code : " + (lnCtr + 1) + " : " + Detail(lnCtr).getSourceCode());
             System.out.println("------------------------------------------------------------------ ");
             
-            switch(Detail(lnCtr).getPayableType()){
+            switch(Detail(lnCtr).getSourceCode()){
                 case SOATaggingStatic.PaymentRequest:
                     paPaymentRequest.add(PaymentRequest());
                     paPaymentRequest.get(paPaymentRequest.size()-1).InitTransaction();

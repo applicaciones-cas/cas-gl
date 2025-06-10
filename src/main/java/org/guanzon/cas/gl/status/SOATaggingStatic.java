@@ -11,6 +11,6 @@ package org.guanzon.cas.gl.status;
  */
 public class SOATaggingStatic {
     //Payable Type
-    public static final String PaymentRequest = "PaymentRequest";
+    public static final String PaymentRequest = "PRF";
     public static final String CachePayable = "CachePayable";
 }
