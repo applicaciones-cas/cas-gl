@@ -115,11 +115,11 @@ public class APPaymentValidator  implements GValidator{
             return poJSON;
         }
         
-        if (poMaster.getEntryNo() == null || poMaster.getEntryNo().intValue() <= 0) {
-            poJSON.put("result","error");
-            poJSON.put("message", "Invalid Entry No");
-            return poJSON;
-        }
+//        if (poMaster.getEntryNo() == null || poMaster.getEntryNo().intValue() <= 0) {
+//            poJSON.put("result","error");
+//            poJSON.put("message", "Invalid Entry No");
+//            return poJSON;
+//        }
         
         //TODO
 //        if (poMaster.getIssuedTo() == null || poMaster.getIssuedTo().isEmpty()) {

@@ -762,7 +762,7 @@ public class SOATagging extends Transaction {
         Master().setFreightAmount(ldblFreight);
         Master().setVatAmount(ldblVatAmt);
         Master().setVatExempt(ldblVatExemptAmt);
-        Master().setZeroVaTSale(ldblZeroRtedAmt);
+        Master().setZeroRatedVat(ldblZeroRtedAmt);
         
         return poJSON;
     }
@@ -995,7 +995,8 @@ public class SOATagging extends Transaction {
         
         switch(payableType){
             case SOATaggingStatic.PaymentRequest:
-                PaymentRequest loPaymentRequest = new PaymentRequest();
+                PaymentRequest loPaymentRequest = new GLControllers(poGRider, logwrapr).PaymentRequest();
+                loPaymentRequest.setWithParent(true);
                 loPaymentRequest.InitTransaction();
                 poJSON = loPaymentRequest.OpenTransaction(transactionNo);
                 if("error".equals((String) poJSON.get("result"))){
@@ -1011,7 +1012,7 @@ public class SOATagging extends Transaction {
                 
                 break;
             case SOATaggingStatic.CachePayable:
-//                CachePayable loCachePayable = new CachePayable();
+//                CachePayable loPaymentRequest = new GLControllers(poGRider, logwrapr).CachePayable();
 //                loCachePayable.InitTransaction();
 //                poJSON = loCachePayable.OpenTransaction(transactionNo);
 //                if("error".equals((String) poJSON.get("result"))){
@@ -1119,6 +1120,28 @@ public class SOATagging extends Transaction {
         //Update linked transactions
         poJSON = setValueToOthers(Master().getTransactionStatus());
         if (!"success".equals((String) poJSON.get("result"))) {
+            return poJSON;
+        }
+        
+        poJSON.put("result", "success");
+        return poJSON;
+    }
+    
+    @Override
+    public JSONObject saveOthers() {
+        try {
+            /*Only modify this if there are other tables to modify except the master and detail tables*/
+            poJSON = new JSONObject();
+            
+            poJSON = saveUpdateOthers(Master().getTransactionStatus());
+            if (!"success".equals((String) poJSON.get("result"))) {
+                return poJSON;
+            }
+            
+        } catch (CloneNotSupportedException ex) {
+            Logger.getLogger(SOATagging.class.getName()).log(Level.SEVERE, MiscUtil.getException(ex), ex);
+            poJSON.put("result", "error");
+            poJSON.put("message", MiscUtil.getException(ex));
             return poJSON;
         }
         
@@ -1236,6 +1259,7 @@ public class SOATagging extends Transaction {
             //1. Save Update Payment Request
             for (lnCtr = 0; lnCtr <= paPaymentRequest.size() - 1; lnCtr++) {
                 paPaymentRequest.get(lnCtr).setWithParent(true);
+                paPaymentRequest.get(lnCtr).Master().setModifiedDate(poGRider.getServerDate());
                 poJSON = paPaymentRequest.get(lnCtr).SaveTransaction();
                 if ("error".equals((String) poJSON.get("result"))) {
                     System.out.println("Save Payment Request " + (String) poJSON.get("message"));

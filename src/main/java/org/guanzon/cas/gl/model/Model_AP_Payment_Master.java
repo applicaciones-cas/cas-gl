@@ -216,15 +216,15 @@ public class Model_AP_Payment_Master extends Model {
         return (Number) getValue("nVatExmpt");
     }
 
-    public JSONObject setZeroVaTSale(Number zeroVATSale) {
-        return setValue("nZroVATSl", zeroVATSale);
+    public JSONObject setZeroRatedVat(Number zeroRatedVat) {
+        return setValue("nZeroRted", zeroRatedVat);
     }
 
-    public Number getZeroVaTSale() {
-        if (getValue("nZroVATSl") == null || "".equals(getValue("nZroVATSl"))) {
+    public Number getZeroRatedVat() {
+        if (getValue("nZeroRted") == null || "".equals(getValue("nZeroRted"))) {
             return 0.00;
         }
-        return (Number) getValue("nZroVATSl");
+        return (Number) getValue("nZeroRted");
     }
     
     public JSONObject setTaxAmount(Number taxAmount) {
