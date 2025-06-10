@@ -563,6 +563,7 @@ public class Disbursement extends Transaction {
             System.out.println("TransNo : " + (lnCtr + 1) + " : " + Detail(lnCtr).getTransactionNo());
             System.out.println("sourceno : " + (lnCtr + 1) + " : " + Detail(lnCtr).getSourceNo());
             System.out.println("sourceCode : " + (lnCtr + 1) + " : " + Detail(lnCtr).getSourceCode());
+            System.out.println("particular : " + (lnCtr + 1) + " : " + Detail(lnCtr).getParticular());
             System.out.println("------------------------------------------------------------------ ");
 
             updateDisbursementsSource(Detail(lnCtr).getSourceNo(), Detail(lnCtr).getSourceCode(), Detail(lnCtr).getParticular(), true);
@@ -740,130 +741,93 @@ public class Disbursement extends Transaction {
     }
 
     public JSONObject addUnifiedPaymentToDisbursement(String transactionNo, String paymentType)
-            throws CloneNotSupportedException, SQLException, GuanzonException {
+        throws CloneNotSupportedException, SQLException, GuanzonException {
 
-        int detailCount = 0;
+    int detailCount = 0;
+    PaymentRequest poPaymentRequest = new GLControllers(poGRider, logwrapr).PaymentRequest();
+    JSONObject poJSON;
 
-        PaymentRequest poPaymentRequest = null;
-//    APPaymentMaster poAPPaymentMaster = null;
-//    CachePayableMaster poCachePayableMaster = null;
-
-        switch (paymentType) {
-            case "PRF":
-                poPaymentRequest = new GLControllers(poGRider, logwrapr).PaymentRequest();
-                poJSON = poPaymentRequest.InitTransaction();
-                if (!"success".equals(poJSON.get("result"))) {
-                    poJSON.put("message", "No records found.");
-                    return poJSON;
-                }
-                poJSON = poPaymentRequest.OpenTransaction(transactionNo);
-                if (!"success".equals(poJSON.get("result"))) {
-                    poJSON.put("message", "No records found.");
-                    return poJSON;
-                }
-                detailCount = poPaymentRequest.getDetailCount();
-                break;
-
-            case "SOA":
-//            poAPPaymentMaster = new GLControllers(poGRider, logwrapr).APPaymentMaster();
-//            poJSON = poAPPaymentMaster.InitTransaction();
-//            if (!"success".equals(poJSON.get("result"))) {
-//                poJSON.put("message", "No records found.");
-//                return poJSON;
-//            }
-//            poJSON = poAPPaymentMaster.OpenTransaction(transactionNo);
-//            if (!"success".equals(poJSON.get("result"))) {
-//                poJSON.put("message", "No records found.");
-//                return poJSON;
-//            }
-//            detailCount = poAPPaymentMaster.getDetailCount();
-                break;
-
-            case "CP":
-//            poCachePayableMaster = new GLControllers(poGRider, logwrapr).CachePayableMaster();
-//            poJSON = poCachePayableMaster.InitTransaction();
-//            if (!"success".equals(poJSON.get("result"))) {
-//                poJSON.put("message", "No records found.");
-//                return poJSON;
-//            }
-//            poJSON = poCachePayableMaster.OpenTransaction(transactionNo);
-//            if (!"success".equals(poJSON.get("result"))) {
-//                poJSON.put("message", "No records found.");
-//                return poJSON;
-//            }
-//            detailCount = poCachePayableMaster.getDetailCount();
-                break;
-
-            default:
-                poJSON.put("result", "error");
-                poJSON.put("message", "Invalid payment type.");
+    switch (paymentType) {
+        case "PRF":
+            poJSON = poPaymentRequest.InitTransaction();
+            if (!"success".equals(poJSON.get("result"))) {
+                poJSON.put("message", "No records found.");
                 return poJSON;
-        }
-
-        // Loop through details outside switch
-        for (int lnCtr = 0; lnCtr < detailCount; lnCtr++) {
-            String sourceNo = "";
-            String sourceCode = "";
-            String accountCode = "";
-            double amount = 0.0000;
-
-            // Extract details based on paymentType
-            switch (paymentType) {
-                case "PRF":
-
-                    sourceNo = poPaymentRequest.Detail(lnCtr).getTransactionNo();
-                    sourceCode = DisbursementStatic.SourceCode.PAYMENT_REQUEST;
-                    accountCode = poPaymentRequest.Detail(lnCtr).Particular().getAccountCode();
-                    amount = (double) poPaymentRequest.Detail(lnCtr).getAmount().doubleValue();
-                    break;
-
-                case "SOA":
-//                sourceNo = poAPPaymentMaster.Detail(lnCtr).getTransactionNo();
-//                sourceCode = poAPPaymentMaster.Detail(lnCtr).getTransactionNo();
-//                accountCode = poAPPaymentMaster.Detail(lnCtr).Particular().getAccountCode();
-//                amount = (double) poAPPaymentMaster.Detail(lnCtr).getAmount();
-                    break;
-
-                case "CP":
-//                sourceNo = poCachePayableMaster.Detail(lnCtr).getTransactionNo();
-//                sourceCode = poCachePayableMaster.Detail(lnCtr).getTransactionNo();
-//                accountCode = poCachePayableMaster.Detail(lnCtr).Particular().getAccountCode();
-//                amount = (double) poCachePayableMaster.Detail(lnCtr).getAmount();
-                    break;
             }
 
-            boolean found = false;
-            for (int i = 0; i < detailCount - 1; i++) {
-                if (Detail(i).getSourceNo().equals(sourceNo)
-                        && Detail(i).getSourceCode().equals(sourceCode)) {
-
-                    double currentAmount = 0.0000;
-                    try {
-                        currentAmount = (double) Detail(i).getAmount().doubleValue();
-                    } catch (NumberFormatException e) {
-                        currentAmount = 0.0000;
-                    }
-
-                    Detail(i).setAmount(currentAmount + amount);
-                    found = true;
-                    break;
-                }
+            poJSON = poPaymentRequest.OpenTransaction(transactionNo);
+            if (!"success".equals(poJSON.get("result"))) {
+                poJSON.put("message", "No records found.");
+                return poJSON;
             }
 
-            if (!found) {
-                int lnLastIndex = detailCount - 1;
-                Detail(lnLastIndex).setSourceNo(sourceNo);
-                Detail(lnLastIndex).setSourceCode(sourceCode);
-                Detail(lnLastIndex).setAccountCode(accountCode);
-                Detail(lnLastIndex).setAmount(amount);
-                AddDetail();
-            }
-        }
+            detailCount = poPaymentRequest.getDetailCount();
+            break;
 
-        poJSON.put("result", "success");
-        poJSON.put("message", "Record loaded successfully.");
-        return poJSON;
+        case "SOA":
+        case "CP":
+            poJSON = new JSONObject();
+            poJSON.put("result", "error");
+            poJSON.put("message", "Unsupported payment type.");
+            return poJSON;
+
+        default:
+            poJSON = new JSONObject();
+            poJSON.put("result", "error");
+            poJSON.put("message", "Invalid payment type.");
+            return poJSON;
     }
+
+    // Loop through PaymentRequest details
+    for (int lnCtr = 0; lnCtr < detailCount; lnCtr++) {
+        String sourceNo = "";
+        String sourceCode = "";
+        String particular = "";
+        double amount = 0.0000;
+
+        // Only PRF supported
+        sourceNo = poPaymentRequest.Detail(lnCtr).getTransactionNo();
+        sourceCode = DisbursementStatic.SourceCode.PAYMENT_REQUEST;
+        particular = poPaymentRequest.Detail(lnCtr).getParticularID();
+        amount = poPaymentRequest.Detail(lnCtr).getAmount().doubleValue();
+
+        boolean found = false;
+        int disbursementDetailCount = getDetailCount();
+
+        for (int i = 0; i < disbursementDetailCount; i++) {
+            if (Detail(i).getSourceNo().equals(sourceNo)
+                    && Detail(i).getSourceCode().equals(sourceCode)
+                    && Detail(i).getParticular().equals(particular)) {
+
+                double currentAmount = 0.0000;
+                try {
+                    currentAmount = Detail(i).getAmount().doubleValue();
+                } catch (NumberFormatException e) {
+                    currentAmount = 0.0000;
+                }
+
+                Detail(i).setAmount(currentAmount + amount);
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            AddDetail(); // Adds a new detail entry
+            int newIndex = getDetailCount() - 1;
+
+            Detail(newIndex).setSourceNo(sourceNo);
+            Detail(newIndex).setSourceCode(sourceCode);
+            Detail(newIndex).setParticular(particular);
+            Detail(newIndex).setAmount(amount);
+        }
+    }
+
+    poJSON.put("result", "success");
+    poJSON.put("message", "Record loaded successfully.");
+    return poJSON;
+}
+
 
     public JSONObject getDisbursement(String fsTransactionNo, String fsPayee) throws SQLException, GuanzonException {
         JSONObject loJSON = new JSONObject();

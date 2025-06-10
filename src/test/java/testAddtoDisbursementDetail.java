@@ -35,7 +35,7 @@ public class testAddtoDisbursementDetail {
     @Test
     public void testOpenTransaction() {
         JSONObject loJSON;
-        String transactionNo = "M00125000007";
+        String transactionNo = "M00125000024";
         String TransactionType = "PRF";
 
         try {
@@ -60,7 +60,7 @@ public class testAddtoDisbursementDetail {
                 System.out.println("Detail #" + (i + 1));
                 System.out.println("  Source No   : " + poDisbursement.Disbursement().Detail(i).getSourceNo());
                 System.out.println("  Source Code : " + poDisbursement.Disbursement().Detail(i).getSourceCode());
-                System.out.println("  Account Code: " + poDisbursement.Disbursement().Detail(i).getAccountCode());
+                System.out.println("  particular : " + poDisbursement.Disbursement().Detail(i).getParticular());
                 System.out.println("  Amount      : " + poDisbursement.Disbursement().Detail(i).getAmount());
                 System.out.println("------------------------------------");
             }
