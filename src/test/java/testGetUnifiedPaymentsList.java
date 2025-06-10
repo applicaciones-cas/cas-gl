@@ -56,7 +56,7 @@ public class testGetUnifiedPaymentsList {
             poDisbursement.Disbursement().Master().setIndustryID("01");
             poDisbursement.Disbursement().Master().setCompanyID("0001");
             // Call the method
-            JSONObject result = poDisbursement.Disbursement().getUnifiedPayments();
+            JSONObject result = poDisbursement.Disbursement().getUnifiedPayments("1");
 
             // Basic assertions
             Assert.assertNotNull("Result should not be null", result);

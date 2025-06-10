@@ -26,6 +26,7 @@ public class DisbursementStatic {
      public static class SourceCode  {
         public static final String PAYMENT_REQUEST = "PRF";
         public static final  String ACCOUNTS_PAYABLE = "SOA";
-        public static final  String CASH_PAYABLE = "CASH";
+        public static final  String CASH_PAYABLE = "CASH";        
+        public static final  String LOAD_ALL = "ALL";
     }
 }				
