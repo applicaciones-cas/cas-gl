@@ -568,10 +568,10 @@ public class SOATagging extends Transaction {
         System.out.println("Executing SQL: " + lsSQL);
         poJSON = ShowDialogFX.Browse(poGRider,
                 lsSQL,
-                "%",
-                "Transaction Date»Transaction No»SOA No»Supplier",
-                "dTransact»sTransNox»sSOANoxxx»sSupplrNm",
-                "a.dTransact»a.sTransNox»a.sSOANoxxx»c.sCompnyNm»b.sCompnyNm",
+                "",
+                "Transaction Date»Transaction No»SOA No»Supplier»Payee",
+                "dTransact»sTransNox»sSOANoxxx»sSupplrNm»sPayeeNme",
+                "a.dTransact»a.sTransNox»a.sSOANoxxx»c.sCompnyNm»b.sCompnyNm»e.sPayeeNme",
                 1);
 
         if (poJSON != null) {
@@ -628,10 +628,10 @@ public class SOATagging extends Transaction {
         System.out.println("Executing SQL: " + lsSQL);
         poJSON = ShowDialogFX.Browse(poGRider,
                 lsSQL,
-                "%",
-                "Transaction Date»Transaction No»SOA No»Supplier»Company",
-                "dTransact»sTransNox»sSOANoxxx»sSupplrNm»sCompnyNm",
-                "a.dTransact»a.sTransNox»a.sSOANoxxx»b.sCompnyNm»c.sCompnyNm",
+                "",
+                "Transaction Date»Transaction No»SOA No»Supplier»Payee",
+                "dTransact»sTransNox»sSOANoxxx»sSupplrNm»sPayeeNme",
+                "a.dTransact»a.sTransNox»a.sSOANoxxx»c.sCompnyNm»b.sCompnyNm»e.sPayeeNme",
                 1);
 
         if (poJSON != null) {
@@ -658,8 +658,8 @@ public class SOATagging extends Transaction {
         poJSON = new JSONObject();
 
         if (getDetailCount() > 0) {
-            if (Detail(getDetailCount() - 1).getSourceCode() != null) {
-                if (Detail(getDetailCount() - 1).getSourceCode().isEmpty()) {
+            if (Detail(getDetailCount() - 1).getSourceNo()!= null) {
+                if (Detail(getDetailCount() - 1).getSourceNo().isEmpty()) {
                     poJSON.put("result", "error");
                     poJSON.put("message", "Last row has empty item.");
                     return poJSON;
@@ -982,13 +982,15 @@ public class SOATagging extends Transaction {
             SQLException,
             GuanzonException {
         poJSON = new JSONObject();
+        poJSON.put("row", 0);
         int lnCtr = 0;
         
         //Check if transaction already exist in the list
         for(lnCtr = 0; lnCtr <= getDetailCount() - 1; lnCtr++){
-            if(transactionNo.equals(Detail(lnCtr).getTransactionNo())){
+            if(transactionNo.equals(Detail(lnCtr).getSourceNo())){
                 poJSON.put("result", "error");
                 poJSON.put("message", "Selected transaction no "+transactionNo+" already exiting in SOA detail.");
+                poJSON.put("row", lnCtr);
                 return poJSON;
             }
         }
@@ -1000,6 +1002,7 @@ public class SOATagging extends Transaction {
                 loPaymentRequest.InitTransaction();
                 poJSON = loPaymentRequest.OpenTransaction(transactionNo);
                 if("error".equals((String) poJSON.get("result"))){
+                    poJSON.put("row", 0);
                     return poJSON;
                 }
                 
@@ -1075,7 +1078,13 @@ public class SOATagging extends Transaction {
         Master().setModifyingId(poGRider.getUserID());
         Master().setModifiedDate(poGRider.getServerDate());
         
-        if (getDetailCount() == 1) {
+        if (Master().getTransactionTotal().doubleValue() <= 0.0000) {
+            poJSON.put("result", "error");
+            poJSON.put("message", "Invalid transaction total amount.");
+            return poJSON;
+        }
+        
+        if (getDetailCount() == 0) {
             //do not allow a detail with no applied amount
             if (Detail(0).getAppliedAmount().doubleValue() == 0.0000) {
                 poJSON.put("result", "error");
@@ -1348,10 +1357,12 @@ public class SOATagging extends Transaction {
                 + " , b.sCompnyNm  AS sSupplrNm"
                 + " , c.sCompnyNm  AS sCompnyNm"
                 + " , d.sDescript  AS sIndustry"
+                + " , e.sPayeeNme  AS sPayeeNme"
                 + " FROM ap_payment_master a "
                 + " LEFT JOIN client_master b ON b.sClientID = a.sClientID "
                 + " LEFT JOIN company c ON c.sCompnyID = a.sCompnyID "
-                + " LEFT JOIN industry d ON d.sIndstCdx = a.sIndstCdx ";
+                + " LEFT JOIN industry d ON d.sIndstCdx = a.sIndstCdx "
+                + " LEFT JOIN payee e ON e.sPayeeIDx = a.sIssuedTo ";
     }
     
     public String getPayableSQL() {

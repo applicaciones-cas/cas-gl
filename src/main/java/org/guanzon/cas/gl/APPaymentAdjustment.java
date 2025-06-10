@@ -576,7 +576,7 @@ public class APPaymentAdjustment extends Parameter {
         System.out.println("Executing SQL: " + lsSQL);
         poJSON = ShowDialogFX.Browse(poGRider,
                 lsSQL,
-                "%",
+                "",
                 "Transaction Date»Transaction No»Company»Supplier",
                 "dTransact»sTransNox»sCompnyNm»sSupplrNm",
                 "a.dTransact»a.sTransNox»d.sCompnyNm»b.sCompnyNm",
@@ -619,7 +619,7 @@ public class APPaymentAdjustment extends Parameter {
         System.out.println("Executing SQL: " + lsSQL);
         poJSON = ShowDialogFX.Browse(poGRider,
                 lsSQL,
-                "%",
+                "",
                 "Transaction Date»Transaction No»Company»Supplier",
                 "dTransact»sTransNox»sCompnyNm»sSupplrNm",
                 "a.dTransact»a.sTransNox»d.sCompnyNm»b.sCompnyNm",
@@ -670,8 +670,6 @@ public class APPaymentAdjustment extends Parameter {
                 " a.sIndstCdx = " + SQLUtil.toSQL(industryId)
                 + " AND d.sCompnyNm LIKE " + SQLUtil.toSQL("%" + companyName)
                 + " AND b.sCompnyNm LIKE " + SQLUtil.toSQL("%" + supplierName)
-//                + " AND a.sCompnyID LIKE " + SQLUtil.toSQL("%" + companyId)
-//                + " AND b.sCompnyNm LIKE " + SQLUtil.toSQL("%" + supplier)
                 + " AND a.sTransNox LIKE " + SQLUtil.toSQL("%" + referenceNo)
                 ) ;
         
@@ -682,7 +680,7 @@ public class APPaymentAdjustment extends Parameter {
         System.out.println("Executing SQL: " + lsSQL);
         poJSON = ShowDialogFX.Browse(poGRider,
                 lsSQL,
-                "%",
+                "",
                 "Transaction Date»Transaction No»Company»Supplier",
                 "dTransact»sTransNox»sCompnyNm»sSupplrNm",
                 "a.dTransact»a.sTransNox»d.sCompnyNm»b.sCompnyNm",

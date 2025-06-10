@@ -373,12 +373,12 @@ public class Model_AP_Payment_Master extends Model {
     }
 
     public Model_Client_Master Supplier() throws SQLException, GuanzonException {
-        if (!"".equals((String) getValue("sSupplier"))) {
+        if (!"".equals((String) getValue("sClientID"))) {
             if (poSupplier.getEditMode() == EditMode.READY
-                    && poSupplier.getClientId().equals((String) getValue("sSupplier"))) {
+                    && poSupplier.getClientId().equals((String) getValue("sClientID"))) {
                 return poSupplier;
             } else {
-                poJSON = poSupplier.openRecord((String) getValue("sSupplier"));
+                poJSON = poSupplier.openRecord((String) getValue("sClientID"));
 
                 if ("success".equals((String) poJSON.get("result"))) {
                     return poSupplier;
