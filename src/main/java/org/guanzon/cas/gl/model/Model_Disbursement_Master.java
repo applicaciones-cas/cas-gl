@@ -42,10 +42,10 @@ public class Model_Disbursement_Master extends Model{
             MiscUtil.initRowSet(poEntity);
             poEntity.updateObject("dTransact", SQLUtil.toDate(xsDateShort(poGRider.getServerDate()), SQLUtil.FORMAT_SHORT_DATE));
             poEntity.updateObject("nEntryNox", DisbursementStatic.DefaultValues.default_value_integer );
+            poEntity.updateObject("cDisbrsTp", DisbursementStatic.DisbursementType.CHECK);
             poEntity.updateObject("nTranTotl", DisbursementStatic.DefaultValues.default_value_double_0000);
             poEntity.updateObject("nDiscTotl", DisbursementStatic.DefaultValues.default_value_double_0000);
             poEntity.updateObject("nWTaxTotl", DisbursementStatic.DefaultValues.default_value_double_0000);
-//            poEntity.updateObject("nNonVATSl", DisbursementStatic.DefaultValues.default_value_double_0000);
             poEntity.updateObject("nVATSales", DisbursementStatic.DefaultValues.default_value_double_0000);
             poEntity.updateObject("nVATRatex", DisbursementStatic.DefaultValues.default_value_double);
             poEntity.updateObject("nVATAmtxx", DisbursementStatic.DefaultValues.default_value_double_0000);

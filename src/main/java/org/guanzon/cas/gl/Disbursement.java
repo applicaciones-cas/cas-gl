@@ -628,11 +628,11 @@ public class Disbursement extends Transaction {
                 + "        a.sTransNox, "
                 + "        a.dTransact, "
                 + "        (a.`nTranTotl` - a.`nAmtPaidx`) as Balance, "
-                + "        'AP' AS TransactionType, "
+                + "        'SOA' AS TransactionType, "
                 + "        'AP_Payment_Master' AS SourceTable "
                 + "    FROM AP_Payment_Master a "
                 + "    WHERE a.cTranStat =  '" + PaymentRequestStatus.CONFIRMED + "' "
-                + "      AND (a.nTranTotl - a.nAmtPaidx) > " + DisbursementStatic.DefaultValues.default_value_double
+                + "      AND (a.nTranTotl - a.nAmtPaidx) > " + DisbursementStatic.DefaultValues.default_value_double_0000
                 + "    UNION ALL "
                 + "    SELECT "
                 + "        b.sTransNox, "
@@ -642,16 +642,17 @@ public class Disbursement extends Transaction {
                 + "        'Payment_Request_Master' AS SourceTable "
                 + "    FROM Payment_Request_Master b "
                 + "    WHERE b.cTranStat = '" + PaymentRequestStatus.CONFIRMED + "' "
-                + "      AND (b.nNetTotal - b.nAmtPaidx) > " + DisbursementStatic.DefaultValues.default_value_double
+                + "      AND (b.nNetTotal - b.nAmtPaidx) > " + DisbursementStatic.DefaultValues.default_value_double_0000
+                + "      AND b.cProcessd = " + PaymentRequestStatus.OPEN
                 + "    UNION ALL "
                 + "    SELECT "
                 + "        c.sTransNox, "
                 + "        c.dTransact, "
                 + "        (c.`nGrossAmt` - c.`nAmtPaidx`) as Balance, "
                 + "        'CP' AS TransactionType, "
-                + "        'Cache_Payables_Master' AS SourceTable "
-                + "    FROM Cache_Payables_Master c "
-                + "    WHERE c.cStatusxx =  '" + PaymentRequestStatus.CONFIRMED + "' "
+                + "        'Cache_Payable_Master' AS SourceTable "
+                + "    FROM Cache_Payable_Master c "
+                + "    WHERE c.cTranStat =  '" + PaymentRequestStatus.CONFIRMED + "' "
                 + "       AND (c.nGrossAmt - c.nAmtPaidx) > " + DisbursementStatic.DefaultValues.default_value_double
                 + ") AS CombinedResults "
                 + "ORDER BY dTransact ASC ";
