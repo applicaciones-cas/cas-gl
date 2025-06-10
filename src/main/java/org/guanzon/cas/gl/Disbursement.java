@@ -257,7 +257,7 @@ public class Disbursement extends Transaction {
 
         return addDetail();
     }
-    
+
 
     /*Search Master References*/
     public JSONObject SearchBranch(String value, boolean byCode) throws ExceptionInInitializerError, SQLException, GuanzonException {
@@ -385,15 +385,16 @@ public class Disbursement extends Transaction {
     private PaymentRequest PaymentRequest() throws SQLException, GuanzonException {
         return new GLControllers(poGRider, logwrapr).PaymentRequest();
     }
+
     private SOATagging SOATagging() throws SQLException, GuanzonException {
         return new SOATaggingControllers(poGRider, logwrapr).SOATagging();
     }
 
-    public JSONObject updateDisbursementsSource(String sourceNo, String sourceCode, String particular, Boolean isAdd) 
+    public JSONObject updateDisbursementsSource(String sourceNo, String sourceCode, String particular, Boolean isAdd)
             throws SQLException, GuanzonException, CloneNotSupportedException {
-        int lnRow,lnList;
+        int lnRow, lnList;
         boolean lbExist = false;
-        
+
         switch (sourceCode) {
             case "PRF":
                 for (lnRow = 0; lnRow <= poPaymentRequest.size() - 1; lnRow++) {
@@ -470,7 +471,7 @@ public class Disbursement extends Transaction {
     private JSONObject saveDisbursementsSource()
             throws CloneNotSupportedException, SQLException, GuanzonException {
         poJSON = new JSONObject();
-        int lnCtr,lnCtr1;
+        int lnCtr, lnCtr1;
         for (lnCtr = 0; lnCtr <= poPaymentRequest.size() - 1; lnCtr++) {
             poPaymentRequest.get(lnCtr).setWithParent(true);
             poJSON = poPaymentRequest.get(lnCtr).SaveTransaction();
@@ -485,7 +486,7 @@ public class Disbursement extends Transaction {
                 return poJSON;
             }
         }
-        
+
         poJSON.put("result", "success");
         return poJSON;
     }
@@ -500,7 +501,7 @@ public class Disbursement extends Transaction {
         if (paDetailRemoved == null) {
             paDetailRemoved = new ArrayList<>();
         }
-        //remove items with no stockid or quantity order     
+        //remove items with no stockid or quantity order
 
         Iterator<Model> detail = Detail().iterator();
         while (detail.hasNext()) {
@@ -509,7 +510,7 @@ public class Disbursement extends Transaction {
             Number amount = (Number) item.getValue("nAmountxx");
 
             if (amount.doubleValue() <= 0 || "".equals(sourceNo)) {
-                detail.remove(); // Correctly remove the item    
+                detail.remove(); // Correctly remove the item
                 if (Master().getEditMode() == EditMode.UPDATE) {
                     paDetailRemoved.add(item);
                 }
@@ -569,7 +570,7 @@ public class Disbursement extends Transaction {
 
             updateDisbursementsSource(Detail(lnCtr).getSourceNo(), Detail(lnCtr).getSourceCode(), Detail(lnCtr).getParticular(), true);
         }
-        //Update stock request removed 
+        //Update stock request removed
         for (lnCtr = 0; lnCtr <= getDetailRemovedCount() - 1; lnCtr++) {
             //Purchase Order
             updateDisbursementsSource(DetailRemove(lnCtr).getSourceNo(), DetailRemove(lnCtr).getSourceCode(), DetailRemove(lnCtr).getParticular(), false);
@@ -625,7 +626,7 @@ public class Disbursement extends Transaction {
                 + " c.sBranchNm,"
                 + " d.sPayeeNme,"
                 + " e.sCompnyNm AS supplier,"
-                + " f.sParticular,"
+                + " f.sDescript,"
                 + " a.nNetTotal "
                 + " FROM Disbursement_Master a "
                 + " JOIN Disbursement_Detail b ON a.sTransNox = b.sTransNox "
@@ -646,235 +647,246 @@ public class Disbursement extends Transaction {
     }
 
     public JSONObject getUnifiedPayments(String Trantype) throws SQLException, GuanzonException {
-    StringBuilder lsSQL = new StringBuilder("SELECT * FROM (");
-    boolean hasCondition = false;
+        StringBuilder lsSQL = new StringBuilder("SELECT * FROM (");
+        boolean hasCondition = false;
 
-    if (DisbursementStatic.SourceCode.LOAD_ALL.equals(Trantype) || DisbursementStatic.SourceCode.ACCOUNTS_PAYABLE.equals(Trantype)) {
-        if (hasCondition) lsSQL.append(" UNION ALL ");
-        lsSQL.append(
-            "SELECT " +
-            "    a.sTransNox, " +
-            "    a.dTransact, " +
-            "    (a.nTranTotl - a.nAmtPaidx) AS Balance, " +
-            "    'SOA' AS TransactionType, " +
-            "    'AP_Payment_Master' AS SourceTable, " +
-            "    a.sIndstCdx AS Industry, " +
-            "    a.sCompnyID AS Company " +
-            "FROM AP_Payment_Master a " +
-            "WHERE a.cTranStat = '" + PaymentRequestStatus.CONFIRMED + "' " +
-            "  AND (a.nTranTotl - a.nAmtPaidx) > " + DisbursementStatic.DefaultValues.default_value_double_0000 + " " +
-            "  AND a.cProcessd = '" + PaymentRequestStatus.OPEN + "' " +
-            "  AND a.sIndstCdx = '" + Master().getIndustryID() + "' " +
-            "  AND a.sCompnyID = '" + Master().getCompanyID() + "'"
-        );
-        hasCondition = true;
-    }
+        if (DisbursementStatic.SourceCode.LOAD_ALL.equals(Trantype) || DisbursementStatic.SourceCode.ACCOUNTS_PAYABLE.equals(Trantype)) {
+            if (hasCondition) {
+                lsSQL.append(" UNION ALL ");
+            }
+            lsSQL.append(
+                    "SELECT "
+                    + "    a.sTransNox, "
+                    + "    a.dTransact, "
+                    + "    (a.nTranTotl - a.nAmtPaidx) AS Balance, "
+                    + "    'SOA' AS TransactionType, "
+                    + "    'AP_Payment_Master' AS SourceTable, "
+                    + "    a.sIndstCdx AS Industry, "
+                    + "    a.sCompnyID AS Company "
+                    + "FROM AP_Payment_Master a "
+                    + "WHERE a.cTranStat = '" + PaymentRequestStatus.CONFIRMED + "' "
+                    + "  AND (a.nTranTotl - a.nAmtPaidx) > " + DisbursementStatic.DefaultValues.default_value_double_0000 + " "
+                    + "  AND a.cProcessd = '" + PaymentRequestStatus.OPEN + "' "
+                    + "  AND a.sIndstCdx = '" + Master().getIndustryID() + "' "
+                    + "  AND a.sCompnyID = '" + Master().getCompanyID() + "'"
+            );
+            hasCondition = true;
+        }
 
-    if (DisbursementStatic.SourceCode.LOAD_ALL.equals(Trantype) || DisbursementStatic.SourceCode.PAYMENT_REQUEST.equals(Trantype)) {
-        if (hasCondition) lsSQL.append(" UNION ALL ");
-        lsSQL.append(
-            "SELECT " +
-            "    b.sTransNox, " +
-            "    b.dTransact, " +
-            "    (b.nNetTotal - b.nAmtPaidx) AS Balance, " +
-            "    'PRF' AS TransactionType, " +
-            "    'Payment_Request_Master' AS SourceTable, " +
-            "    b.sIndstCdx AS Industry, " +
-            "    b.sCompnyID AS Company " +
-            "FROM Payment_Request_Master b " +
-            "WHERE b.cTranStat = '" + PaymentRequestStatus.CONFIRMED + "' " +
-            "  AND (b.nNetTotal - b.nAmtPaidx) > " + DisbursementStatic.DefaultValues.default_value_double_0000 + " " +
-            "  AND b.cProcessd = '" + PaymentRequestStatus.OPEN + "' " +
-            "  AND b.sIndstCdx = '" + Master().getIndustryID() + "' " +
-            "  AND b.sCompnyID = '" + Master().getCompanyID() + "'"
-        );
-        hasCondition = true;
-    }
+        if (DisbursementStatic.SourceCode.LOAD_ALL.equals(Trantype) || DisbursementStatic.SourceCode.PAYMENT_REQUEST.equals(Trantype)) {
+            if (hasCondition) {
+                lsSQL.append(" UNION ALL ");
+            }
+            lsSQL.append(
+                    "SELECT "
+                    + "    b.sTransNox, "
+                    + "    b.dTransact, "
+                    + "    (b.nNetTotal - b.nAmtPaidx) AS Balance, "
+                    + "    'PRF' AS TransactionType, "
+                    + "    'Payment_Request_Master' AS SourceTable, "
+                    + "    b.sIndstCdx AS Industry, "
+                    + "    b.sCompnyID AS Company "
+                    + "FROM Payment_Request_Master b "
+                    + "WHERE b.cTranStat = '" + PaymentRequestStatus.CONFIRMED + "' "
+                    + "  AND (b.nNetTotal - b.nAmtPaidx) > " + DisbursementStatic.DefaultValues.default_value_double_0000 + " "
+                    + "  AND b.cProcessd = '" + PaymentRequestStatus.OPEN + "' "
+                    + "  AND b.sIndstCdx = '" + Master().getIndustryID() + "' "
+                    + "  AND b.sCompnyID = '" + Master().getCompanyID() + "'"
+            );
+            hasCondition = true;
+        }
 
-    if (DisbursementStatic.SourceCode.LOAD_ALL.equals(Trantype) || DisbursementStatic.SourceCode.CASH_PAYABLE.equals(Trantype)) {
-        if (hasCondition) lsSQL.append(" UNION ALL ");
-        lsSQL.append(
-            "SELECT " +
-            "    c.sTransNox, " +
-            "    c.dTransact, " +
-            "    (c.nGrossAmt - c.nAmtPaidx) AS Balance, " +
-            "    'CP' AS TransactionType, " +
-            "    'Cache_Payable_Master' AS SourceTable, " +
-            "    c.sIndstCdx AS Industry, " +
-            "    c.sCompnyID AS Company " +
-            "FROM Cache_Payable_Master c " +
-            "WHERE c.cTranStat = '" + PaymentRequestStatus.CONFIRMED + "' " +
-            "  AND (c.nGrossAmt - c.nAmtPaidx) > " + DisbursementStatic.DefaultValues.default_value_double + " " +
-            "  AND c.cProcessd = '" + PaymentRequestStatus.OPEN + "' " +
-            "  AND c.sIndstCdx = '" + Master().getIndustryID() + "' " +
-            "  AND c.sCompnyID = '" + Master().getCompanyID() + "'"
-        );
-        hasCondition = true;
-    }
+        if (DisbursementStatic.SourceCode.LOAD_ALL.equals(Trantype) || DisbursementStatic.SourceCode.CASH_PAYABLE.equals(Trantype)) {
+            if (hasCondition) {
+                lsSQL.append(" UNION ALL ");
+            }
+            lsSQL.append(
+                    "SELECT "
+                    + "    c.sTransNox, "
+                    + "    c.dTransact, "
+                    + "    (c.nGrossAmt - c.nAmtPaidx) AS Balance, "
+                    + "    'CP' AS TransactionType, "
+                    + "    'Cache_Payable_Master' AS SourceTable, "
+                    + "    c.sIndstCdx AS Industry, "
+                    + "    c.sCompnyID AS Company "
+                    + "FROM Cache_Payable_Master c "
+                    + "WHERE c.cTranStat = '" + PaymentRequestStatus.CONFIRMED + "' "
+                    + "  AND (c.nGrossAmt - c.nAmtPaidx) > " + DisbursementStatic.DefaultValues.default_value_double + " "
+                    + "  AND c.cProcessd = '" + PaymentRequestStatus.OPEN + "' "
+                    + "  AND c.sIndstCdx = '" + Master().getIndustryID() + "' "
+                    + "  AND c.sCompnyID = '" + Master().getCompanyID() + "'"
+            );
+            hasCondition = true;
+        }
 
-    lsSQL.append(") AS CombinedResults ORDER BY dTransact ASC");
+        lsSQL.append(") AS CombinedResults ORDER BY dTransact ASC");
 
-    System.out.println("Executing SQL: " + lsSQL.toString());
+        System.out.println("Executing SQL: " + lsSQL.toString());
 
-    ResultSet loRS = poGRider.executeQuery(lsSQL.toString());
-    JSONArray dataArray = new JSONArray();
-    JSONObject loJSON = new JSONObject();
+        ResultSet loRS = poGRider.executeQuery(lsSQL.toString());
+        JSONArray dataArray = new JSONArray();
+        JSONObject loJSON = new JSONObject();
 
-    if (loRS == null) {
-        loJSON.put("result", "error");
-        loJSON.put("message", "Query execution failed.");
+        if (loRS == null) {
+            loJSON.put("result", "error");
+            loJSON.put("message", "Query execution failed.");
+            return loJSON;
+        }
+
+        try {
+            int lnctr = 0;
+
+            while (loRS.next()) {
+                JSONObject record = new JSONObject();
+                record.put("sTransNox", loRS.getString("sTransNox"));
+                record.put("dTransact", loRS.getDate("dTransact"));
+                record.put("Balance", loRS.getDouble("Balance"));
+                record.put("TransactionType", loRS.getString("TransactionType"));
+
+                dataArray.add(record);
+                lnctr++;
+            }
+
+            if (lnctr > 0) {
+                loJSON.put("result", "success");
+                loJSON.put("message", "Record(s) loaded successfully.");
+                loJSON.put("data", dataArray);
+            } else {
+                loJSON.put("result", "error");
+                loJSON.put("message", "No records found.");
+                loJSON.put("data", new JSONArray());
+            }
+
+            MiscUtil.close(loRS);
+
+        } catch (SQLException e) {
+            loJSON.put("result", "error");
+            loJSON.put("message", e.getMessage());
+        }
+
         return loJSON;
     }
 
-    try {
-        int lnctr = 0;
-
-        while (loRS.next()) {
-            JSONObject record = new JSONObject();
-            record.put("sTransNox", loRS.getString("sTransNox"));
-            record.put("dTransact", loRS.getDate("dTransact"));
-            record.put("Balance", loRS.getDouble("Balance"));
-            record.put("TransactionType", loRS.getString("TransactionType"));
-
-            dataArray.add(record);
-            lnctr++;
-        }
-
-        if (lnctr > 0) {
-            loJSON.put("result", "success");
-            loJSON.put("message", "Record(s) loaded successfully.");
-            loJSON.put("data", dataArray);
-        } else {
-            loJSON.put("result", "error");
-            loJSON.put("message", "No records found.");
-            loJSON.put("data", new JSONArray());
-        }
-
-        MiscUtil.close(loRS);
-
-    } catch (SQLException e) {
-        loJSON.put("result", "error");
-        loJSON.put("message", e.getMessage());
-    }
-
-    return loJSON;
-}
-
     public JSONObject addUnifiedPaymentToDisbursement(String transactionNo, String paymentType)
-        throws CloneNotSupportedException, SQLException, GuanzonException {
+            throws CloneNotSupportedException, SQLException, GuanzonException {
 
-    int detailCount = 0;
-    PaymentRequest poPaymentRequest = new GLControllers(poGRider, logwrapr).PaymentRequest();
-    JSONObject poJSON;
+        int detailCount = 0;
+        PaymentRequest poPaymentRequest = new GLControllers(poGRider, logwrapr).PaymentRequest();
+        JSONObject poJSON;
 
-    switch (paymentType) {
-        case "PRF":
-            poJSON = poPaymentRequest.InitTransaction();
-            if (!"success".equals(poJSON.get("result"))) {
-                poJSON.put("message", "No records found.");
-                return poJSON;
-            }
-
-            poJSON = poPaymentRequest.OpenTransaction(transactionNo);
-            if (!"success".equals(poJSON.get("result"))) {
-                poJSON.put("message", "No records found.");
-                return poJSON;
-            }
-
-            detailCount = poPaymentRequest.getDetailCount();
-            break;
-
-        case "SOA":
-        case "CP":
-            poJSON = new JSONObject();
-            poJSON.put("result", "error");
-            poJSON.put("message", "Unsupported payment type.");
-            return poJSON;
-
-        default:
-            poJSON = new JSONObject();
-            poJSON.put("result", "error");
-            poJSON.put("message", "Invalid payment type.");
-            return poJSON;
-    }
-
-    // Loop through PaymentRequest details
-    for (int lnCtr = 0; lnCtr < detailCount; lnCtr++) {
-        String sourceNo = "";
-        String sourceCode = "";
-        String particular = "";
-        double amount = 0.0000;
-
-        // Only PRF supported
-        sourceNo = poPaymentRequest.Detail(lnCtr).getTransactionNo();
-        sourceCode = DisbursementStatic.SourceCode.PAYMENT_REQUEST;
-        particular = poPaymentRequest.Detail(lnCtr).getParticularID();
-        amount = poPaymentRequest.Detail(lnCtr).getAmount().doubleValue();
-
-        boolean found = false;
-        int disbursementDetailCount = getDetailCount();
-
-        for (int i = 0; i < disbursementDetailCount; i++) {
-            if (Detail(i).getSourceNo().equals(sourceNo)
-                    && Detail(i).getSourceCode().equals(sourceCode)
-                    && Detail(i).getParticular().equals(particular)) {
-
-                double currentAmount = 0.0000;
-                try {
-                    currentAmount = Detail(i).getAmount().doubleValue();
-                } catch (NumberFormatException e) {
-                    currentAmount = 0.0000;
+        switch (paymentType) {
+            case "PRF":
+                poJSON = poPaymentRequest.InitTransaction();
+                if (!"success".equals(poJSON.get("result"))) {
+                    poJSON.put("message", "No records found.");
+                    return poJSON;
                 }
 
-                Detail(i).setAmount(currentAmount + amount);
-                found = true;
+                poJSON = poPaymentRequest.OpenTransaction(transactionNo);
+                if (!"success".equals(poJSON.get("result"))) {
+                    poJSON.put("message", "No records found.");
+                    return poJSON;
+                }
+
+                detailCount = poPaymentRequest.getDetailCount();
                 break;
+
+            case "SOA":
+            case "CP":
+                poJSON = new JSONObject();
+                poJSON.put("result", "error");
+                poJSON.put("message", "Unsupported payment type.");
+                return poJSON;
+
+            default:
+                poJSON = new JSONObject();
+                poJSON.put("result", "error");
+                poJSON.put("message", "Invalid payment type.");
+                return poJSON;
+        }
+
+        // Loop through PaymentRequest details
+        for (int lnCtr = 0; lnCtr < detailCount; lnCtr++) {
+            String sourceNo = "";
+            String sourceCode = "";
+            String particular = "";
+            double amount = 0.0000;
+
+            // Only PRF supported
+            sourceNo = poPaymentRequest.Detail(lnCtr).getTransactionNo();
+            sourceCode = DisbursementStatic.SourceCode.PAYMENT_REQUEST;
+            particular = poPaymentRequest.Detail(lnCtr).getParticularID();
+            amount = poPaymentRequest.Detail(lnCtr).getAmount().doubleValue();
+
+            boolean found = false;
+            int disbursementDetailCount = getDetailCount();
+
+            for (int i = 0; i < disbursementDetailCount; i++) {
+                if (Detail(i).getSourceNo().equals(sourceNo)
+                        && Detail(i).getSourceCode().equals(sourceCode)
+                        && Detail(i).getParticular().equals(particular)) {
+
+                    double currentAmount = 0.0000;
+                    try {
+                        currentAmount = Detail(i).getAmount().doubleValue();
+                    } catch (NumberFormatException e) {
+                        currentAmount = 0.0000;
+                    }
+
+                    Detail(i).setAmount(currentAmount + amount);
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                AddDetail(); // Adds a new detail entry
+                int newIndex = getDetailCount() - 1;
+
+                Detail(newIndex).setSourceNo(sourceNo);
+                Detail(newIndex).setSourceCode(sourceCode);
+                Detail(newIndex).setParticular(particular);
+                Detail(newIndex).setAmount(amount);
             }
         }
 
-        if (!found) {
-            AddDetail(); // Adds a new detail entry
-            int newIndex = getDetailCount() - 1;
-
-            Detail(newIndex).setSourceNo(sourceNo);
-            Detail(newIndex).setSourceCode(sourceCode);
-            Detail(newIndex).setParticular(particular);
-            Detail(newIndex).setAmount(amount);
-        }
+        poJSON.put("result", "success");
+        poJSON.put("message", "Record loaded successfully.");
+        return poJSON;
     }
 
-    poJSON.put("result", "success");
-    poJSON.put("message", "Record loaded successfully.");
-    return poJSON;
-}
-
-
     public JSONObject getDisbursement(String fsTransactionNo, String fsPayee) throws SQLException, GuanzonException {
-        JSONObject loJSON = new JSONObject();
+        poJSON = new JSONObject();
+        // Build transaction status condition
         String lsTransStat = "";
         if (psTranStat.length() > 1) {
-            for (int lnCtr = 0; lnCtr <= psTranStat.length() - 1; lnCtr++) {
+            for (int lnCtr = 0; lnCtr < psTranStat.length(); lnCtr++) {
                 lsTransStat += ", " + SQLUtil.toSQL(Character.toString(psTranStat.charAt(lnCtr)));
             }
             lsTransStat = " AND a.cTranStat IN (" + lsTransStat.substring(2) + ")";
-        } else {
+        } else if (!psTranStat.isEmpty()) {
             lsTransStat = " AND a.cTranStat = " + SQLUtil.toSQL(psTranStat);
         }
 
         initSQL();
 
-        String lsFilterCondition = String.join(" AND ", "a.sPayeeIDx LIKE " + SQLUtil.toSQL("%" + fsPayee),
-                " a.sTransNox  LIKE " + SQLUtil.toSQL("%" + fsTransactionNo),
-                " ");
+        // Filter conditions (empty string means show all)
+        String lsFilterCondition = "a.sPayeeIDx LIKE " + SQLUtil.toSQL("%" + fsPayee + "%")
+                + " AND a.sTransNox LIKE " + SQLUtil.toSQL("%" + fsTransactionNo + "%");
+
+        // Start from base SQL and apply filters
         String lsSQL = MiscUtil.addCondition(SQL_BROWSE, lsFilterCondition);
 
-        lsSQL = MiscUtil.addCondition(lsSQL, lsFilterCondition);
-        if (!psTranStat.isEmpty()) {
-            lsSQL = lsSQL + lsTransStat;
+        // Add transaction status condition
+        if (!lsTransStat.isEmpty()) {
+            lsSQL += lsTransStat;
         }
-        lsSQL = lsSQL + " GROUP BY  a.sTransNox"
-                + " ORDER BY dTransact ASC";
+
+        // Grouping and sorting
+        lsSQL += " GROUP BY a.sTransNox ORDER BY a.dTransact ASC";
+
         System.out.println("Executing SQL: " + lsSQL);
+
         ResultSet loRS = poGRider.executeQuery(lsSQL);
 
         int lnCtr = 0;
@@ -891,17 +903,17 @@ public class Disbursement extends Transaction {
                 lnCtr++;
             }
             System.out.println("Records found: " + lnCtr);
-            loJSON.put("result", "success");
-            loJSON.put("message", "Record loaded successfully.");
+            poJSON.put("result", "success");
+            poJSON.put("message", "Record loaded successfully.");
         } else {
             poDisbursementMaster = new ArrayList<>();
             poDisbursementMaster.add(DisbursementMasterList());
-            loJSON.put("result", "error");
-            loJSON.put("continue", true);
-            loJSON.put("message", "No record found .");
+            poJSON.put("result", "error");
+            poJSON.put("continue", true);
+            poJSON.put("message", "No record found .");
         }
         MiscUtil.close(loRS);
-        return loJSON;
+        return poJSON;
     }
 
     private Model_Disbursement_Master DisbursementMasterList() {
