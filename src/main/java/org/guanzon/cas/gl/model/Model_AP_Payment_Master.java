@@ -15,6 +15,7 @@ import org.guanzon.appdriver.constant.EditMode;
 import org.guanzon.cas.client.model.Model_Client_Master;
 import org.guanzon.cas.client.services.ClientModels;
 import org.guanzon.cas.gl.services.GLModels;
+import org.guanzon.cas.gl.status.SOATaggingStatic;
 import org.guanzon.cas.gl.status.SOATaggingStatus;
 import org.guanzon.cas.parameter.model.Model_Branch;
 import org.guanzon.cas.parameter.model.Model_Company;
@@ -50,6 +51,7 @@ public class Model_AP_Payment_Master extends Model {
             //assign default values
             poEntity.updateObject("dTransact", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
             poEntity.updateObject("dModified", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
+            poEntity.updateString("cProcessd", "0");
             poEntity.updateObject("nEntryNox", 0);
             poEntity.updateObject("nTranTotl", 0.0000);
             poEntity.updateObject("nDiscAmnt", 0.0000);
