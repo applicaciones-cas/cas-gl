@@ -922,11 +922,22 @@ public class SOATagging extends Transaction {
         return paPayablesList.size();
     }
     
-    public JSONObject loadPayables() {
+    public JSONObject loadPayables(String supplier, String company, String payee, String referenceNo) {
         try {
             paPayablesList = new ArrayList<>();
             paPayablesType = new ArrayList<>();
-            String lsSQL = getPayableSQL() + " ORDER BY dTransact DESC ";
+            
+            if (company == null) {
+                company = "";
+            }
+            if (supplier == null) {
+                supplier = "";
+            }
+            if (referenceNo == null) {
+                referenceNo = "";
+            }
+            
+            String lsSQL = getPayableSQL(supplier,company,payee,referenceNo) + " ORDER BY dTransact DESC ";
             System.out.println("Executing SQL: " + lsSQL);
             System.out.println("Payment Request List");
             ResultSet loRS = poGRider.executeQuery(lsSQL);
@@ -1273,7 +1284,7 @@ public class SOATagging extends Transaction {
                 }
             }
 
-            //1. Save Update Payment Request
+            //1. Save Update Cache Payable
 //            for (lnCtr = 0; lnCtr <= paCachePayable.size() - 1; lnCtr++) {
 //                paCachePayable.get(lnCtr).setWithParent(true);
 //                poJSON = paCachePayable.get(lnCtr).SaveTransaction();
@@ -1322,26 +1333,6 @@ public class SOATagging extends Transaction {
         return poJSON;
     }
 
-    public String getCompanyId() {
-        String lsCompanyId = "";
-        try {
-            String lsSQL = "SELECT sCompnyID FROM branch ";
-            lsSQL = MiscUtil.addCondition(lsSQL, " sBranchCd = " + SQLUtil.toSQL(poGRider.getBranchCode()));
-
-            ResultSet loRS = poGRider.executeQuery(lsSQL);
-
-            if (loRS.next()) {
-                lsCompanyId = loRS.getString("sCompnyID");
-            }
-
-            MiscUtil.close(loRS);
-        } catch (SQLException ex) {
-            Logger.getLogger(SOATagging.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        return lsCompanyId;
-    }
-
     @Override
     public void initSQL() {
         SQL_BROWSE = " SELECT "
@@ -1362,7 +1353,7 @@ public class SOATagging extends Transaction {
                 + " LEFT JOIN payee e ON e.sPayeeIDx = a.sIssuedTo ";
     }
     
-    public String getPayableSQL() {
+    public String getPayableSQL(String supplier, String company, String payee, String referenceNo)  {
         return  " SELECT        "                                        
                 + "   a.sTransNox "                                        
                 + " , a.dTransact "                                        
@@ -1370,13 +1361,18 @@ public class SOATagging extends Transaction {
                 + " , a.cTranStat "                                        
                 + " , a.nAmtPaidx "                                        
                 + " , a.nNetTotal AS nPayblAmt  "                                        
-                + " , b.sCompnyNm AS sPayablNm  "                                        
+                + " , b.sCompnyNm AS sPayablNm  "                            
+                + " , c.sCompnyNm AS sCompnyNm  "                                      
                 + " ,  " + SQLUtil.toSQL(SOATaggingStatic.CachePayable) + " AS sPayablTp  "                         
                 + " FROM cache_payable_master a "                          
-                + " LEFT JOIN client_master b ON b.sClientID = a.sClientID "
+                + " LEFT JOIN client_master b ON b.sClientID = a.sClientID "                    
+                + " LEFT JOIN company c ON c.sCompnyID = a.sCompnyID "
                 + " WHERE a.sIndstCdx = " + SQLUtil.toSQL(psIndustryId)
                 + " AND a.cTranStat = "+ SQLUtil.toSQL(PaymentRequestStatus.CONFIRMED)
                 + " AND a.nAmtPaidx < a.nNetTotal "
+                + " AND b.sCompnyNm LIKE "+ SQLUtil.toSQL("%"+supplier)
+                + " AND c.sCompnyNm LIKE "+ SQLUtil.toSQL("%"+company)
+                + " AND a.sTransNox LIKE "+ SQLUtil.toSQL("%"+referenceNo)
                 + " UNION  "                                               
                 + " SELECT "                                               
                 + "   a.sTransNox "                                       
@@ -1385,13 +1381,17 @@ public class SOATagging extends Transaction {
                 + " , a.cTranStat "                                       
                 + " , a.nAmtPaidx "                                       
                 + " , a.nTranTotl AS nPayblAmt    "                                       
-                + " , b.sPayeeNme AS sPayablNm    "               
+                + " , b.sPayeeNme AS sPayablNm    "                           
+                + " , c.sCompnyNm AS sCompnyNm  "                
                 + " ,  " + SQLUtil.toSQL(SOATaggingStatic.PaymentRequest) + " AS sPayablTp  "                       
                 + " FROM payment_request_master a "                       
-                + " LEFT JOIN payee b ON b.sPayeeIDx = a.sPayeeIDx "
+                + " LEFT JOIN payee b ON b.sPayeeIDx = a.sPayeeIDx "              
+                + " LEFT JOIN company c ON c.sCompnyID = a.sCompnyID "
                 + " WHERE a.sIndstCdx = " + SQLUtil.toSQL(psIndustryId)
                 + " AND a.cTranStat = "+ SQLUtil.toSQL(PaymentRequestStatus.CONFIRMED)
-                + " AND a.nAmtPaidx < a.nTranTotl ";       
+                + " AND a.nAmtPaidx < a.nTranTotl "
+                + " AND b.sPayeeNme LIKE "+ SQLUtil.toSQL("%"+payee)
+                + " AND a.sTransNox LIKE "+ SQLUtil.toSQL("%"+referenceNo);       
     }
 
     @Override
@@ -1404,396 +1404,5 @@ public class SOATagging extends Transaction {
         loValidator.setMaster(poMaster);
         poJSON = loValidator.validate();
         return poJSON;
-    }
-    private CustomJasperViewer poViewer = null;
-    private String psTransactionNo = "";
-
-//    public JSONObject printRecord(Runnable onPrintedCallback) {
-//        poJSON = new JSONObject();
-//        String watermarkPath = "D:\\GGC_Maven_Systems\\Reports\\images\\draft.png"; //set draft as default
-//        psTransactionNo = Master().getTransactionNo();
-//        try {
-//            
-//            //Reopen Transaction to get the accurate data
-//            poJSON = OpenTransaction(psTransactionNo);
-//            if ("error".equals((String) poJSON.get("result"))) {
-//                System.out.println("Print Record open transaction : " + (String) poJSON.get("message"));
-//                return poJSON;
-//            }
-//            
-//            // 1. Prepare parameters
-//            Map<String, Object> parameters = new HashMap<>();
-//            parameters.put("sSupplierNm", Master().Supplier().getCompanyName());
-//            parameters.put("sBranchNm", poGRider.getBranchName()); //TODO
-//            parameters.put("sAddressx", poGRider.getAddress());
-//            parameters.put("sCompnyNm", poGRider.getClientName());
-//            parameters.put("sTransNox", Master().getTransactionNo());
-//            parameters.put("dReferDte", Master().getReferenceDate());
-//            parameters.put("sReferNox", Master().getReferenceNo());
-//            parameters.put("sRemarks", Master().getRemarks());
-//            parameters.put("dTransDte", new java.sql.Date(Master().getTransactionDate().getTime()));
-//            parameters.put("dDatexxx", new java.sql.Date(poGRider.getServerDate().getTime()));
-//
-//            // Set watermark based on approval status
-//            switch (Master().getTransactionStatus()) {
-//                case SOATaggingStatus.CONFIRMED:
-//                case SOATaggingStatus.PAID:
-//                case SOATaggingStatus.POSTED:
-//                    if("1".equals(Master().getPrint())){
-//                        watermarkPath = "D:\\GGC_Maven_Systems\\Reports\\images\\approvedreprint.png";
-//                    } else {
-//                        watermarkPath = "D:\\GGC_Maven_Systems\\Reports\\images\\approved.png";
-//                    }
-//                    break;
-////                case SOATaggingStatus.CANCELLED:
-////                    watermarkPath = "D:\\GGC_Maven_Systems\\Reports\\images\\cancelled.png";
-////                    break;
-//            }
-//
-//            parameters.put("watermarkImagePath", watermarkPath);
-//            List<OrderDetail> orderDetails = new ArrayList<>();
-//            
-//            String jrxmlPath = "D:\\GGC_Maven_Systems\\Reports\\PurchaseOrderReceiving.jrxml";
-//            double lnTotal = 0.0;
-//            int lnRow = 1;
-//            String lsDescription = "";
-//            String lsSerial = "";
-//            String lsBarcode = "";
-//            String lsMeasure = "";
-//            for (int lnCtr = 0; lnCtr <= getDetailCount() - 1; lnCtr++) {
-//                lnTotal = Detail(lnCtr).getUnitPrce().doubleValue() * Detail(lnCtr).getQuantity().intValue();
-//                
-//                if(Detail(lnCtr).isSerialized()){
-//                    getPurchaseOrderReceivingSerial(Detail(lnCtr).getEntryNo());
-//                    for(int lnList = 0; lnList <=getPurchaseOrderReceivingSerialCount()-1; lnList++){
-//                        if(PurchaseOrderReceivingSerialList(lnList).getEntryNo() == Detail(lnCtr).getEntryNo()){
-//                            if("".equals(lsSerial)){
-//                                lsSerial = PurchaseOrderReceivingSerialList(lnList).getSerial01();
-//                            } else {
-//                                lsSerial = lsSerial + "\n" + PurchaseOrderReceivingSerialList(lnList).getSerial01();
-//                            }
-//                        }
-//                    }
-//                }
-//                
-//                switch(Master().getCategoryCode()){
-//                    case "0005": //CAR
-//                    case "0003": //Motorcycle
-//                    case "0001": //Cellphone   
-//                    case "0002": //Appliances  
-//                        lsBarcode = Detail(lnCtr).Inventory().Brand().getDescription();
-//
-//                        if(Detail(lnCtr).Inventory().Model().getDescription() != null && !"".equals(Detail(lnCtr).Inventory().Model().getDescription())){
-//                            lsDescription = Detail(lnCtr).Inventory().Model().getDescription();
-//                        }
-//                        if(Detail(lnCtr).Inventory().Variant().getDescription() != null && !"".equals(Detail(lnCtr).Inventory().Variant().getDescription())){
-//                            lsDescription = lsDescription + " " + Detail(lnCtr).Inventory().Variant().getDescription();
-//                        }
-//                        if(Detail(lnCtr).Inventory().Variant().getYearModel()!= 0){
-//                            lsDescription = lsDescription + " " + Detail(lnCtr).Inventory().Variant().getYearModel();
-//                        }
-//                        if(Detail(lnCtr).Inventory().Color().getDescription() != null && !"".equals(Detail(lnCtr).Inventory().Color().getDescription())){
-//                            lsDescription = lsDescription + " " + Detail(lnCtr).Inventory().Color().getDescription();
-//                        }
-//                        
-//                        if(!"".equals(lsSerial)){
-//                            lsDescription = lsDescription + "\n" + lsSerial;
-//                        }
-//                        orderDetails.add(new OrderDetail(lnRow, String.valueOf(Detail(lnCtr).getOrderNo()), 
-//                                lsBarcode, lsDescription, Detail(lnCtr).getUnitPrce().doubleValue(), Detail(lnCtr).getQuantity().intValue(), lnTotal));
-//                    break;
-//                    case "0008": // Food  
-//                        lsBarcode = Detail(lnCtr).Inventory().getBarCode();
-//                        if (Detail(lnCtr).Inventory().Measure().getDescription() != null && !"".equals(Detail(lnCtr).Inventory().Measure().getDescription())){
-//                            lsMeasure = Detail(lnCtr).Inventory().Measure().getDescription();
-//                        }
-//                        lsDescription = Detail(lnCtr).Inventory().Brand().getDescription() 
-//                                + " " + Detail(lnCtr).Inventory().getDescription(); 
-//                        orderDetails.add(new OrderDetail(lnRow, String.valueOf(Detail(lnCtr).getOrderNo()), 
-//                                lsBarcode, lsDescription, lsMeasure ,Detail(lnCtr).getUnitPrce().doubleValue(), Detail(lnCtr).getQuantity().intValue(), lnTotal));
-//                        jrxmlPath = "D:\\GGC_Maven_Systems\\Reports\\PurchaseOrderReceiving_Food.jrxml";
-//                    break;
-//                    case "0006": // CAR SP
-//                    case "0004": // Motorcycle SP
-//                    case "0007": // General
-//                    case "0009": // Hospitality
-//                    default:
-//                        lsBarcode = Detail(lnCtr).Inventory().getBarCode();
-//                        lsDescription = Detail(lnCtr).Inventory().getDescription();   
-//                        orderDetails.add(new OrderDetail(lnRow, String.valueOf(Detail(lnCtr).getOrderNo()), 
-//                                lsBarcode, lsDescription, Detail(lnCtr).getUnitPrce().doubleValue(), Detail(lnCtr).getQuantity().intValue(), lnTotal));
-//                    break;
-//                }
-//                
-//                lnRow++;
-//                lsDescription = "";
-//                lsBarcode = "";
-//                lsSerial = "";
-//            }
-//
-//            // 3. Create data source
-//            JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(orderDetails);
-//
-//            // 4. Compile and fill report
-//            JasperReport jasperReport = JasperCompileManager.compileReport(jrxmlPath);
-//            JasperPrint jasperPrint = JasperFillManager.fillReport(
-//                    jasperReport,
-//                    parameters,
-//                    dataSource
-//            );
-//
-//            if (poViewer != null && poViewer.isDisplayable()) {
-//                poViewer.dispose();
-//                poViewer = null;
-//
-//            }
-//            poViewer = new CustomJasperViewer(jasperPrint, onPrintedCallback);
-//            poViewer.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE); 
-//            poViewer.setVisible(true);
-//            poViewer.toFront();
-//            
-//            poViewer.addWindowListener(new WindowAdapter() {
-//                @Override
-//                public void windowClosing(java.awt.event.WindowEvent e) {
-//                    poViewer = null;
-//                    System.out.println("Jasper viewer is closing...");
-//                }
-//
-//                @Override
-//                public void windowClosed(java.awt.event.WindowEvent e) {
-//                    System.out.println("Jasper viewer closed.");
-//                    onPrintedCallback.run(); 
-//                }
-//            });
-//            
-//        } catch (JRException e) {
-//            System.err.println("Error generating report: " + e.getMessage());
-//            e.printStackTrace();
-//            poJSON.put("result", "error");
-//            poJSON.put("message", MiscUtil.getException(e));
-//        } catch (SQLException | GuanzonException ex) {
-//            Logger.getLogger(SOATagging.class.getName()).log(Level.SEVERE, MiscUtil.getException(ex), ex);
-//            poJSON.put("result", "error");
-//            poJSON.put("message", MiscUtil.getException(ex));
-//        } catch (CloneNotSupportedException ex) {
-//            Logger.getLogger(SOATagging.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//
-//        return poJSON;
-//    }
-    public static class OrderDetail {
-
-        private Integer nRowNo;
-        private String sOrderNo;
-        private String sBarcode;
-        private String sDescription;
-        private String sMeasure;
-        private double nUprice;
-        private Integer nOrder;
-        private double nTotal;
-
-        public OrderDetail(Integer rowNo, String orderNo, String barcode, String description,
-                double uprice, Integer order, double total) {
-            this.nRowNo = rowNo;
-            this.sOrderNo = orderNo;
-            this.sBarcode = barcode;
-            this.sDescription = description;
-            this.nUprice = uprice;
-            this.nOrder = order;
-            this.nTotal = total;
-        }
-
-        public OrderDetail(Integer rowNo, String orderNo, String barcode, String description, String measure,
-                double uprice, Integer order, double total) {
-            this.nRowNo = rowNo;
-            this.sOrderNo = orderNo;
-            this.sBarcode = barcode;
-            this.sDescription = description;
-            this.sMeasure = measure;
-            this.nUprice = uprice;
-            this.nOrder = order;
-            this.nTotal = total;
-        }
-
-        public Integer getnRowNo() {
-            return nRowNo;
-        }
-
-        public String getsOrderNo() {
-            return sOrderNo;
-        }
-
-        public String getsBarcode() {
-            return sBarcode;
-        }
-
-        public String getsDescription() {
-            return sDescription;
-        }
-
-        public String getsMeasure() {
-            return sMeasure;
-        }
-
-        public double getnUprice() {
-            return nUprice;
-        }
-
-        public Integer getnOrder() {
-            return nOrder;
-        }
-
-        public double getnTotal() {
-            return nTotal;
-        }
-    }
-
-    private class CustomJasperViewer extends JasperViewer {
-
-        private final Runnable onPrintedCallback;
-
-        public CustomJasperViewer(JasperPrint jasperPrint, Runnable onPrintedCallback) {
-            super(jasperPrint, false);
-            this.onPrintedCallback = onPrintedCallback;
-            customizePrintButton(jasperPrint);
-
-        }
-
-        private void customizePrintButton(JasperPrint jasperPrint) {
-            poJSON = new JSONObject();
-            try {
-                JRViewer viewer = findJRViewer(this);
-                if (viewer == null) {
-                    System.out.println("JRViewer not found!");
-                    return;
-                }
-
-                for (int i = 0; i < viewer.getComponentCount(); i++) {
-                    if (viewer.getComponent(i) instanceof JRViewerToolbar) {
-                        JRViewerToolbar toolbar = (JRViewerToolbar) viewer.getComponent(i);
-
-                        for (int j = 0; j < toolbar.getComponentCount(); j++) {
-                            if (toolbar.getComponent(j) instanceof JButton) {
-                                JButton button = (JButton) toolbar.getComponent(j);
-
-                                if (button.getToolTipText() != null) {
-                                    if (button.getToolTipText().equals("Save")) {
-                                        button.setEnabled(false);  // Disable instead of hiding
-                                        button.setVisible(false);  // Hide it completely
-                                    }
-                                }
-
-                                if ("Print".equals(button.getToolTipText())) {
-                                    for (ActionListener al : button.getActionListeners()) {
-                                        button.removeActionListener(al);
-                                    }
-                                    button.addActionListener(e -> {
-                                        try {
-                                            boolean isPrinted = JasperPrintManager.printReport(jasperPrint, true);
-                                            if (isPrinted) {
-                                                PrintTransaction(true);
-                                            } else {
-                                                Platform.runLater(() -> {
-                                                    ShowMessageFX.Warning(null, "Computerized Accounting System", "Printing was canceled by the user.");
-                                                    SwingUtilities.invokeLater(() -> CustomJasperViewer.this.toFront());
-
-                                                });
-                                            }
-                                        } catch (JRException ex) {
-                                            Platform.runLater(() -> {
-                                                ShowMessageFX.Warning(null, "Computerized Accounting System", "Print Failed: " + ex.getMessage());
-                                                SwingUtilities.invokeLater(() -> CustomJasperViewer.this.toFront());
-                                            });
-                                        } catch (SQLException | GuanzonException | CloneNotSupportedException ex) {
-                                            Logger.getLogger(SOATagging.class.getName()).log(Level.SEVERE, null, ex);
-                                        }
-                                    });
-                                }
-                            }
-                        }
-                        // Force UI refresh after hiding the button
-                        toolbar.revalidate();
-                        toolbar.repaint();
-                    }
-                }
-            } catch (Exception e) {
-                System.out.println("Error customizing print button: " + e.getMessage());
-            }
-        }
-
-        private void PrintTransaction(boolean fbIsPrinted)
-                throws SQLException,
-                CloneNotSupportedException,
-                GuanzonException {
-            poJSON = new JSONObject();
-            if (fbIsPrinted) {
-//                poJSON = OpenTransaction((String) poMaster.getValue("sTransNox"));
-                poJSON = OpenTransaction(psTransactionNo);
-                if ("error".equals((String) poJSON.get("result"))) {
-                    Platform.runLater(() -> {
-                        ShowMessageFX.Warning(null, "Print Purchase Order Receiving", "Printing of the transaction was aborted.\n" + (String) poJSON.get("message"));
-                        SwingUtilities.invokeLater(() -> CustomJasperViewer.this.toFront());
-                    });
-                    fbIsPrinted = false;
-                }
-                if (SOATaggingStatus.CONFIRMED.equals(Master().getTransactionStatus())) {
-                    poJSON = UpdateTransaction();
-                    if ("error".equals((String) poJSON.get("result"))) {
-                        Platform.runLater(() -> {
-                            ShowMessageFX.Warning(null, "Print Purchase Order Receiving", "Printing of the transaction was aborted.\n" + (String) poJSON.get("message"));
-                            SwingUtilities.invokeLater(() -> CustomJasperViewer.this.toFront());
-                        });
-                        fbIsPrinted = false;
-                    }
-                    //Populate purchase receiving serials
-                    for (int lnCtr = 0; lnCtr <= getDetailCount() - 1; lnCtr++) {
-//                        getPurchaseOrderReceivingSerial(Detail(lnCtr).getEntryNo());
-                    }
-                    poMaster.setValue("dModified", poGRider.getServerDate());
-                    poMaster.setValue("sModified", poGRider.getUserID());
-                    poMaster.setValue("cPrintxxx", Logical.YES);
-                    pbIsPrint = fbIsPrinted;
-                    poJSON = SaveTransaction();
-                    if ("error".equals((String) poJSON.get("result"))) {
-                        Platform.runLater(() -> {
-                            ShowMessageFX.Warning(null, "Print Purchase Order Receiving", "Printing of the transaction was aborted.\n" + (String) poJSON.get("message"));
-                            SwingUtilities.invokeLater(() -> CustomJasperViewer.this.toFront());
-                        });
-                        fbIsPrinted = false;
-                    }
-
-                    pbIsPrint = false;
-                }
-            }
-
-            if (fbIsPrinted) {
-                Platform.runLater(() -> {
-                    ShowMessageFX.Information(null, "Print Purchase Order Receiving", "Transaction printed successfully.");
-                });
-            }
-
-            if (onPrintedCallback != null) {
-                poViewer = null;
-                this.dispose();
-//                onPrintedCallback.run();  // <- triggers controller method!
-            }
-            SwingUtilities.invokeLater(() -> CustomJasperViewer.this.toFront());
-        }
-
-        private JRViewer findJRViewer(Component parent) {
-            if (parent instanceof JRViewer) {
-                return (JRViewer) parent;
-            }
-            if (parent instanceof Container) {
-                Component[] components = ((Container) parent).getComponents();
-                for (Component component : components) {
-                    JRViewer viewer = findJRViewer(component);
-                    if (viewer != null) {
-                        return viewer;
-                    }
-                }
-            }
-            return null;
-        }
     }
 }

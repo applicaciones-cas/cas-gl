@@ -182,7 +182,7 @@ public class testSOATagging {
 
             poSOATaggingController.setIndustryId(industryId); 
 
-            loJSON = poSOATaggingController.loadPayables();
+            loJSON = poSOATaggingController.loadPayables(supplierId,companyId,supplierId,"");
             if (!"success".equals((String) loJSON.get("result"))) {
                 System.err.println((String) loJSON.get("message"));
                 Assert.fail();
