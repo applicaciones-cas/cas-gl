@@ -577,9 +577,9 @@ public class APPaymentAdjustment extends Parameter {
         poJSON = ShowDialogFX.Browse(poGRider,
                 lsSQL,
                 "",
-                "Transaction Date»Transaction No»Company»Supplier",
-                "dTransact»sTransNox»sCompnyNm»sSupplrNm",
-                "a.dTransact»a.sTransNox»d.sCompnyNm»b.sCompnyNm",
+                "Transaction Date»Transaction No»Company»Supplier»Payee",
+                "dTransact»sTransNox»sCompnyNm»sSupplrNm»sPayeeNme",
+                "a.dTransact»a.sTransNox»d.sCompnyNm»b.sCompnyNm»c.sPayeeNme",
                 1);
 
         if (poJSON != null) {
@@ -620,9 +620,9 @@ public class APPaymentAdjustment extends Parameter {
         poJSON = ShowDialogFX.Browse(poGRider,
                 lsSQL,
                 "",
-                "Transaction Date»Transaction No»Company»Supplier",
-                "dTransact»sTransNox»sCompnyNm»sSupplrNm",
-                "a.dTransact»a.sTransNox»d.sCompnyNm»b.sCompnyNm",
+                "Transaction Date»Transaction No»Company»Supplier»Payee",
+                "dTransact»sTransNox»sCompnyNm»sSupplrNm»sPayeeNme",
+                "a.dTransact»a.sTransNox»d.sCompnyNm»b.sCompnyNm»c.sPayeeNme",
                 byCode ? 0 : 1);
 
         if (poJSON != null) {
@@ -681,9 +681,9 @@ public class APPaymentAdjustment extends Parameter {
         poJSON = ShowDialogFX.Browse(poGRider,
                 lsSQL,
                 "",
-                "Transaction Date»Transaction No»Company»Supplier",
-                "dTransact»sTransNox»sCompnyNm»sSupplrNm",
-                "a.dTransact»a.sTransNox»d.sCompnyNm»b.sCompnyNm",
+                "Transaction Date»Transaction No»Company»Supplier»Payee",
+                "dTransact»sTransNox»sCompnyNm»sSupplrNm»sPayeeNme",
+                "a.dTransact»a.sTransNox»d.sCompnyNm»b.sCompnyNm»c.sPayeeNme",
                 1);
 
         if (poJSON != null) {
