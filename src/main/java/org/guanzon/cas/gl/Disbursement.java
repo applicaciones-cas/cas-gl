@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.guanzon.appdriver.agent.ShowDialogFX;
 import org.guanzon.appdriver.agent.services.Model;
 import org.guanzon.appdriver.agent.services.Transaction;
 import org.guanzon.appdriver.base.GuanzonException;
@@ -29,6 +30,7 @@ import org.guanzon.cas.gl.services.SOATaggingControllers;
 import org.guanzon.cas.gl.status.DisbursementStatic;
 import org.guanzon.cas.gl.status.PaymentRequestStatus;
 import org.guanzon.cas.gl.validator.DisbursementValidator;
+import org.guanzon.cas.parameter.Banks;
 import org.guanzon.cas.parameter.Branch;
 import org.guanzon.cas.parameter.TaxCode;
 import org.guanzon.cas.parameter.services.ParamControllers;
@@ -66,8 +68,8 @@ public class Disbursement extends Transaction {
     }
 
     public JSONObject OpenTransaction(String transactionNo) throws CloneNotSupportedException, SQLException, GuanzonException {
-        resetMaster();
-        Detail().clear();
+//        resetMaster();
+//        Detail().clear();
         return openTransaction(transactionNo);
     }
 
@@ -311,6 +313,64 @@ public class Disbursement extends Transaction {
 
         if ("success".equals((String) poJSON.get("result"))) {
             Master().setPayeeID(object.getModel().getPayeeID());
+        }
+
+        return poJSON;
+    }
+
+    public JSONObject SearchTransaction(String fsValue) throws CloneNotSupportedException, SQLException, GuanzonException {
+        poJSON = new JSONObject();
+        String lsTransStat = "";
+        String lsBranch = "";
+        if (psTranStat.length() > 1) {
+            for (int lnCtr = 0; lnCtr <= psTranStat.length() - 1; lnCtr++) {
+                lsTransStat += ", " + SQLUtil.toSQL(Character.toString(psTranStat.charAt(lnCtr)));
+            }
+            lsTransStat = " AND a.cTranStat IN (" + lsTransStat.substring(2) + ")";
+        } else {
+            lsTransStat = " AND a.cTranStat = " + SQLUtil.toSQL(psTranStat);
+        }
+
+        initSQL();
+        String lsFilterCondition = String.join(" AND ", "a.sIndstCdx = " + SQLUtil.toSQL(Master().getIndustryID()),
+                " a.sCompnyID = " + SQLUtil.toSQL(Master().getCompanyID()));
+//                " a.sSupplier LIKE " + SQLUtil.toSQL("%" + fsSupplierID),
+//                " f.sCategrCd LIKE " + SQLUtil.toSQL("%" + Master().getCategoryCode()),
+//                " a.sTransNox LIKE " + SQLUtil.toSQL("%" + fsReferID));
+
+        String lsSQL = MiscUtil.addCondition(SQL_BROWSE, lsFilterCondition);
+        if (!psTranStat.isEmpty()) {
+            lsSQL = lsSQL + lsTransStat;
+        }
+
+        lsSQL = lsSQL + " GROUP BY a.sTransNox";
+        System.out.println("SQL EXECUTED xxx : " + lsSQL);
+        poJSON = ShowDialogFX.Browse(poGRider,
+                lsSQL,
+                fsValue,
+                "Transaction No»Transaction Date»Branch»Supplier",
+                "a.sTransNox»a.dTransact»c.sBranchNm»supplier",
+                "a.sTransNox»a.dTransact»IFNULL(c.sBranchNm, '')»IFNULL(e.sCompnyNm, '')",
+                1);
+
+        if (poJSON != null) {
+            return OpenTransaction((String) poJSON.get("sTransNox"));
+        } else {
+            poJSON = new JSONObject();
+            poJSON.put("result", "error");
+            poJSON.put("message", "No record loaded.");
+            return poJSON;
+        }
+    }
+
+    public JSONObject SearchBanks(String value, boolean byCode) throws ExceptionInInitializerError, SQLException, GuanzonException {
+        Banks object = new ParamControllers(poGRider, logwrapr).Banks();
+        object.setRecordStatus("1");
+
+        poJSON = object.searchRecord(value, byCode);
+
+        if ("success".equals((String) poJSON.get("result"))) {
+            CheckPayments().getModel().setBankID(object.getModel().getBankID());
         }
 
         return poJSON;
@@ -926,6 +986,33 @@ public class Disbursement extends Transaction {
 
     public Model_Disbursement_Master poDisbursementMaster(int row) {
         return (Model_Disbursement_Master) poDisbursementMaster.get(row);
+    }
+
+    public JSONObject computeFields() {
+        poJSON = new JSONObject();
+        double lnTotalVatSales = 0.0000;
+        double lnTotalVatRates = 0.00;
+        double lnTotalVatAmount = 0.0000;
+        double lnTotalVatZeroRatedSales = 0.0000;
+        double lnTotalVatExemptSales = 0.0000;
+        double lnTotalPurchaseAmount = 0.0000;
+        double lnLessWithHoldingTax = 0.0000;
+        for (int lnCntr = 0; lnCntr <= getDetailCount() - 1; lnCntr++) {
+            lnTotalVatRates += Detail(lnCntr).getTaxRates().doubleValue();
+            lnTotalPurchaseAmount += Detail(lnCntr).getAmount().doubleValue();
+            lnTotalVatAmount += (Detail(lnCntr).getAmount().doubleValue() * (Detail(lnCntr).getTaxRates().doubleValue() / 100));
+        }
+        if (lnTotalPurchaseAmount - lnTotalVatAmount <= 0.0000) {
+            poJSON.put("result", "error");
+            poJSON.put("message", "Invalid Net Total Amount.");
+            return poJSON;
+        }
+        Master().setVATRates(lnTotalVatRates);
+        Master().setTransactionTotal(lnTotalPurchaseAmount);
+        Master().setNetTotal(lnTotalPurchaseAmount - lnTotalVatAmount);
+        poJSON.put("result", "success");
+        poJSON.put("message", "computed successfully");
+        return poJSON;
     }
 
     public void exportDisbursementMasterMetadataToXML(String filePath) throws SQLException, IOException {
