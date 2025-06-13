@@ -52,6 +52,7 @@ public class Disbursement extends Transaction {
 
         poMaster = new GLModels(poGRider).DisbursementMaster();
         poDetail = new GLModels(poGRider).DisbursementDetail();
+        checkPayments = new GLControllers(poGRider,logwrapr).CheckPayments();
         paDetail = new ArrayList<>();
         poPaymentRequest = new ArrayList<>();
         poApPayments = new ArrayList<>();
@@ -371,6 +372,8 @@ public class Disbursement extends Transaction {
 
         if ("success".equals((String) poJSON.get("result"))) {
             CheckPayments().getModel().setBankID(object.getModel().getBankID());
+            System.out.println("search result == " +    CheckPayments().getModel().getBankID()); 
+            System.out.println("search result == " +    CheckPayments().getModel().Banks().getBankName());
         }
 
         return poJSON;
@@ -391,46 +394,101 @@ public class Disbursement extends Transaction {
     public Model_Disbursement_Detail Detail(int row) {
         return (Model_Disbursement_Detail) paDetail.get(row);
     }
+    
 
-    public CheckPayments CheckPayments() throws SQLException, GuanzonException {
+    public CheckPayments CheckPayments() {
+        return (CheckPayments)checkPayments;
+    }
+    
+    public JSONObject setCheckpayment() throws GuanzonException, SQLException{
         if (Master().getOldDisbursementType().equals(DisbursementStatic.DisbursementType.CHECK)
                 || Master().getDisbursementType().equals(DisbursementStatic.DisbursementType.CHECK)) {
             // Only initialize if null, or you want to force recreate each time
+            int editMode = Master().getEditMode();
+            String transactionNo = Master().getTransactionNo();
+            String checkPaymentTransactionNo = "";
             if (checkPayments == null) {
                 checkPayments = new GLControllers(poGRider, logwrapr).CheckPayments();
                 checkPayments.setWithParentClass(true);
+            }
 
-                if (Master().getEditMode() == EditMode.ADDNEW) {
-                    checkPayments.newRecord();
+                switch (editMode) {
+                    case EditMode.ADDNEW:
+                        if (checkPayments.getEditMode()!= EditMode.ADDNEW){
+                            checkPayments.newRecord();
+                            System.out.println("CHECK set to new ==== " +checkPayments.getEditMode() );
+                            checkPayments.getModel().setSourceNo(Master().getTransactionNo());
+                            checkPayments.getModel().setSourceCode(SOURCE_CODE);
+                        }
+                        break;
+                    case EditMode.READY:
+                        if (checkPayments.getEditMode()!= EditMode.READY) {
+                            checkPaymentTransactionNo = checkPayments.getTransactionNoOfCheckPayment(transactionNo, SOURCE_CODE);
+                            checkPayments.openRecord(checkPaymentTransactionNo);
+                        }
+                        break;
 
-                    CheckPayments().getModel().setSourceNo(Master().getTransactionNo());
-                    CheckPayments().getModel().setSourceCode(SOURCE_CODE);
-                } else if (Master().getEditMode() == EditMode.UPDATE || Master().getEditMode() == EditMode.READY) {
-                    String transactionNo = Master().getTransactionNo();
-                    String checkPaymentTransactionNo = checkPayments.getTransactionNoOfCheckPayment(transactionNo, SOURCE_CODE);
-
-                    checkPayments.openRecord(checkPaymentTransactionNo);
-
-                    if (Master().getEditMode() == EditMode.UPDATE) {
-                        checkPayments.updateRecord();
-
-                        boolean disbursementTypeChanged = !Master().getDisbursementType().equals(Master().getOldDisbursementType());
-                        if (disbursementTypeChanged) {
-                            if (Master().getDisbursementType().equals(DisbursementStatic.DisbursementType.CHECK)) {
-                                checkPayments.getModel().setTransactionStatus(DisbursementStatic.OPEN);
-                            } else {
-                                checkPayments.getModel().setTransactionStatus(DisbursementStatic.VOID);
+                    case EditMode.UPDATE:
+                        if (checkPayments.getEditMode()!= EditMode.UPDATE ) {
+                            checkPaymentTransactionNo = checkPayments.getTransactionNoOfCheckPayment(transactionNo, SOURCE_CODE);
+                            checkPayments.openRecord(checkPaymentTransactionNo);
+                            checkPayments.updateRecord();
+                            boolean disbursementTypeChanged = !Master().getDisbursementType().equals(Master().getOldDisbursementType());
+                            if (disbursementTypeChanged) {
+                                if (Master().getDisbursementType().equals(DisbursementStatic.DisbursementType.CHECK)) {
+                                    checkPayments.getModel().setTransactionStatus(DisbursementStatic.OPEN);
+                                } else {
+                                    checkPayments.getModel().setTransactionStatus(DisbursementStatic.VOID);
+                                }
                             }
                         }
-                    }
-
-                    checkPayments.getModel().setSourceNo(transactionNo);
-                    checkPayments.getModel().setSourceCode(SOURCE_CODE);
+                        break;
                 }
             }
-        }
-        return checkPayments;
+        System.out.println("CHECK EDIT MODE ==== " +checkPayments.getEditMode() );
+        poJSON.put("result", "success");
+        return poJSON;
     }
+    
+//    public CheckPayments CheckPayments() throws SQLException, GuanzonException {
+//        if (Master().getOldDisbursementType().equals(DisbursementStatic.DisbursementType.CHECK)
+//                || Master().getDisbursementType().equals(DisbursementStatic.DisbursementType.CHECK)) {
+//            // Only initialize if null, or you want to force recreate each time
+//            if (checkPayments == null) {
+//                checkPayments = new GLControllers(poGRider, logwrapr).CheckPayments();
+//                checkPayments.setWithParentClass(true);
+//
+//                if (Master().getEditMode() == EditMode.ADDNEW) {
+//                    checkPayments.newRecord();
+//
+//                    CheckPayments().getModel().setSourceNo(Master().getTransactionNo());
+//                    CheckPayments().getModel().setSourceCode(SOURCE_CODE);
+//                } else if (Master().getEditMode() == EditMode.UPDATE || Master().getEditMode() == EditMode.READY) {
+//                    String transactionNo = Master().getTransactionNo();
+//                    String checkPaymentTransactionNo = checkPayments.getTransactionNoOfCheckPayment(transactionNo, SOURCE_CODE);
+//
+//                    checkPayments.openRecord(checkPaymentTransactionNo);
+//
+//                    if (Master().getEditMode() == EditMode.UPDATE) {
+//                        checkPayments.updateRecord();
+//
+//                        boolean disbursementTypeChanged = !Master().getDisbursementType().equals(Master().getOldDisbursementType());
+//                        if (disbursementTypeChanged) {
+//                            if (Master().getDisbursementType().equals(DisbursementStatic.DisbursementType.CHECK)) {
+//                                checkPayments.getModel().setTransactionStatus(DisbursementStatic.OPEN);
+//                            } else {
+//                                checkPayments.getModel().setTransactionStatus(DisbursementStatic.VOID);
+//                            }
+//                        }
+//                    }
+//
+//                    checkPayments.getModel().setSourceNo(transactionNo);
+//                    checkPayments.getModel().setSourceCode(SOURCE_CODE);
+//                }
+//            }
+//        }
+//        return checkPayments;
+//    }
 
     public JSONObject saveCheckPayments() throws SQLException, GuanzonException, CloneNotSupportedException {
 //        System.out.println("checkPayments save: " + checkPayments.getEditMode());

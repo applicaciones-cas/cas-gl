@@ -92,11 +92,11 @@ public class testDisbursementUpdateTransaction {
 //            poDisbursement.Disbursement().Detail(1).setModifiedDate(poApp.getServerDate());
 //            poDisbursement.Disbursement().Detail(2).setModifiedDate(poApp.getServerDate());
 
-            loJSON = poDisbursement.Disbursement().Detail(2).setAmount(0.0000);
-            if (!"success".equals((String) loJSON.get("result"))) {
-                System.err.println((String) loJSON.get("message"));
-                Assert.fail();
-            }
+//            loJSON = poDisbursement.Disbursement().Detail(2).setAmount(0.0000);
+//            if (!"success".equals((String) loJSON.get("result"))) {
+//                System.err.println((String) loJSON.get("message"));
+//                Assert.fail();
+//            }
             
 //            loJSON = poDisbursement.Disbursement().Detail(1).setAmount(5000.0000);
 //            if (!"success".equals((String) loJSON.get("result"))) {

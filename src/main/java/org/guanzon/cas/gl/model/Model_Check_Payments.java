@@ -350,12 +350,12 @@ public class Model_Check_Payments extends Model{
     }
     
     public Model_Banks Banks() throws GuanzonException, SQLException {
-        if (!"".equals((String) getValue("sBranchCd"))) {
+        if (!"".equals((String) getValue("sBankIDxx"))) {
             if (poBanks.getEditMode() == EditMode.READY
-                    && poBanks.getBankID().equals((String) getValue("sBranchCd"))) {
+                    && poBanks.getBankID().equals((String) getValue("sBankIDxx"))) {
                 return poBanks;
             } else {
-                poJSON = poBanks.openRecord((String) getValue("sBranchCd"));
+                poJSON = poBanks.openRecord((String) getValue("sBankIDxx"));
                 if ("success".equals((String) poJSON.get("result"))) {
                     return poBanks;
                 } else {

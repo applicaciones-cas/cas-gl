@@ -93,6 +93,8 @@ public class testDisbursementNewTransaction {
             
             if (poDisbursement.Disbursement().Master().getDisbursementType().equals(DisbursementStatic.DisbursementType.CHECK)){
                 
+
+                
                 poDisbursement.Disbursement().CheckPayments().getModel().setBranchCode(branchCd);
                 Assert.assertEquals(   poDisbursement.Disbursement().CheckPayments().getModel().getBranchCode(), branchCd);
 

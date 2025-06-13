@@ -3,6 +3,7 @@ import java.sql.SQLException;
 import org.guanzon.appdriver.base.GRiderCAS;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
+import org.guanzon.cas.gl.CheckPayments;
 import org.guanzon.cas.gl.services.GLControllers;
 import org.guanzon.cas.gl.status.DisbursementStatic;
 import org.json.simple.JSONObject;
@@ -40,7 +41,7 @@ public class testDisbursementOpenTransaction {
                 Assert.fail();
             }
 
-            loJSON = poDisbursement.Disbursement().OpenTransaction("P0w125000024");
+            loJSON = poDisbursement.Disbursement().OpenTransaction("M00125000002");
             if (!"success".equals((String) loJSON.get("result"))) {
                 System.err.println((String) loJSON.get("message"));
                 Assert.fail();
@@ -52,6 +53,7 @@ public class testDisbursementOpenTransaction {
             System.out.println("Transaction Date : " + poDisbursement.Disbursement().Master().getTransactionDate().toString());
             System.out.println("Branch: " + poDisbursement.Disbursement().Master().Branch().getBranchName());
             
+           
 //            System.out.println("Payee: " + poPaymentRequest.PaymentRequest().Master().getPayeeID());
             System.out.println("");
             int detailSize = poDisbursement.Disbursement().Detail().size();
@@ -70,7 +72,8 @@ public class testDisbursementOpenTransaction {
             if ( poDisbursement.Disbursement().Master().getDisbursementType().equals(DisbursementStatic.DisbursementType.CHECK)){
                 System.out.println("----------CHECK PAYMENT INFO--------- ");
                 System.out.println("");
-                    System.out.println("TRANSACTION NO : " + poDisbursement.Disbursement().CheckPayments().getModel().getTransactionNo());
+                    System.out.println("TRANSACTION NO : " + poDisbursement.CheckPayments());
+                    System.out.println("TRANSACTION NO : " + poDisbursement.CheckPayments().getModel().Banks().getBankName());
                     System.out.println("BRANCH : " + poDisbursement.Disbursement().CheckPayments().getModel().Branch().getBranchName());
                     System.out.println("CHECK DATE ID : " + poDisbursement.Disbursement().CheckPayments().getModel().getCheckDate());
                 System.out.println("");
