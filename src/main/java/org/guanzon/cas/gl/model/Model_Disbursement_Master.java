@@ -12,6 +12,7 @@ import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.base.SQLUtil;
 import org.guanzon.appdriver.constant.EditMode;
+import org.guanzon.appdriver.constant.Logical;
 import org.guanzon.cas.gl.services.GLModels;
 import org.guanzon.cas.gl.status.DisbursementStatic;
 import org.guanzon.cas.parameter.model.Model_Branch;
@@ -24,25 +25,25 @@ import org.json.simple.JSONObject;
  *
  * @author User
  */
-public class Model_Disbursement_Master extends Model{
-    Model_Payee poPayee;    
+public class Model_Disbursement_Master extends Model {
+
+    Model_Payee poPayee;
     Model_Branch poBranch;
-    Model_Company poCompany;    
+    Model_Company poCompany;
     Model_Industry poIndustry;
     private String oldDisbursementType = DisbursementStatic.DisbursementType.CHECK;
-    
+
     @Override
     public void initialize() {
         try {
             poEntity = MiscUtil.xml2ResultSet(System.getProperty("sys.default.path.metadata") + XML, getTable());
-            
+
             poEntity.last();
             poEntity.moveToInsertRow();
 
             MiscUtil.initRowSet(poEntity);
             poEntity.updateObject("dTransact", SQLUtil.toDate(xsDateShort(poGRider.getServerDate()), SQLUtil.FORMAT_SHORT_DATE));
-            poEntity.updateObject("nEntryNox", DisbursementStatic.DefaultValues.default_value_integer );
-            poEntity.updateObject("cDisbrsTp", DisbursementStatic.DisbursementType.CHECK);
+            poEntity.updateObject("nEntryNox", DisbursementStatic.DefaultValues.default_value_integer);
             poEntity.updateObject("nTranTotl", DisbursementStatic.DefaultValues.default_value_double_0000);
             poEntity.updateObject("nDiscTotl", DisbursementStatic.DefaultValues.default_value_double_0000);
             poEntity.updateObject("nWTaxTotl", DisbursementStatic.DefaultValues.default_value_double_0000);
@@ -53,7 +54,7 @@ public class Model_Disbursement_Master extends Model{
             poEntity.updateObject("nVatExmpt", DisbursementStatic.DefaultValues.default_value_double_0000);
             poEntity.updateObject("nNetTotal", DisbursementStatic.DefaultValues.default_value_double_0000);
             poEntity.updateString("cTranStat", DisbursementStatic.OPEN);
-            
+
 //            poEntity.updateString("cTranStat", DisbursementStatic.OPEN);
 //            poEntity.updateString("cDisbrsTp", DisbursementStatic.DisbursementType.CHECK);
 //            poEntity.updateObject("nAmountxx", DisbursementStatic.DefaultValues.default_value_double);
@@ -74,61 +75,61 @@ public class Model_Disbursement_Master extends Model{
             poCompany = model.Company();
             poIndustry = model.Industry();
             GLModels gl = new GLModels(poGRider);
-            poPayee = gl.Payee();            
-            
+            poPayee = gl.Payee();
+
             pnEditMode = EditMode.UNKNOWN;
         } catch (SQLException e) {
             logwrapr.severe(e.getMessage());
             System.exit(1);
         }
     }
-    
+
     private static String xsDateShort(Date fdValue) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         String date = sdf.format(fdValue);
         return date;
     }
-    
-    public JSONObject setTransactionNo(String transactionNo){
+
+    public JSONObject setTransactionNo(String transactionNo) {
         return setValue("sTransNox", transactionNo);
     }
-    
-    public String getTransactionNo  (){
+
+    public String getTransactionNo() {
         return (String) getValue("sTransNox");
     }
-     
-    public JSONObject setIndustryID(String industryID){
+
+    public JSONObject setIndustryID(String industryID) {
         return setValue("sIndstCdx", industryID);
     }
-    
-    public String getIndustryID  (){
+
+    public String getIndustryID() {
         return (String) getValue("sIndstCdx");
     }
-    
-    public JSONObject setBranchCode(String branchCode){
+
+    public JSONObject setBranchCode(String branchCode) {
         return setValue("sBranchCd", branchCode);
     }
-    
-    public String getBranchCode(){
+
+    public String getBranchCode() {
         return (String) getValue("sBranchCd");
     }
-        
-    public JSONObject setCompanyID(String companyID){
+
+    public JSONObject setCompanyID(String companyID) {
         return setValue("sCompnyID", companyID);
     }
-    
-    public String getCompanyID(){
+
+    public String getCompanyID() {
         return (String) getValue("sCompnyID");
     }
-    
-    public JSONObject setTransactionDate(Date transactionDate){
+
+    public JSONObject setTransactionDate(Date transactionDate) {
         return setValue("dTransact", transactionDate);
     }
-    
-    public Date getTransactionDate(){
+
+    public Date getTransactionDate() {
         return (Date) getValue("dTransact");
     }
-    
+
     public JSONObject setEntryNo(int entryNo) {
         return setValue("nEntryNox", entryNo);
     }
@@ -136,210 +137,207 @@ public class Model_Disbursement_Master extends Model{
     public Number getEntryNo() {
         return (Number) getValue("nEntryNox");
     }
-    
-    public JSONObject setVoucherNo(String voucherNo){
+
+    public JSONObject setVoucherNo(String voucherNo) {
         return setValue("sVouchrNo", voucherNo);
     }
-    
-    public String getVoucherNo(){
+
+    public String getVoucherNo() {
         return (String) getValue("sVouchrNo");
     }
-    
-    public JSONObject setDisbursementType(String disbursementType){
+
+    public JSONObject setDisbursementType(String disbursementType) {
         return setValue("cDisbrsTp", disbursementType);
     }
-    
-    public String getDisbursementType(){
+
+    public String getDisbursementType() {
         return (String) getValue("cDisbrsTp");
     }
-    
-    public JSONObject setBankAccountID(String bankACcountID){
+
+    public JSONObject setBankAccountID(String bankACcountID) {
         return setValue("sBnkActID", bankACcountID);
     }
-    
-    public String getBankAccountID(){
+
+    public String getBankAccountID() {
         return (String) getValue("sBnkActID");
     }
-    
-    public JSONObject setBankReferenceNo(String bankReferenceNo){
+
+    public JSONObject setBankReferenceNo(String bankReferenceNo) {
         return setValue("sBankRefr", bankReferenceNo);
     }
-    
-    public String getBankReferenceNo(){
+
+    public String getBankReferenceNo() {
         return (String) getValue("sBankRefr");
     }
 
-    public JSONObject setPayeeID(String payeeID){
+    public JSONObject setPayeeID(String payeeID) {
         return setValue("sPayeeIDx", payeeID);
     }
-    
-    public String getPayeeID(){
+
+    public String getPayeeID() {
         return (String) getValue("sPayeeIDx");
     }
-    
-    public JSONObject setTransactionTotal(Number transactionTotal){
+
+    public JSONObject setTransactionTotal(Number transactionTotal) {
         return setValue("nTranTotl", transactionTotal);
     }
-    
-    public Number getTransactionTotal(){
+
+    public Number getTransactionTotal() {
         return (Number) getValue("nTranTotl");
     }
-    
-        
-    public JSONObject setDiscountTotal(Number discountTotal){
+
+    public JSONObject setDiscountTotal(Number discountTotal) {
         return setValue("nDiscTotl", discountTotal);
     }
-    
-    public Number getDiscountTotal(){
+
+    public Number getDiscountTotal() {
         return (Number) getValue("nDiscTotl");
     }
-    
-    public JSONObject setWithTaxTotal(Number withTaxTotal){
+
+    public JSONObject setWithTaxTotal(Number withTaxTotal) {
         return setValue("nWTaxTotl", withTaxTotal);
     }
-    
-    public Number getWithTaxTotal(){
+
+    public Number getWithTaxTotal() {
         return (Number) getValue("nWTaxTotl");
     }
-    
-    public JSONObject setNonVATSale(Number nonVATSale){
+
+    public JSONObject setNonVATSale(Number nonVATSale) {
         return setValue("nNonVATSl", nonVATSale);
     }
 
-    
 //    public Number getNonVATSale(){
 //        return (Number) getValue("nNonVATSl");
 //    }
-//    
+//
 //    public JSONObject setVATSale(Number VATSale){
 //        return setValue("nVATSales", VATSale);
 //    }
-    
-    public Number getVATSale(){
+    public Number getVATSale() {
         return (Number) getValue("nVATSales");
     }
 
-    public JSONObject setVATRates(Number vatRates){
+    public JSONObject setVATRates(Number vatRates) {
         return setValue("nVATRatex", vatRates);
     }
-    
-    public Number getVATRates(){
+
+    public Number getVATRates() {
         return (Number) getValue("nVATRatex");
     }
 
-    public JSONObject setVATAmount(Number vatAmount){
+    public JSONObject setVATAmount(Number vatAmount) {
         return setValue("nVATAmtxx", vatAmount);
     }
-    
-    public Number getVATAmount(){
+
+    public Number getVATAmount() {
         return (Number) getValue("nVATAmtxx");
     }
-    
-    public JSONObject setZeroVATSales(Number zeroVATSales){
+
+    public JSONObject setZeroVATSales(Number zeroVATSales) {
         return setValue("nZroVATSl", zeroVATSales);
     }
-    
-    public Number getZeroVATSales(){
+
+    public Number getZeroVATSales() {
         return (Number) getValue("nZroVATSl");
     }
-            
-    public JSONObject setVATExmpt(Number vatExmpt){
+
+    public JSONObject setVATExmpt(Number vatExmpt) {
         return setValue("nVatExmpt", vatExmpt);
     }
-    
-    public Number getVATExmpt(){
+
+    public Number getVATExmpt() {
         return (Number) getValue("nVatExmpt");
     }
-    
-    public JSONObject setNetTotal(Number netTotal){
+
+    public JSONObject setNetTotal(Number netTotal) {
         return setValue("nNetTotal", netTotal);
     }
-    
-    public Number getNetTotal(){
+
+    public Number getNetTotal() {
         return (Number) getValue("nNetTotal");
     }
-    
-    public JSONObject setRemarks(String remarks){
+
+    public JSONObject setRemarks(String remarks) {
         return setValue("sRemarksx", remarks);
     }
-    
-    public String getRemarks(){
+
+    public String getRemarks() {
         return (String) getValue("sRemarksx");
     }
-    
-    public JSONObject setApproved(String approved){
+
+    public JSONObject setApproved(String approved) {
         return setValue("sApproved", approved);
     }
-    
-    public String getApproved(){
+
+    public String getApproved() {
         return (String) getValue("sApproved");
     }
-    
-    public JSONObject setBankPrint(String bankPrint){
+
+    public JSONObject setBankPrint(String bankPrint) {
         return setValue("cBankPrnt", bankPrint);
     }
-    
-    public String getBankPrint(){
+
+    public String getBankPrint() {
         return (String) getValue("cBankPrnt");
     }
-//    
+//
 //    public JSONObject setPayeeType(String payeeType){
 //        return setValue("cPayeeTyp", payeeType);
 //    }
-//    
+//
 //    public String getPayeeType(){
 //        return (String) getValue("cPayeeTyp");
 //    }
-//    
+//
 //    public JSONObject setPickUpType(String pickUpType){
 //        return setValue("cPickUpTp", pickUpType);
 //    }
-//    
+//
 //    public String getPickUpType(){
 //        return (String) getValue("cPickUpTp");
 //    }
-//        
+//
 //    public JSONObject setClaimant(String claimant){
 //        return setValue("cClaimant", claimant);
 //    }
-//    
+//
 //    public String getClaimant(){
 //        return (String) getValue("cClaimant");
 //    }
-//    
-//        
+//
+//
 //    public JSONObject setAuthorize(String authorize){
 //        return setValue("sAuthorze", authorize);
 //    }
-//    
+//
 //    public String getAuthorize(){
 //        return (String) getValue("sAuthorze");
 //    }
-    
-    public JSONObject setTransactionStatus(String transactionStatus){
+
+    public JSONObject setTransactionStatus(String transactionStatus) {
         return setValue("cTranStat", transactionStatus);
     }
-    
-    public String getTransactionStatus(){
+
+    public String getTransactionStatus() {
         return (String) getValue("cTranStat");
     }
-    
-    public JSONObject setModifyingId(String modifyingId){
+
+    public JSONObject setModifyingId(String modifyingId) {
         return setValue("sModified", modifyingId);
     }
-    
-    public String getModifyingId(){
+
+    public String getModifyingId() {
         return (String) getValue("sModified");
     }
-    
-    public JSONObject setModifiedDate(Date modifiedDate){
+
+    public JSONObject setModifiedDate(Date modifiedDate) {
         return setValue("dModified", modifiedDate);
     }
-    
-    public Date getModifiedDate(){
+
+    public Date getModifiedDate() {
         return (Date) getValue("dModified");
     }
-        
+
     @Override
     public String getNextCode() {
         return MiscUtil.getNextCode(this.getTable(), ID, true, poGRider.getGConnection().getConnection(), poGRider.getBranchCode());
@@ -373,7 +371,7 @@ public class Model_Disbursement_Master extends Model{
             return poPayee;
         }
     }
-    
+
     public Model_Branch Branch() throws GuanzonException, SQLException {
         if (!"".equals((String) getValue("sBranchCd"))) {
             if (poBranch.getEditMode() == EditMode.READY
@@ -393,7 +391,7 @@ public class Model_Disbursement_Master extends Model{
             return poBranch;
         }
     }
-    
+
     public Model_Company Company() throws SQLException, GuanzonException {
         if (!"".equals((String) getValue("sCompnyID"))) {
             if (poCompany.getEditMode() == EditMode.READY
@@ -414,6 +412,7 @@ public class Model_Disbursement_Master extends Model{
             return poCompany;
         }
     }
+
     public Model_Industry Industry() throws SQLException, GuanzonException {
         if (!"".equals((String) getValue("sIndstCdx"))) {
             if (poIndustry.getEditMode() == EditMode.READY

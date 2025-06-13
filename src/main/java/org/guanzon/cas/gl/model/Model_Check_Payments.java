@@ -26,29 +26,29 @@ import org.json.simple.JSONObject;
  *
  * @author User
  */
-public class Model_Check_Payments extends Model{
-    Model_Client_Master poSupplier;    
-    Model_Payee poPayee;    
+public class Model_Check_Payments extends Model {
+
+    Model_Client_Master poSupplier;
+    Model_Payee poPayee;
     Model_Branch poBranch;
     Model_Banks poBanks;
-    
+
     @Override
     public void initialize() {
         try {
             poEntity = MiscUtil.xml2ResultSet(System.getProperty("sys.default.path.metadata") + XML, getTable());
-            
+
             poEntity.last();
             poEntity.moveToInsertRow();
 
             MiscUtil.initRowSet(poEntity);
-            
+
             poEntity.updateObject("dTransact", SQLUtil.toDate(xsDateShort(poGRider.getServerDate()), SQLUtil.FORMAT_SHORT_DATE));
             poEntity.updateObject("dCheckDte", SQLUtil.toDate(xsDateShort(poGRider.getServerDate()), SQLUtil.FORMAT_SHORT_DATE));
-            
             poEntity.updateObject("nAmountxx", DisbursementStatic.DefaultValues.default_value_double_0000);
             poEntity.updateString("cTranStat", DisbursementStatic.OPEN);
             poEntity.updateObject("sBranchCd", poGRider.getBranchCode());
-            
+
             poEntity.insertRow();
             poEntity.moveToCurrentRow();
 
@@ -59,137 +59,135 @@ public class Model_Check_Payments extends Model{
             poBranch = model.Branch();
             poBanks = model.Banks();
             GLModels gl = new GLModels(poGRider);
-            poPayee = gl.Payee();   
+            poPayee = gl.Payee();
             ClientModels clientModel = new ClientModels(poGRider);
             poSupplier = clientModel.ClientMaster();
-            
+
             pnEditMode = EditMode.UNKNOWN;
         } catch (SQLException e) {
             logwrapr.severe(e.getMessage());
             System.exit(1);
         }
     }
-    
+
     private static String xsDateShort(Date fdValue) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         String date = sdf.format(fdValue);
         return date;
     }
-    
-    public JSONObject setTransactionNo(String transactionNo){
+
+    public JSONObject setTransactionNo(String transactionNo) {
         return setValue("sTransNox", transactionNo);
     }
-    
-    public String getTransactionNo  (){
+
+    public String getTransactionNo() {
         return (String) getValue("sTransNox");
     }
-        
-    public JSONObject setBranchCode(String branchCode){
+
+    public JSONObject setBranchCode(String branchCode) {
         return setValue("sBranchCd", branchCode);
     }
-    
-    public String getBranchCode(){
+
+    public String getBranchCode() {
         return (String) getValue("sBranchCd");
     }
-    
-    public JSONObject setTransactionDate(Date transactionDate){
+
+    public JSONObject setTransactionDate(Date transactionDate) {
         return setValue("dTransact", transactionDate);
     }
-    
-    public Date getTransactionDate(){
+
+    public Date getTransactionDate() {
         return (Date) getValue("dTransact");
     }
 
-    
-    public JSONObject setBankID(String bankID){
+    public JSONObject setBankID(String bankID) {
         return setValue("sBankIDxx", bankID);
     }
-    
-    public String getBankID(){
+
+    public String getBankID() {
         return (String) getValue("sBankIDxx");
     }
-    
-    public JSONObject setBankAcountID(String bankAccountID){
+
+    public JSONObject setBankAcountID(String bankAccountID) {
         return setValue("sBnkActID", bankAccountID);
     }
-    
-    public String getBankAcountID(){
+
+    public String getBankAcountID() {
         return (String) getValue("sBnkActID");
     }
-    
-    public JSONObject setCheckNo(String checkNo){
+
+    public JSONObject setCheckNo(String checkNo) {
         return setValue("sCheckNox", checkNo);
     }
-    
-    public String getCheckNo(){
-        return (String) getValue("sBasCheckNoxnkRefr");
+
+    public String getCheckNo() {
+        return (String) getValue("sCheckNox");
     }
-    
-    public JSONObject setCheckDate(Date checkDate){
+
+    public JSONObject setCheckDate(Date checkDate) {
         return setValue("dCheckDte", checkDate);
     }
-    
-    public Date getCheckDate(){
+
+    public Date getCheckDate() {
         return (Date) getValue("dCheckDte");
     }
-    
-    public JSONObject setPayorID(String payorID){
+
+    public JSONObject setPayorID(String payorID) {
         return setValue("sPayorIDx", payorID);
     }
-    
-    public String getPayorID(){
+
+    public String getPayorID() {
         return (String) getValue("sPayorIDx");
     }
-    
-    public JSONObject setPayeeID(String payeeID){
+
+    public JSONObject setPayeeID(String payeeID) {
         return setValue("sPayeeIDx", payeeID);
     }
-    
-    public String getPayeeID(){
+
+    public String getPayeeID() {
         return (String) getValue("sPayeeIDx");
     }
-    
-    public JSONObject setAmount(Number amount){
+
+    public JSONObject setAmount(Number amount) {
         return setValue("nAmountxx", amount);
-    }   
-    
-    public Number getAmount(){
+    }
+
+    public Number getAmount() {
         return (Number) getValue("nAmountxx");
     }
-    
-    public JSONObject setRemarks(String remarks){
+
+    public JSONObject setRemarks(String remarks) {
         return setValue("sRemarksx", remarks);
     }
-    
-    public String getRemarks(){
+
+    public String getRemarks() {
         return (String) getValue("sRemarksx");
     }
-    
-    public JSONObject setSourceCode(String sourceCode){
+
+    public JSONObject setSourceCode(String sourceCode) {
         return setValue("sSourceCd", sourceCode);
     }
-    
-    public String getSourceCode(){
+
+    public String getSourceCode() {
         return (String) getValue("sSourceCd");
     }
-    
-    public JSONObject setSourceNo(String sourceNo){
+
+    public JSONObject setSourceNo(String sourceNo) {
         return setValue("sSourceNo", sourceNo);
     }
-   
-    public String getSourceNo(){
+
+    public String getSourceNo() {
         return (String) getValue("sSourceNo");
     }
-    
-    public JSONObject setLocation(String location){
+
+    public JSONObject setLocation(String location) {
         return setValue("cLocation", location);
     }
-    
-    public String getLocation(){
+
+    public String getLocation() {
         return (String) getValue("cLocation");
     }
-    
-    
+
     public JSONObject isReplaced(boolean replaced) {
         return setValue("cIsReplcd", replaced);
     }
@@ -198,48 +196,47 @@ public class Model_Check_Payments extends Model{
         Object value = getValue("cIsReplcd");
         return value instanceof Boolean ? (Boolean) value : false;
     }
-    
-    public JSONObject setReleased(String released){
+
+    public JSONObject setReleased(String released) {
         return setValue("cReleased", released);
     }
-    
-    public String getReleased(){
+
+    public String getReleased() {
         return (String) getValue("cReleased");
     }
-    
-    public JSONObject setPayeeType(String payeeType){
+
+    public JSONObject setPayeeType(String payeeType) {
         return setValue("cPayeeTyp", payeeType);
     }
-    
-    public String getPayeeType(){
+
+    public String getPayeeType() {
         return (String) getValue("cPayeeTyp");
     }
-    
-        
-    public JSONObject setDesbursementMode(String desbursementMode){
+
+    public JSONObject setDesbursementMode(String desbursementMode) {
         return setValue("cDisbMode", desbursementMode);
     }
-    
-    public String getDesbursementMode(){
+
+    public String getDesbursementMode() {
         return (String) getValue("cDisbMode");
     }
-        
-    public JSONObject setClaimant(String claimant){
+
+    public JSONObject setClaimant(String claimant) {
         return setValue("cClaimant", claimant);
     }
-    
-    public String getClaimant(){
+
+    public String getClaimant() {
         return (String) getValue("cClaimant");
     }
-        
-    public JSONObject setAuthorize(String authorize){
+
+    public JSONObject setAuthorize(String authorize) {
         return setValue("sAuthorze", authorize);
     }
-    
-    public String getAuthorize(){
+
+    public String getAuthorize() {
         return (String) getValue("sAuthorze");
     }
-    
+
     public JSONObject isCross(boolean iscross) {
         return setValue("cIsCrossx", iscross);
     }
@@ -248,7 +245,7 @@ public class Model_Check_Payments extends Model{
         Object value = getValue("cIsCrossx");
         return value instanceof Boolean ? (Boolean) value : false;
     }
-    
+
     public JSONObject isPayee(boolean ispayee) {
         return setValue("cIsPayeex", ispayee);
     }
@@ -257,38 +254,36 @@ public class Model_Check_Payments extends Model{
         Object value = getValue("cIsPayeex");
         return value instanceof Boolean ? (Boolean) value : false;
     }
-    
+
 //    cIsPayeex to verify
-    
-    public JSONObject setTransactionStatus(String transactionStatus){
+    public JSONObject setTransactionStatus(String transactionStatus) {
         return setValue("cTranStat", transactionStatus);
     }
-    
-    public String getTransactionStatus(){
+
+    public String getTransactionStatus() {
         return (String) getValue("cTranStat");
     }
-    
-    public JSONObject setModifyingId(String modifyingId){
+
+    public JSONObject setModifyingId(String modifyingId) {
         return setValue("sModified", modifyingId);
     }
-    
-    public String getModifyingId(){
+
+    public String getModifyingId() {
         return (String) getValue("sModified");
     }
-    
-    public JSONObject setModifiedDate(Date modifiedDate){
+
+    public JSONObject setModifiedDate(Date modifiedDate) {
         return setValue("dModified", modifiedDate);
     }
-    
-    public Date getModifiedDate(){
+
+    public Date getModifiedDate() {
         return (Date) getValue("dModified");
     }
-    
+
     @Override
     public String getNextCode() {
         return MiscUtil.getNextCode(this.getTable(), ID, true, poGRider.getGConnection().getConnection(), poGRider.getBranchCode());
     }
-
 
     public Model_Payee Payee() throws GuanzonException, SQLException {
         if (!"".equals((String) getValue("sPayeeIDx"))) {
@@ -309,6 +304,7 @@ public class Model_Check_Payments extends Model{
             return poPayee;
         }
     }
+
     public Model_Client_Master Supplier() throws GuanzonException, SQLException {
         if (!"".equals((String) getValue("sSupplier"))) {
             if (poSupplier.getEditMode() == EditMode.READY
@@ -328,7 +324,7 @@ public class Model_Check_Payments extends Model{
             return poSupplier;
         }
     }
-    
+
     public Model_Branch Branch() throws GuanzonException, SQLException {
         if (!"".equals((String) getValue("sBranchCd"))) {
             if (poBranch.getEditMode() == EditMode.READY
@@ -348,7 +344,7 @@ public class Model_Check_Payments extends Model{
             return poBranch;
         }
     }
-    
+
     public Model_Banks Banks() throws GuanzonException, SQLException {
         if (!"".equals((String) getValue("sBankIDxx"))) {
             if (poBanks.getEditMode() == EditMode.READY
@@ -368,5 +364,5 @@ public class Model_Check_Payments extends Model{
             return poBanks;
         }
     }
-    
+
 }
