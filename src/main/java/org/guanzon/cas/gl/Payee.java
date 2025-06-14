@@ -16,11 +16,13 @@ public class Payee extends Parameter{
     Model_Payee poModel;
     
     @Override
-    public void initialize() {
+    public void initialize() throws SQLException, GuanzonException {
         psRecdStat = Logical.YES;
         
         GLModels model = new GLModels(poGRider);
         poModel = model.Payee();
+        
+        super.initialize();
     }
     
     @Override
