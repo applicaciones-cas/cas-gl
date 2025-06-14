@@ -2,7 +2,8 @@ import java.sql.SQLException;
 import org.guanzon.appdriver.base.GRiderCAS;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
-import org.guanzon.cas.gl.AccountChart;
+import org.guanzon.cas.gl.BankAccountMaster;
+import org.guanzon.cas.gl.TransactionAccountChart;
 import org.guanzon.cas.gl.services.GLControllers;
 import org.json.simple.JSONObject;
 import org.junit.AfterClass;
@@ -13,19 +14,19 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class testAccountChart {
+public class testBankAccountMaster {
     static GRiderCAS instance;
-    static AccountChart record;
+    static BankAccountMaster record;
 
     @BeforeClass
     public static void setUpClass() {
         System.setProperty("sys.default.path.metadata", "D:/GGC_Maven_Systems/config/metadata/new/");
 
-        instance = MiscUtil.Connect();
+        instance = MiscUtil.Connect("M001000002");
         
         try {
             GLControllers ctrl = new GLControllers(instance, null);
-            record = ctrl.AccountChart();
+            record = ctrl.BankAccountMaster();
         } catch (SQLException | GuanzonException e) {
             Assert.fail(e.getMessage());
         }
@@ -35,32 +36,42 @@ public class testAccountChart {
     public void testNewRecord() {
         try {
             JSONObject loJSON;
-
+            
             loJSON = record.newRecord();
             if ("error".equals((String) loJSON.get("result"))) {
                 Assert.fail((String) loJSON.get("message"));
             }           
 
-            loJSON = record.getModel().setDescription("Liabilities");
+            loJSON = record.getModel().setIndustryCode("02");
             if ("error".equals((String) loJSON.get("result"))) {
                 Assert.fail((String) loJSON.get("message"));
             } 
             
-            loJSON = record.getModel().setParentAccountCode("");
+            loJSON = record.getModel().setBranchCode("M001");
             if ("error".equals((String) loJSON.get("result"))) {
                 Assert.fail((String) loJSON.get("message"));
             } 
             
-            loJSON = record.getModel().setGLCode("ACCOUNTS_PAYABLE");
+            loJSON = record.getModel().setCompanyId("M001");
             if ("error".equals((String) loJSON.get("result"))) {
                 Assert.fail((String) loJSON.get("message"));
             } 
             
-            loJSON = record.getModel().setIndustryId("01");
+            loJSON = record.getModel().setBankId("M00124001");
+            if ("error".equals((String) loJSON.get("result"))) {
+                Assert.fail((String) loJSON.get("message"));
+            } 
+            
+            loJSON = record.getModel().setAccountNo("0000000000111111");
             if ("error".equals((String) loJSON.get("result"))) {
                 Assert.fail((String) loJSON.get("message"));
             } 
 
+            loJSON = record.getModel().setAccountName("MENTEE X");
+            if ("error".equals((String) loJSON.get("result"))) {
+                Assert.fail((String) loJSON.get("message"));
+            } 
+            
             loJSON = record.saveRecord();
             if ("error".equals((String) loJSON.get("result"))) {
                 Assert.fail((String) loJSON.get("message"));
@@ -69,45 +80,6 @@ public class testAccountChart {
             Assert.fail(e.getMessage());
         }
     }
-   
-//    @Test
-//    public void testUpdateRecord() {
-//        JSONObject loJSON;
-//
-//        loJSON = record.openRecord("24009");
-//        if ("error".equals((String) loJSON.get("result"))) {
-//            Assert.fail((String) loJSON.get("message"));
-//        }      
-//        
-//        loJSON = record.updateRecord();
-//        if ("error".equals((String) loJSON.get("result"))) {
-//            Assert.fail((String) loJSON.get("message"));
-//        }      
-//        
-//        loJSON = record.getModel().setModifyingId(instance.getUserID());
-//        if ("error".equals((String) loJSON.get("result"))) {
-//            Assert.fail((String) loJSON.get("message"));
-//        }     
-//        
-//        loJSON = record.getModel().setModifiedDate(instance.getServerDate());
-//        if ("error".equals((String) loJSON.get("result"))) {
-//            Assert.fail((String) loJSON.get("message"));
-//        }     
-//        
-//        loJSON = record.saveRecord();
-//        if ("error".equals((String) loJSON.get("result"))) {
-//            Assert.fail((String) loJSON.get("message"));
-//        } 
-//    }
-    
-//    @Test
-//    public void testSearch(){
-//        JSONObject loJSON = record.searchRecord("", false);        
-//        if ("success".equals((String) loJSON.get("result"))){
-//            System.out.println(record.getModel().getBrandId());
-//            System.out.println(record.getModel().getDescription());
-//        } else System.out.println("No record was selected.");
-//    }
     
     @AfterClass
     public static void tearDownClass() {

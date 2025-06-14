@@ -16,11 +16,13 @@ public class AccountChart extends Parameter{
     Model_Account_Chart poModel;
     
     @Override
-    public void initialize() {
+    public void initialize() throws SQLException, GuanzonException {
         psRecdStat = Logical.YES;
         
         GLModels model = new GLModels(poGRider);
         poModel = model.Account_Chart();
+        
+        super.initialize();
     }
     
     @Override

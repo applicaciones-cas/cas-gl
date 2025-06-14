@@ -2,6 +2,8 @@ package org.guanzon.cas.gl.services;
 
 import org.guanzon.appdriver.base.GRiderCAS;
 import org.guanzon.cas.gl.model.Model_Account_Chart;
+import org.guanzon.cas.gl.model.Model_Bank_Account_Ledger;
+import org.guanzon.cas.gl.model.Model_Bank_Account_Master;
 import org.guanzon.cas.gl.model.Model_Cache_Payable_Detail;
 import org.guanzon.cas.gl.model.Model_Cache_Payable_Master;
 import org.guanzon.cas.gl.model.Model_Journal_Detail;
@@ -169,6 +171,40 @@ public class GLModels {
         return poCachePayableMaster;
     }
     
+    public Model_Bank_Account_Master Bank_Account_Master(){
+        if (poGRider == null){
+            System.err.println("GLModels.Bank_Account_Master: Application driver is not set.");
+            return null;
+        }
+        
+        if (poBankAccountMaster == null){
+            poBankAccountMaster = new Model_Bank_Account_Master();
+            poBankAccountMaster.setApplicationDriver(poGRider);
+            poBankAccountMaster.setXML("Model_Bank_Account_Master");
+            poBankAccountMaster.setTableName("Bank_Account_Master");
+            poBankAccountMaster.initialize();
+        }
+
+        return poBankAccountMaster;
+    }
+    
+    public Model_Bank_Account_Ledger Bank_Account_Ledger(){
+        if (poGRider == null){
+            System.err.println("GLModels.Bank_Account_Master: Application driver is not set.");
+            return null;
+        }
+        
+        if (poBankAccountLedger == null){
+            poBankAccountLedger = new Model_Bank_Account_Ledger();
+            poBankAccountLedger.setApplicationDriver(poGRider);
+            poBankAccountLedger.setXML("Model_Bank_Account_Ledger");
+            poBankAccountLedger.setTableName("Bank_Account_Ledger");
+            poBankAccountLedger.initialize();
+        }
+
+        return poBankAccountLedger;
+    }
+    
     private final GRiderCAS poGRider;
     
     private Model_Account_Chart poAccountChart;
@@ -180,4 +216,6 @@ public class GLModels {
     private Model_Recurring_Issuance poRecurringIssuance;
     private Model_Cache_Payable_Detail poCachePayableDetail;
     private Model_Cache_Payable_Master poCachePayableMaster;
+    private Model_Bank_Account_Master poBankAccountMaster;
+    private Model_Bank_Account_Ledger poBankAccountLedger;
 }

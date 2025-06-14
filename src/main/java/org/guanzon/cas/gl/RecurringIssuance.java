@@ -20,11 +20,13 @@ public class RecurringIssuance extends Parameter{
     Model_Recurring_Issuance poModel;
     
     @Override
-    public void initialize() {
+    public void initialize() throws SQLException, GuanzonException {
         psRecdStat = Logical.YES;
         
         GLModels model = new GLModels(poGRider);
         poModel = model.Recurring_Issuance();
+        
+        super.initialize();
     }
     
     @Override
