@@ -8,7 +8,6 @@ import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.base.SQLUtil;
 import org.guanzon.appdriver.constant.Logical;
 import org.guanzon.appdriver.constant.UserRight;
-import org.guanzon.cas.gl.model.Model_Particular;
 import org.guanzon.cas.gl.model.Model_Payee;
 import org.guanzon.cas.gl.services.GLModels;
 import org.json.simple.JSONObject;
