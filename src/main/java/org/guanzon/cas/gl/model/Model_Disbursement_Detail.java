@@ -36,7 +36,7 @@ public class Model_Disbursement_Detail extends Model {
             MiscUtil.initRowSet(poEntity);
 
             //assign default values
-            poEntity.updateObject("nEntryNox", DisbursementStatic.DefaultValues.default_value_integer );
+            poEntity.updateObject("nEntryNox", DisbursementStatic.DefaultValues.default_value_integer);
             poEntity.updateObject("nAmountxx", DisbursementStatic.DefaultValues.default_value_double_0000);
             poEntity.updateObject("nAmtAppld", DisbursementStatic.DefaultValues.default_value_double_0000);
             poEntity.updateObject("nTaxRatex", DisbursementStatic.DefaultValues.default_value_double);
@@ -63,7 +63,6 @@ public class Model_Disbursement_Detail extends Model {
             System.exit(1);
         }
     }
-
 
     @Override
     public String getNextCode() {
@@ -133,33 +132,32 @@ public class Model_Disbursement_Detail extends Model {
     public Number getAmountApplied() {
         return (Number) getValue("nAmtAppld");
     }
-    
-    
+
     public JSONObject isWithVat(boolean iswithvat) {
-        return setValue("cWithVATx", iswithvat);
+        return setValue("cWithVATx", iswithvat ? "1" : "0");
     }
 
     public boolean isWithVat() {
         Object value = getValue("cWithVATx");
-        return value instanceof Boolean ? (Boolean) value : false;
+        return "1".equals(String.valueOf(value));
     }
 
-    public JSONObject setTAxCode(String taxCode){
+    public JSONObject setTAxCode(String taxCode) {
         return setValue("sTaxCodex", taxCode);
     }
-    
-    public String getTAxCode(){
+
+    public String getTAxCode() {
         return (String) getValue("sTaxCodex");
     }
-    
+
     public JSONObject setTaxRates(Number taxRates) {
         return setValue("nTaxRatex", taxRates);
     }
 
     public Number getTaxRates() {
         return (Number) getValue("nTaxRatex");
-    }    
-    
+    }
+
     public JSONObject setTaxAmount(Number taxamount) {
         return setValue("nTaxAmtxx", taxamount);
     }
@@ -167,7 +165,7 @@ public class Model_Disbursement_Detail extends Model {
     public Number getTaxAmount() {
         return (Number) getValue("nTaxAmtxx");
     }
-    
+
     public Model_Particular Particular() throws SQLException, GuanzonException {
         if (!"".equals((String) getValue("sPrtclrID"))) {
             if (poParticular.getEditMode() == EditMode.READY
@@ -188,6 +186,7 @@ public class Model_Disbursement_Detail extends Model {
             return poParticular;
         }
     }
+
     public Model_Tax_Code TaxCode() throws SQLException, GuanzonException {
         if (!"".equals((String) getValue("sTaxCodex"))) {
             if (poTaxCode.getEditMode() == EditMode.READY
@@ -208,5 +207,5 @@ public class Model_Disbursement_Detail extends Model {
             return poTaxCode;
         }
     }
-    
+
 }

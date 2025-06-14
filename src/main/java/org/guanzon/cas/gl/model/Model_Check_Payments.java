@@ -189,12 +189,12 @@ public class Model_Check_Payments extends Model {
     }
 
     public JSONObject isReplaced(boolean replaced) {
-        return setValue("cIsReplcd", replaced);
+        return setValue("cIsReplcd", replaced ? "1" : "0");
     }
 
     public boolean isReplaced() {
         Object value = getValue("cIsReplcd");
-        return value instanceof Boolean ? (Boolean) value : false;
+        return "1".equals(String.valueOf(value));
     }
 
     public JSONObject setReleased(String released) {
@@ -238,21 +238,21 @@ public class Model_Check_Payments extends Model {
     }
 
     public JSONObject isCross(boolean iscross) {
-        return setValue("cIsCrossx", iscross);
+        return setValue("cIsCrossx", iscross ? "1" : "0");
     }
 
     public boolean isCross() {
         Object value = getValue("cIsCrossx");
-        return value instanceof Boolean ? (Boolean) value : false;
+        return "1".equals(String.valueOf(value));
     }
 
     public JSONObject isPayee(boolean ispayee) {
-        return setValue("cIsPayeex", ispayee);
+        return setValue("cIsPayeex", ispayee ? "1" : "0");
     }
 
     public boolean isPayee() {
         Object value = getValue("cIsPayeex");
-        return value instanceof Boolean ? (Boolean) value : false;
+        return "1".equals(String.valueOf(value));
     }
 
 //    cIsPayeex to verify
