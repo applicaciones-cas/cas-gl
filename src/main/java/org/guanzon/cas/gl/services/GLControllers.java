@@ -5,6 +5,7 @@ import org.guanzon.appdriver.base.GRiderCAS;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.LogWrapper;
 import org.guanzon.cas.gl.AccountChart;
+import org.guanzon.cas.gl.CachePayable;
 import org.guanzon.cas.gl.Particular;
 import org.guanzon.cas.gl.Payee;
 import org.guanzon.cas.gl.RecurringIssuance;
@@ -100,6 +101,23 @@ public class GLControllers {
         poRecurringIssuance.newRecord();
         return poRecurringIssuance;        
     }
+    
+    public CachePayable CachePayable() throws SQLException, GuanzonException{
+        if (poGRider == null){
+            poLogWrapper.severe("GLControllers.CachePayable: Application driver is not set.");
+            return null;
+        }
+        
+        if (poCachePayable != null) return poCachePayable;
+        
+        poCachePayable = new CachePayable();
+        poCachePayable.setApplicationDriver(poGRider);
+        poCachePayable.setBranchCode(poGRider.getBranchCode());
+        poCachePayable.setVerifyEntryNo(true);
+        poCachePayable.setWithParent(false);
+        poCachePayable.setLogWrapper(poLogWrapper);
+        return poCachePayable;        
+    }
        
     @Override
     protected void finalize() throws Throwable {
@@ -125,4 +143,5 @@ public class GLControllers {
     private Particular poParticular;
     private Payee poPayee;
     private RecurringIssuance poRecurringIssuance;
+    private CachePayable poCachePayable;
 }
