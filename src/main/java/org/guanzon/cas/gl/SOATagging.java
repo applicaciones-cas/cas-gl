@@ -30,7 +30,6 @@ import org.guanzon.cas.client.Client;
 import org.guanzon.cas.client.services.ClientControllers;
 import org.guanzon.cas.gl.model.Model_AP_Payment_Detail;
 import org.guanzon.cas.gl.model.Model_AP_Payment_Master;
-import org.guanzon.cas.gl.model.Model_Cache_Payable_Master;
 import org.guanzon.cas.gl.model.Model_Payment_Request_Master;
 import org.guanzon.cas.gl.services.GLControllers;
 import org.guanzon.cas.gl.services.GLModels;
@@ -43,6 +42,8 @@ import org.guanzon.cas.parameter.Company;
 import org.guanzon.cas.parameter.services.ParamControllers;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
+import ph.com.guanzongroup.cas.cashflow.model.Model_Cache_Payable_Master;
+import ph.com.guanzongroup.cas.cashflow.services.CashflowModels;
 
 /**
  *
@@ -883,7 +884,7 @@ public class SOATagging extends Transaction {
     }
 
     private Model_Cache_Payable_Master CachePayableMaster() {
-        return new GLModels(poGRider).Cache_Payable_Master();
+        return new CashflowModels(poGRider).Cache_Payable_Master();
     }
 
     public Model_Cache_Payable_Master CachePayableList(int row) {
@@ -1309,10 +1310,10 @@ public class SOATagging extends Transaction {
                         case SOATaggingStatus.CANCELLED:
                         case SOATaggingStatus.RETURNED:
                             paPaymentRequest.get(paPaymentRequest.size() - 1).Master().setProcess(false);
-                            paPaymentRequest.get(paPaymentRequest.size()-1).Master().setProcess(false);
+                            paPaymentRequest.get(paPaymentRequest.size() - 1).Master().setProcess(false);
                             break;
                         case SOATaggingStatus.CONFIRMED:
-                            paPaymentRequest.get(paPaymentRequest.size()-1).Master().setProcess(true);
+                            paPaymentRequest.get(paPaymentRequest.size() - 1).Master().setProcess(true);
                             break;
                     }
 

@@ -5,27 +5,28 @@
  */
 package org.guanzon.cas.gl.model;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 import org.guanzon.appdriver.agent.services.Model;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.MiscUtil;
-import org.guanzon.appdriver.base.SQLUtil;
 import org.guanzon.appdriver.constant.EditMode;
 import org.guanzon.cas.gl.services.GLModels;
 import org.json.simple.JSONObject;
+import ph.com.guanzongroup.cas.cashflow.model.Model_Cache_Payable_Master;
+import ph.com.guanzongroup.cas.cashflow.services.CashflowModels;
 
 /**
  *
  * @author Aldrich && Arsiela Team 2 05232025
  */
 public class Model_AP_Payment_Detail extends Model {
-    
+
     //reference objects
     Model_Payment_Request_Master poPaymentRequest;
+    Model_Cache_Payable_Master poCachePayable;
     private String psPayableType = "";
-    
+
     @Override
     public void initialize() {
         try {
@@ -53,9 +54,11 @@ public class Model_AP_Payment_Detail extends Model {
             ID2 = "nEntryNox";
 
             //initialize reference objects
-            
             GLModels gl = new GLModels(poGRider);
             poPaymentRequest = gl.PaymentRequestMaster();
+
+            CashflowModels gl2 = new CashflowModels(poGRider);
+            poCachePayable = gl2.Cache_Payable_Master();
             //end - initialize reference objects
 
             pnEditMode = EditMode.UNKNOWN;
@@ -156,7 +159,6 @@ public class Model_AP_Payment_Detail extends Model {
 //    public String getPayableType() {
 //        return psPayableType;
 //    }
-
     @Override
     public String getNextCode() {
         return "";
@@ -183,6 +185,25 @@ public class Model_AP_Payment_Detail extends Model {
             return poPaymentRequest;
         }
     }
+    public Model_Cache_Payable_Master CachePayableMaster() throws SQLException, GuanzonException {
+        if (!"".equals((String) getValue("sSourceNo"))) {
+            if (poCachePayable.getEditMode() == EditMode.READY
+                    && poCachePayable.getTransactionNo().equals((String) getValue("sSourceNo"))) {
+                return poCachePayable;
+            } else {
+                poJSON = poCachePayable.openRecord((String) getValue("sSourceNo"));
 
+                if ("success".equals((String) poJSON.get("result"))) {
+                    return poCachePayable;
+                } else {
+                    poCachePayable.initialize();
+                    return poCachePayable;
+                }
+            }
+        } else {
+            poCachePayable.initialize();
+            return poCachePayable;
+        }
+    }
     //end reference object models
 }
