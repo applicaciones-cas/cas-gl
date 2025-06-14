@@ -507,8 +507,12 @@ public class Disbursement extends Transaction {
                         if (disbursementTypeChanged) {
                             if (Master().getDisbursementType().equals(DisbursementStatic.DisbursementType.CHECK)) {
                                 checkPayments.getModel().setTransactionStatus(DisbursementStatic.OPEN);
+                                checkPayments.getModel().setModifiedDate(poGRider.getServerDate());
+                                checkPayments.getModel().setModifyingId(poGRider.getUserID());
                             } else {
                                 checkPayments.getModel().setTransactionStatus(DisbursementStatic.VOID);
+                                checkPayments.getModel().setModifiedDate(poGRider.getServerDate());
+                                checkPayments.getModel().setModifyingId(poGRider.getUserID());
                             }
                         }
                     }
@@ -683,6 +687,7 @@ public class Disbursement extends Transaction {
         String sourceNo = "";
         String sourceCode = "";
         String particular = "";
+        boolean lbUpdated = false;
         /*Put system validations and other assignments here*/
         poJSON = new JSONObject();
         if (paDetailRemoved == null) {
@@ -703,6 +708,44 @@ public class Disbursement extends Transaction {
                 }
             }
         }
+        
+        Disbursement loRecord = new GLControllers(poGRider, null).Disbursement();
+            loRecord.InitTransaction();
+            loRecord.OpenTransaction(Master().getTransactionNo());
+
+            lbUpdated = loRecord.getDetailCount() == getDetailCount();
+            if (lbUpdated) {
+                lbUpdated = loRecord.Master().getTransactionDate().equals(Master().getTransactionDate());
+            }
+            if (lbUpdated) {
+                lbUpdated = loRecord.Master().getDisbursementType().equals(Master().getDisbursementType());
+            }
+            
+            
+            if (lbUpdated) {
+                for (int lnCtr = 0; lnCtr <= loRecord.getDetailCount() - 1; lnCtr++) {
+                    lbUpdated = loRecord.Detail(lnCtr).getParticular().equals(Detail(lnCtr).getParticular());
+                    if (lbUpdated) {
+                        lbUpdated = loRecord.Detail(lnCtr).getAmount().equals(Detail(lnCtr).getAmount());
+                    }
+                    if (lbUpdated) {
+                        lbUpdated = loRecord.Detail(lnCtr).getTAxCode().equals(Detail(lnCtr).getTAxCode());
+                    }
+
+                    if (!lbUpdated) {
+                        break;
+                    }
+                }
+            }
+
+            if (lbUpdated) {
+                poJSON.put("result", "error");
+                poJSON.put("message", "No update has been made.");
+                return poJSON;
+            }
+        
+        
+        
         if (getDetailCount() == 1) {
             //do not allow a single item detail with no quantity order
             if (Detail(0).getAmount().doubleValue() == 0.0000) {
@@ -711,15 +754,18 @@ public class Disbursement extends Transaction {
                 return poJSON;
             }
         }
-
-        poJSON = setValueToOthers();
-        if (!"success".equals((String) poJSON.get("result"))) {
-            return poJSON;
+        
+        if(Master().getDisbursementType().equals(DisbursementStatic.DisbursementType.CHECK)){
+            poJSON = setValueToOthers();
+            if (!"success".equals((String) poJSON.get("result"))) {
+                return poJSON;
+            }
         }
 
         for (int lnCtr = 0; lnCtr <= getDetailCount() - 1; lnCtr++) {
             Detail(lnCtr).setTransactionNo(Master().getTransactionNo());
             Detail(lnCtr).setEntryNo(lnCtr + 1);
+//            Detail(lnCtr).setModifiedDate(poGRider.getServerDate());
         }
 
         poJSON.put("result", "success");
@@ -754,8 +800,11 @@ public class Disbursement extends Transaction {
             System.out.println("sourceCode : " + (lnCtr + 1) + " : " + Detail(lnCtr).getSourceCode());
             System.out.println("particular : " + (lnCtr + 1) + " : " + Detail(lnCtr).getParticular());
             System.out.println("------------------------------------------------------------------ ");
-
-            updateDisbursementsSource(Detail(lnCtr).getSourceNo(), Detail(lnCtr).getSourceCode(), Detail(lnCtr).getParticular(), true);
+            if (Master().getEditMode() == EditMode.ADDNEW) {
+                updateDisbursementsSource(Detail(lnCtr).getSourceNo(), Detail(lnCtr).getSourceCode(), Detail(lnCtr).getParticular(), true);
+            } else if (Master().getEditMode() == EditMode.UPDATE) {
+                updateDisbursementsSource(Detail(lnCtr).getSourceNo(), Detail(lnCtr).getSourceCode(), Detail(lnCtr).getParticular(), false);
+            }
         }
         //Update stock request removed
         for (lnCtr = 0; lnCtr <= getDetailRemovedCount() - 1; lnCtr++) {
@@ -1337,5 +1386,100 @@ public class Disbursement extends Transaction {
     public void setCompanyID(String companyID) {
         psCompanyId = companyID;
     }
+    
+//    @Override
+//    protected JSONObject saveTransaction() throws CloneNotSupportedException, SQLException, GuanzonException {
+//    this.poJSON = new JSONObject();
+//    if (!this.pbInitTran) {
+//      this.poJSON.put("result", "error");
+//      this.poJSON.put("message", "Object is not initialized.");
+//      return this.poJSON;
+//    } 
+//    if (this.pnEditMode == 1) {
+//      this.poJSON.put("result", "error");
+//      this.poJSON.put("message", "Saving of unmodified transaction is not allowed.");
+//      return this.poJSON;
+//    } 
+//    if (!hasRightToSave()) {
+//      this.poJSON.put("result", "error");
+//      this.poJSON.put("message", "User has no right to save.");
+//      return this.poJSON;
+//    } 
+//    this.poJSON = willSave();
+//    if ("error".equals(this.poJSON.get("result")))
+//      return this.poJSON; 
+//    if (getEditMode() == 0) {
+//      this.pdModified = this.poGRider.getServerDate();
+//      this.poMaster.setValue("sModified", this.poGRider.Encrypt(this.poGRider.getUserID()));
+//    } 
+//    this.poJSON = save();
+//    if (!this.pbWthParent)
+//      this.poGRider.beginTrans((String)this.poEvent.get("event"), this.poMaster
+//          .getTable(), this.SOURCE_CODE, 
+//          
+//          String.valueOf(this.poMaster.getValue(1))); 
+//    if ("success".equals(this.poJSON.get("result"))) {
+//      if (this.pbVerifyEntryNo)
+//        this.poMaster.setValue("nEntryNox", Integer.valueOf(this.paDetail.size())); 
+//      if (this.pnEditMode == 0 || this.pnEditMode == 2) {
+//        this.poMaster.setValue("dModified", this.pdModified);
+//        this.poJSON = this.poMaster.saveRecord();
+//        if ("error".equals(this.poJSON.get("result"))) {
+//          if (!this.pbWthParent)
+//            this.poGRider.rollbackTrans(); 
+//          return this.poJSON;
+//        } 
+//        for (int lnCtr = 0; lnCtr <= this.paDetail.size() - 1; lnCtr++) {
+//          ((Model)this.paDetail.get(lnCtr)).setValue("dModified", this.pdModified);
+//          this.poJSON = ((Model)this.paDetail.get(lnCtr)).saveRecord();
+//          if ("error".equals(this.poJSON.get("result"))) {
+//            if (!this.pbWthParent)
+//              this.poGRider.rollbackTrans(); 
+//            return this.poJSON;
+//          } 
+//        } 
+//        if (this.pnEditMode == 2) {
+//          String lsSQL = "SELECT * FROM " + this.poDetail.getTable() + " WHERE sTransNox = " + SQLUtil.toSQL(this.poMaster.getValue("sTransNox")) + " AND nEntryNox > " + this.paDetail.size();
+//          ResultSet loRS = this.poGRider.executeQuery(lsSQL);
+//          if (loRS.next()) {
+//            lsSQL = "DELETE FROM " + this.poDetail.getTable() + " WHERE sTransNox = " + SQLUtil.toSQL(this.poMaster.getValue("sTransNox")) + " AND nEntryNox > " + this.paDetail.size();
+//            if (this.poGRider.executeQuery(lsSQL, this.poDetail.getTable(), this.psBranchCode, this.psDestination, "") <= 0L) {
+//              if (!this.pbWthParent)
+//                this.poGRider.rollbackTrans(); 
+//              this.poJSON.put("result", "error");
+//              this.poJSON.put("message", "Unable to remove old records.");
+//              return this.poJSON;
+//            } 
+//          } 
+//        } 
+//      } else {
+//        this.poJSON.put("result", "error");
+//        this.poJSON.put("message", "Edit mode is not allowed to save transaction.");
+//        return this.poJSON;
+//      } 
+//    } else {
+//      if (!this.pbWthParent)
+//        this.poGRider.rollbackTrans(); 
+//      return this.poJSON;
+//    } 
+//    this.poJSON = saveOthers();
+//    if ("error".equals(this.poJSON.get("result"))) {
+//      if (!this.pbWthParent)
+//        this.poGRider.rollbackTrans(); 
+//      return this.poJSON;
+//    } 
+//    if (!this.pbWthParent)
+//      this.poGRider.commitTrans(); 
+//    saveComplete();
+//    this.pnEditMode = -1;
+//    this.pbRecordExist = true;
+//    this.poJSON = new JSONObject();
+//    this.poJSON.put("result", "success");
+//    this.poJSON.put("message", "Transaction saved successfully.");
+//    return this.poJSON;
+//  }
+//    private boolean hasRightToSave() {
+//    return true;
+//  }
 
 }
