@@ -17,12 +17,14 @@ public class Particular extends Parameter {
     Model_Particular poModel;
 
     @Override
-    public void initialize() {
+    public void initialize() throws SQLException, GuanzonException {
         psRecdStat = Logical.YES;
         pbInitRec = true;
 
         GLModels model = new GLModels(poGRider);
         poModel = model.Particular();
+        
+        super.initialize();
     }
 
     @Override

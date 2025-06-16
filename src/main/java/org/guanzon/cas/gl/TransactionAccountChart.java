@@ -14,11 +14,13 @@ public class TransactionAccountChart extends Parameter{
     Model_Transaction_Account_Chart poModel;
     
     @Override
-    public void initialize() {
+    public void initialize() throws SQLException, GuanzonException {
         psRecdStat = Logical.YES;
         
         GLModels model = new GLModels(poGRider);
         poModel = model.Transaction_Account_Chart();
+        
+        super.initialize();
     }
     
     @Override

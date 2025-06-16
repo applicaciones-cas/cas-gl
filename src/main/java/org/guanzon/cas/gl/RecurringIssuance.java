@@ -1,8 +1,6 @@
 package org.guanzon.cas.gl;
 
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.guanzon.appdriver.agent.ShowDialogFX;
 import org.guanzon.appdriver.agent.services.Parameter;
 import org.guanzon.appdriver.base.GuanzonException;
@@ -22,16 +20,13 @@ public class RecurringIssuance extends Parameter{
     Model_Recurring_Issuance poModel;
     
     @Override
-    public void initialize() {
-        try {
-            psRecdStat = Logical.YES;
-            super.initialize();
-            
-            GLModels model = new GLModels(poGRider);
-            poModel = model.Recurring_Issuance();
-        } catch (SQLException | GuanzonException ex) {
-            Logger.getLogger(RecurringIssuance.class.getName()).log(Level.SEVERE, null, ex);
-        }
+    public void initialize() throws SQLException, GuanzonException {
+        psRecdStat = Logical.YES;
+        
+        GLModels model = new GLModels(poGRider);
+        poModel = model.Recurring_Issuance();
+        
+        super.initialize();
     }
     
     @Override
@@ -201,5 +196,4 @@ public class RecurringIssuance extends Parameter{
         
         return poJSON;
     }
-
 }

@@ -8,19 +8,19 @@ import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.base.SQLUtil;
 import org.guanzon.appdriver.constant.Logical;
 import org.guanzon.appdriver.constant.UserRight;
-import org.guanzon.cas.gl.model.Model_Account_Chart;
+import org.guanzon.cas.gl.model.Model_Bank_Account_Master;
 import org.guanzon.cas.gl.services.GLModels;
 import org.json.simple.JSONObject;
 
-public class AccountChart extends Parameter{
-    Model_Account_Chart poModel;
+public class BankAccountMaster extends Parameter{
+    Model_Bank_Account_Master poModel;
     
     @Override
     public void initialize() throws SQLException, GuanzonException {
         psRecdStat = Logical.YES;
         
         GLModels model = new GLModels(poGRider);
-        poModel = model.Account_Chart();
+        poModel = model.Bank_Account_Master();
         
         super.initialize();
     }
@@ -36,21 +36,45 @@ public class AccountChart extends Parameter{
         } else {
             poJSON = new JSONObject();
             
-            if (poModel.getAccountCode().isEmpty()){
+            if (poModel.getBankAccountId()== null ||  poModel.getBankAccountId().isEmpty()){
                 poJSON.put("result", "error");
-                poJSON.put("message", "Account code must not be empty.");
+                poJSON.put("message", "Account must not be empty.");
                 return poJSON;
             }
             
-            if (poModel.getDescription() == null ||  poModel.getDescription().isEmpty()){
+            if (poModel.getIndustryCode() == null ||  poModel.getIndustryCode().isEmpty()){
                 poJSON.put("result", "error");
-                poJSON.put("message", "Description must not be empty.");
+                poJSON.put("message", "Industry must not be empty.");
                 return poJSON;
             }
             
-            if (poModel.getGLCode()== null ||  poModel.getGLCode().isEmpty()){
+            if (poModel.getBranchCode() == null ||  poModel.getBranchCode().isEmpty()){
                 poJSON.put("result", "error");
-                poJSON.put("message", "General ledger must not be empty.");
+                poJSON.put("message", "Branch must not be empty.");
+                return poJSON;
+            }
+            
+            if (poModel.getCompanyId() == null ||  poModel.getCompanyId().isEmpty()){
+                poJSON.put("result", "error");
+                poJSON.put("message", "Company must not be empty.");
+                return poJSON;
+            }
+            
+            if (poModel.getBankId() == null ||  poModel.getBankId().isEmpty()){
+                poJSON.put("result", "error");
+                poJSON.put("message", "Bank must not be empty.");
+                return poJSON;
+            }
+            
+            if (poModel.getAccountNo() == null ||  poModel.getAccountNo().isEmpty()){
+                poJSON.put("result", "error");
+                poJSON.put("message", "Account number must not be empty.");
+                return poJSON;
+            }
+            
+            if (poModel.getAccountName() == null ||  poModel.getAccountName().isEmpty()){
+                poJSON.put("result", "error");
+                poJSON.put("message", "Account name must not be empty.");
                 return poJSON;
             }
         }
@@ -63,7 +87,7 @@ public class AccountChart extends Parameter{
     }
     
     @Override
-    public Model_Account_Chart getModel() {
+    public Model_Bank_Account_Master getModel() {
         return poModel;
     }
     
@@ -74,13 +98,13 @@ public class AccountChart extends Parameter{
         poJSON = ShowDialogFX.Search(poGRider,
                 lsSQL,
                 value,
-                "ID»Description»GL Code»Industry",
-                "sAcctCode»sDescript»sGLCodexx»xIndstNme",
-                "a.sAcctCode»a.sDescript»a.sGLCodexx»IFNULL(b.sDescript, '')",
+                "ID»Bank»Account No.»Account Name",
+                "sBnkActID»xBankName»sActNumbr»sActNamex",
+                "a.sBnkActID»IFNULL(b.sBankName, '')»a.sActNumbr»a.sActNamex",
                 byCode ? 0 : 1);
 
         if (poJSON != null) {
-            return poModel.openRecord((String) poJSON.get("sAcctCode"));
+            return poModel.openRecord((String) poJSON.get("sBnkActID"));
         } else {
             poJSON = new JSONObject();
             poJSON.put("result", "error");
@@ -104,24 +128,14 @@ public class AccountChart extends Parameter{
         }
         
         String lsSQL = "SELECT" +
-                            "  a.sAcctCode" +
-                            ", a.sDescript" +
-                            ", a.sParentCd" +
-                            ", a.cBasedAct" +
-                            ", a.sAcctGrpx" +
-                            ", a.sReprtGrp" +
-                            ", a.cAcctType" +
-                            ", a.cBalTypex" +
-                            ", a.sGLCodexx" +
-                            ", a.sIndstCde" +
-                            ", a.cRecdStat" +
-                            ", a.sModified" +
-                            ", a.dModified" +
-                            ", IFNULL(b.sDescript, '') xIndstNme" +
-                            ", IFNULL(c.sGLDescxx, '') sGLDescxx" +
-                        " FROM Account_Chart a" +
-                            " LEFT JOIN Industry b ON a.sIndstCde = b.sIndstCdx" +
-                            " LEFT JOIN Transaction_Account_Chart c ON a.sGLCodexx = c.sGLCodexx";
+                            "  a.sBnkActID" +
+                            ", a.sBankIDxx" +
+                            ", a.sActNumbr" +
+                            ", a.sActNamex" +
+                            ", IFNULL(b.sBankName, '') xBankName" +
+                        " FROM Bank_Account_Master a" +
+                            " LEFT JOIN Banks b ON a.sBankIDxx = b.sBankIDxx";
+        
         
         return MiscUtil.addCondition(lsSQL, lsCondition);
     }

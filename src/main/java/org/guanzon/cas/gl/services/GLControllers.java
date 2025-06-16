@@ -5,14 +5,12 @@ import org.guanzon.appdriver.base.GRiderCAS;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.LogWrapper;
 import org.guanzon.cas.gl.AccountChart;
-import org.guanzon.cas.gl.CheckPayments;
-import org.guanzon.cas.gl.Disbursement;
+import org.guanzon.cas.gl.BankAccountMaster;
+import org.guanzon.cas.gl.CachePayable;
 import org.guanzon.cas.gl.Particular;
 import org.guanzon.cas.gl.Payee;
-import org.guanzon.cas.gl.PaymentRequest;
 import org.guanzon.cas.gl.RecurringIssuance;
 import org.guanzon.cas.gl.TransactionAccountChart;
-import org.guanzon.cas.gl.status.DisbursementStatic;
 
 public class GLControllers {
     public GLControllers(GRiderCAS applicationDriver, LogWrapper logWrapper){
@@ -64,7 +62,7 @@ public class GLControllers {
         
         poPayee = new Payee();
         poPayee.setApplicationDriver(poGRider);
-        poPayee.setWithParentClass(true);
+        poPayee.setWithParentClass(false);
         poPayee.setLogWrapper(poLogWrapper);
         poPayee.initialize();
         poPayee.newRecord();
@@ -81,7 +79,7 @@ public class GLControllers {
         
         poParticular = new Particular();
         poParticular.setApplicationDriver(poGRider);
-        poParticular.setWithParentClass(true);
+        poParticular.setWithParentClass(false);
         poParticular.setLogWrapper(poLogWrapper);
         poParticular.initialize();
         poParticular.newRecord();
@@ -98,65 +96,47 @@ public class GLControllers {
         
         poRecurringIssuance = new RecurringIssuance();
         poRecurringIssuance.setApplicationDriver(poGRider);
-        poRecurringIssuance.setWithParentClass(true);
+        poRecurringIssuance.setWithParentClass(false);
         poRecurringIssuance.setLogWrapper(poLogWrapper);
         poRecurringIssuance.initialize();
-//        poRecurringIssuance.newRecord();
+        poRecurringIssuance.newRecord();
         return poRecurringIssuance;        
     }
     
-    public PaymentRequest PaymentRequest() throws SQLException, GuanzonException{
+    public CachePayable CachePayable() throws SQLException, GuanzonException{
         if (poGRider == null){
-            poLogWrapper.severe("GLControllers.PaymentRequest: Application driver is not set.");
+            poLogWrapper.severe("GLControllers.CachePayable: Application driver is not set.");
             return null;
         }
         
-        if (poPaymentRequest != null) return poPaymentRequest;
+        if (poCachePayable != null) return poCachePayable;
         
-        poPaymentRequest = new PaymentRequest();
-        poPaymentRequest.setApplicationDriver(poGRider);
-        poPaymentRequest.setBranchCode(poGRider.getBranchCode());
-        poPaymentRequest.setLogWrapper(poLogWrapper);
-        poPaymentRequest.setVerifyEntryNo(true);
-        poPaymentRequest.setWithParent(false);
-        return poPaymentRequest;        
-    }
-
-    public Disbursement Disbursement() throws SQLException, GuanzonException{
-        if (poGRider == null){
-            poLogWrapper.severe("GLControllers.Disbursement: Application driver is not set.");
-            return null;
-        }
-        
-        if (poDisbursement != null) return poDisbursement;
-        
-        poDisbursement = new Disbursement();
-        poDisbursement.setApplicationDriver(poGRider);
-        poDisbursement.setBranchCode(poGRider.getBranchCode());
-        poDisbursement.setLogWrapper(poLogWrapper);
-        poDisbursement.setVerifyEntryNo(true);
-        poDisbursement.setWithParent(false);
-        return poDisbursement;        
+        poCachePayable = new CachePayable();
+        poCachePayable.setApplicationDriver(poGRider);
+        poCachePayable.setBranchCode(poGRider.getBranchCode());
+        poCachePayable.setVerifyEntryNo(true);
+        poCachePayable.setWithParent(false);
+        poCachePayable.setLogWrapper(poLogWrapper);
+        return poCachePayable;        
     }
     
-    public CheckPayments CheckPayments() throws SQLException, GuanzonException{
+    public BankAccountMaster BankAccountMaster() throws SQLException, GuanzonException{
         if (poGRider == null){
-            poLogWrapper.severe("GLControllers.CheckPayments: Application driver is not set.");
+            poLogWrapper.severe("GLControllers.BankAccountMaster: Application driver is not set.");
             return null;
         }
         
-        if (poCheckPayments != null) return poCheckPayments;
+        if (poBankAccountMaster != null) return poBankAccountMaster;
         
+        poBankAccountMaster = new BankAccountMaster();
+        poBankAccountMaster.setApplicationDriver(poGRider);
+        poBankAccountMaster.setWithParentClass(false);
+        poBankAccountMaster.setLogWrapper(poLogWrapper);
+        poBankAccountMaster.initialize();
+        poBankAccountMaster.newRecord();
+        return poBankAccountMaster;        
+    }
        
-        poCheckPayments = new CheckPayments();
-        poCheckPayments.setApplicationDriver(poGRider);
-        poCheckPayments.setWithParentClass(true);
-        poCheckPayments.setLogWrapper(poLogWrapper);
-        poCheckPayments.initialize();
-        return poCheckPayments;        
-        
-    }
-    
     @Override
     protected void finalize() throws Throwable {
         try {                    
@@ -165,8 +145,8 @@ public class GLControllers {
             poParticular = null;
             poPayee = null;
             poRecurringIssuance = null;
-            poDisbursement = null;
-            poCheckPayments = null;
+            poCachePayable = null;
+            poBankAccountMaster = null;
             
             poLogWrapper = null;
             poGRider = null;
@@ -183,7 +163,6 @@ public class GLControllers {
     private Particular poParticular;
     private Payee poPayee;
     private RecurringIssuance poRecurringIssuance;
-    private PaymentRequest poPaymentRequest;
-    private Disbursement poDisbursement;
-    private CheckPayments poCheckPayments;
+    private CachePayable poCachePayable;
+    private BankAccountMaster poBankAccountMaster;
 }
